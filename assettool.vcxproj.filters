@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\GTA-RW">
+      <UniqueIdentifier>{50712fbe-aff3-46dc-8ac4-f3eac62ecfba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GTA-RW">
+      <UniqueIdentifier>{eba2ec82-741c-4eda-969f-057a154c1861}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Generic">
+      <UniqueIdentifier>{dd629b00-f672-4300-8039-473fcd071a8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generic">
+      <UniqueIdentifier>{014e4c02-f373-4536-8c62-abf473cd5c8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\THPS">
+      <UniqueIdentifier>{f9d2c6fb-9178-4c0c-b80c-3e6fdf8671df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\THPS">
+      <UniqueIdentifier>{84d2b98d-31fa-4ec8-9113-6bff2229aa5c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="txd.cpp">
+      <Filter>Source Files\GTA-RW</Filter>
+    </ClCompile>
+    <ClCompile Include="pngExporter.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="modules.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="args_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameSA.cpp">
+      <Filter>Source Files\GTA-RW</Filter>
+    </ClCompile>
+    <ClCompile Include="CGeneric.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="CGame.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameTHPS.cpp">
+      <Filter>Source Files\THPS</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="txd.h">
+      <Filter>Header Files\GTA-RW</Filter>
+    </ClInclude>
+    <ClInclude Include="CImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pngExporter.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="args_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CGTASA.h">
+      <Filter>Header Files\GTA-RW</Filter>
+    </ClInclude>
+    <ClInclude Include="modules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CGeneric.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="CGameTHPS.h">
+      <Filter>Header Files\THPS</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
