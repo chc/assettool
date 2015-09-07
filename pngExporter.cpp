@@ -278,10 +278,14 @@ bool png_import_img(ImportOptions *impOpts) {
 
 	//make this for all colour types
 	void *col_data = malloc(sizeof(uint32_t) * width * height);
-	void *p = col_data;
+	char *p = (char *)col_data;
+	int len = png_get_rowbytes(png_ptr,info_ptr);
 	for(int i=0;i<height;i++) {
-		memcpy(p,row_pointers[i],png_get_rowbytes(png_ptr,info_ptr));
+		memcpy(p,row_pointers[i],len);
+		p += len;
 	}
+
+	tex->setColourData(EColourType_32BPP,col_data);
 
    /* clean up after the read, and free any memory allocated - REQUIRED */
    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
