@@ -61,6 +61,22 @@ void free_img(Img* img) {
 	}
 	free(img);
 }
+int gta_rw_get_txd_img_size(Img *img, TXDImgHeader *txdimg) {
+	int read_size = 0;
+	switch(img->colourType) {
+		case EColourType_DXT1:
+		case EColourType_DXT2:
+		case EColourType_DXT3:
+		case EColourType_DXT5:
+			read_size = txdimg->data_size;
+			break;
+		case EColourType_8BPP_256Palette:
+		default:
+			read_size = img->width*img->height*(txdimg->BitsPerPixel/8);
+			break;
+	}
+	return read_size;
+}
 //edit the tool to organize based on flags, scan all files and sort for anaylisis
 Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd) 
 {
@@ -90,19 +106,11 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 		img->colourType = EColourType_32BPP;
 	}
 
-	switch(img->colourType) {
-		case EColourType_DXT1:
-		case EColourType_DXT2:
-		case EColourType_DXT3:
-		case EColourType_DXT5:
-			read_size = txdimg->data_size;
-			break;
-		case EColourType_8BPP_256Palette:
-			img->palette = (uint32_t*)malloc(256 * sizeof(uint32_t));
-			fread(img->palette,sizeof(uint32_t),256,fd);
-		default:
-			read_size = img->width*img->height*(txdimg->BitsPerPixel/8);
-			break;
+	read_size = gta_rw_get_txd_img_size(img,txdimg);
+
+	if(img->colourType == EColourType_8BPP_256Palette) {
+		img->palette = (uint32_t*)malloc(256 * sizeof(uint32_t));
+		fread(img->palette,sizeof(uint32_t),256,fd);
 	}
 
 	img->rbga_data = (void *)malloc(read_size);
@@ -198,51 +206,69 @@ void make_empty_txd(FILE* fd) {
 	record.RWVersionA = 402915327;
 }
 
-/*
-Name: cd10h
-tex count: 65535
-Dimensions: 128x128
-rwVersion: 0
-TXDVer: 9
-dummy: 6147
-texturenative: 8308
-sizeofTextureNative: 8308
-rwVersionA: 402915327
-RWVersionNOB: 402915327
-set to 4: 4
-filter flags: 4353
-mipmaps: 1
-dxt comp: 8
-data size: 8192
-DXTCC: D
-BPP: 16
-img flags: 512
-DXT1
-*/
+long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record) {
+	TXDImgHeader img;
+	int pos = ftell(fd), retoffset;
+	for(int i=0;i<record->texturecount;i++) {
+		fread(&img,sizeof(img),1,fd);
+		printf("%s %s\n",img.name,name);
+		if(!strcmp(name,img.name)) {
+			retoffset = ftell(fd);
+			fseek(fd,pos,SEEK_SET);
+			printf("file exists in txd\n");
+			return retoffset;
+		}
+	}
+	return -1;
+}
+
 bool gta_rw_export_txd(ExportOptions *expOpts) {
 	printf("I must make/append TXD at: %s\n",expOpts->path);
-	FILE *fd = fopen(expOpts->path,"wb");
-
+	FILE *fd = NULL;
+	
 	TXDFileHeader head;
 	TXDRecordInfo record;
+	TXDImgHeader img;
+	memset(&img,0,sizeof(img));
 	memset(&head,0,sizeof(head));
 	memset(&record,0,sizeof(record));
 
-	head.type = 22;
-	head.size = 0;
-	head.gameid = 402915327;
-	head.split = 1;
+	const char *testname = "test";
 
-	record.RwTxdExt = 4;
-	record.RWVersion = 402915327;
-	record.texturecount = 1;
-	record.dummy = 2;
-	record.texturenative = 21;
-	record.sizeofTextureNative = 8308;
-	record.RWVersionA = 402915327;
+	fd = fopen(expOpts->path,"rb");
+	bool create = !fd;
+	if(create) {
+		fd = fopen(expOpts->path,"wb");
+		head.type = 22;
+		head.size = 0;
+		head.gameid = 402915327;
+		head.split = 1;
 
-	TXDImgHeader img;
-	memset(&img,0,sizeof(img));
+		record.RwTxdExt = 4;
+		record.RWVersion = 402915327;
+		record.texturecount = 1;
+		record.dummy = 2;
+		record.texturenative = 21;
+		record.sizeofTextureNative = 8308;
+		record.RWVersionA = 402915327;
+		fwrite(&head,sizeof(head),1,fd);
+		fwrite(&record,sizeof(record),1,fd);
+	} else {
+		
+		fclose(fd);
+		fd = fopen(expOpts->path,"r+");
+		 
+		fread(&head,sizeof(head),1,fd);
+		fread(&record,sizeof(record),1,fd);
+		gta_rw_txd_file_exists(fd, testname, &record);
+		record.texturecount = 6262;
+		fseek(fd,-sizeof(record),SEEK_CUR);
+		fwrite(&record,sizeof(record),1,fd);
+		fseek(fd,0,SEEK_END);
+	}
+
+
+
 	img.TxdStruct = 1;
 	img.sizeofTXDStruct = 8284;
 	img.RWVersionB = 402915327;
