@@ -149,7 +149,7 @@ bool png_import_img(ImportOptions *impOpts) {
 	/* Strip alpha bytes from the input data without combining with the
 	* background (not recommended).
 	*/
-	png_set_strip_alpha(png_ptr);
+	//png_set_strip_alpha(png_ptr);
 
 	/* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
 	* byte into separate bytes (useful for paletted and grayscale images).
@@ -158,20 +158,9 @@ bool png_import_img(ImportOptions *impOpts) {
 
 	/* Change the order of packed pixels to least significant bit first
 	* (not useful if you are using png_set_packing). */
-	png_set_packswap(png_ptr);
+	//png_set_packswap(png_ptr);
 
-	/* Expand paletted colors into true RGB triplets */
-	if (color_type == PNG_COLOR_TYPE_PALETTE)
-		png_set_palette_to_rgb(png_ptr);
-	/* Expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
-	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-		png_set_expand_gray_1_2_4_to_8(png_ptr);
-
-	/* Expand paletted or RGB images with transparency to full alpha channels
-	* so the data will be available as RGBA quartets.
-	*/
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-		png_set_tRNS_to_alpha(png_ptr);
+	png_set_expand(png_ptr);
 
 	/* Set the background color to draw transparent and alpha images over.
 	* It is possible to set the red, green, and blue components directly
@@ -185,33 +174,6 @@ bool png_import_img(ImportOptions *impOpts) {
 	if (png_get_bKGD(png_ptr, info_ptr, &image_background))
 		png_set_background(png_ptr, image_background,
 							PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-	else
-		png_set_background(png_ptr, &my_background,
-							PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-
-
-	/* Tell libpng to handle the gamma conversion for you.  The final call
-	* is a good guess for PC generated images, but it should be configurable
-	* by the user at run time by the user.  It is strongly suggested that
-	* your application support gamma correction.
-	*/
-	const char *gamma_str;
-
-	double screen_gamma = 2.2;  /* A good guess for a PC monitors in a dimly
-							lit room */
-
-	int intent;
-
-	if (png_get_sRGB(png_ptr, info_ptr, &intent))
-		png_set_gamma(png_ptr, screen_gamma, 0.45455);
-	else
-	{
-		double image_gamma;
-		if (png_get_gAMA(png_ptr, info_ptr, &image_gamma))
-			png_set_gamma(png_ptr, screen_gamma, image_gamma);
-		else
-			png_set_gamma(png_ptr, screen_gamma, 0.45455);
-	}
 
 	/* invert monochrome files to have 0 as white and 1 as black */
 	png_set_invert_mono(png_ptr);
@@ -228,24 +190,22 @@ bool png_import_img(ImportOptions *impOpts) {
 		png_set_shift(png_ptr, sig_bit);
 	}
 
-	/* flip the RGB pixels to BGR (or RGBA to BGRA) */
-	//if (color_type & PNG_COLOR_MASK_COLOR)
-		//png_set_bgr(png_ptr);
-
 	/* swap the RGBA or GA data to ARGB or AG (or BGRA to ABGR) */
-	png_set_swap_alpha(png_ptr);
+	//png_set_swap_alpha(png_ptr);
 
 	/* swap bytes of 16 bit files to least significant byte first */
 	png_set_swap(png_ptr);
 
 	/* Add filler (or alpha) byte (before/after each RGB triplet) */
-	png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+	//png_set_filler(png_ptr, 0x22, PNG_FILLER_AFTER);
 
 	/* Turn on interlace handling.  REQUIRED if you are not using
 	* png_read_image().  To see how to handle interlacing passes,
 	* see the png_read_row() method below:
 	*/
 	int number_passes = png_set_interlace_handling(png_ptr);
+
+	png_read_update_info(png_ptr,info_ptr);
 
 	ExportOptions exp;
 	exp.dataClass = (void *)tex;

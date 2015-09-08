@@ -249,7 +249,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.TXDVersion = 9;
 	img.FilterFlags = 4353;
 	img.image_flags = 512;//means dxt
-	img.dxt_cc = ID_DXT1;
+	img.dxt_cc = ID_DXT3;
 
 	CTexture *tex = (CTexture*)expOpts->dataClass;
 	uint32_t w,h;
@@ -259,8 +259,9 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.mipmaps = 1;
 
 	strcpy(img.name,"test");
+	strcpy(img.alphaname,"test_a");
 
-	int dxt_flags = squish::kDxt1;
+	int dxt_flags = squish::kDxt3;
 	int col_len = squish::GetStorageRequirements(w,h,dxt_flags);
 	char *rbga_data = (char *)malloc(col_len);
 	memset(rbga_data,0,col_len);

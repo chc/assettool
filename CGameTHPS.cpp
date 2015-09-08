@@ -6,6 +6,8 @@
 #include <libthps/LibTHPS.h>
 #include <libthps/Image.h>
 #include <libthps/texturetable.h>
+
+#include "CTHPSImg.h"
 using namespace LibTHPS;
 CGameTHPS::CGameTHPS() {
 	mp_shortName = "THPS";
@@ -64,6 +66,9 @@ bool thps_xbx_import_img(ImportOptions* opts) {
 	return false;
 }
 bool thps_xbx_export_img(ExportOptions *expOpts) {
+	CTHPSImg img;
+	memset(&img,0,sizeof(img));
+	img.write((CTexture *)expOpts->dataClass,expOpts->path);
 	return false;
 }
 bool thps_xbx_export_textable(ExportOptions *expOpts) {

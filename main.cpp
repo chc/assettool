@@ -8,9 +8,8 @@
 #include "modules.h"
 #include "args_handler.h"
 
-//-inpath out.png -outpath out.txd -infmt png -outfmt txd -outparams txd_append
-//
-
+//-inpath out.png -outpath out.txd -infmt png -outgame GTASA -outfmt txd -outparams txd_append
+//-inpath out.png -outpath out2.png -infmt png -outfmt png -outparams txd_append
 assetToolState g_toolState;
 
 int main(int argc, const char* argv[]) {
