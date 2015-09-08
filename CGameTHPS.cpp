@@ -3,9 +3,9 @@
 #include "CImage.h"
 #include "txd.h"
 
-#include <LibTHPS.h>
-#include <Image.h>
-#include <texturetable.h>
+#include <libthps/LibTHPS.h>
+#include <libthps/Image.h>
+#include <libthps/texturetable.h>
 using namespace LibTHPS;
 CGameTHPS::CGameTHPS() {
 	mp_shortName = "THPS";

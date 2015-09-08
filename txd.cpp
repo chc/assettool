@@ -178,6 +178,99 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 	return true;
 }
 
+void make_empty_txd(FILE* fd) {
+	TXDFileHeader head;
+	TXDRecordInfo record;
+	memset(&head,0,sizeof(head));
+	memset(&record,0,sizeof(record));
+
+	head.type = 22;
+	head.size = 0;
+	head.gameid = 402915327;
+	head.split = 1;
+
+	record.RwTxdExt = 4;
+	record.RWVersion = 402915327;
+	record.texturecount = 0;
+	record.dummy = 2;
+	record.texturenative = 21;
+	record.sizeofTextureNative = 8308;
+	record.RWVersionA = 402915327;
+}
+
+/*
+Name: cd10h
+tex count: 65535
+Dimensions: 128x128
+rwVersion: 0
+TXDVer: 9
+dummy: 6147
+texturenative: 8308
+sizeofTextureNative: 8308
+rwVersionA: 402915327
+RWVersionNOB: 402915327
+set to 4: 4
+filter flags: 4353
+mipmaps: 1
+dxt comp: 8
+data size: 8192
+DXTCC: D
+BPP: 16
+img flags: 512
+DXT1
+*/
 bool gta_rw_export_txd(ExportOptions *expOpts) {
+	printf("I must make/append TXD at: %s\n",expOpts->path);
+	FILE *fd = fopen(expOpts->path,"wb");
+
+	TXDFileHeader head;
+	TXDRecordInfo record;
+	memset(&head,0,sizeof(head));
+	memset(&record,0,sizeof(record));
+
+	head.type = 22;
+	head.size = 0;
+	head.gameid = 402915327;
+	head.split = 1;
+
+	record.RwTxdExt = 4;
+	record.RWVersion = 402915327;
+	record.texturecount = 1;
+	record.dummy = 2;
+	record.texturenative = 21;
+	record.sizeofTextureNative = 8308;
+	record.RWVersionA = 402915327;
+
+	TXDImgHeader img;
+	memset(&img,0,sizeof(img));
+	img.TxdStruct = 1;
+	img.sizeofTXDStruct = 8284;
+	img.RWVersionB = 402915327;
+	img.TXDVersion = 9;
+	img.FilterFlags = 4353;
+	img.image_flags = 512;//means dxt
+	img.dxt_cc = ID_DXT1;
+
+	CTexture *tex = (CTexture*)expOpts->dataClass;
+	uint32_t w,h;
+	tex->getDimensions(w,h);
+	img.width = w;
+	img.height = h;
+	img.mipmaps = 1;
+
+	strcpy(img.name,"test");
+
+	int dxt_flags = squish::kDxt1;
+	int col_len = squish::GetStorageRequirements(w,h,dxt_flags);
+	char *rbga_data = (char *)malloc(col_len);
+	memset(rbga_data,0,col_len);
+	squish::CompressImage((squish::u8*)tex->getRBGA(),w,h,(void *)rbga_data,dxt_flags);
+	img.data_size = col_len;
+	fwrite(&head,sizeof(head),1,fd);
+	fwrite(&record,sizeof(record),1,fd);
+	fwrite(&img,sizeof(img),1,fd);
+	fwrite(rbga_data,col_len,1,fd);
+	free(rbga_data);
+	fclose(fd);
 	return false;
 }
