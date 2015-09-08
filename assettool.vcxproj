@@ -66,23 +66,24 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\depends\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\depends\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\depends\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\depends\lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\depends\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\depends\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\..\depends\lib-x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;libTHPS.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\depends\lib-x64;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,6 +118,20 @@
     <ClCompile Include="CGameSA.cpp" />
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
+    <ClCompile Include="CTHPSImg.cpp" />
+    <ClCompile Include="libthps\buffreader.cpp" />
+    <ClCompile Include="libthps\buffwriter.cpp" />
+    <ClCompile Include="libthps\chc_endian.cpp" />
+    <ClCompile Include="libthps\Font.cpp" />
+    <ClCompile Include="libthps\Image.cpp" />
+    <ClCompile Include="libthps\Material.cpp" />
+    <ClCompile Include="libthps\Mesh.cpp" />
+    <ClCompile Include="libthps\misc.cpp" />
+    <ClCompile Include="libthps\Scene.cpp" />
+    <ClCompile Include="libthps\Sector.cpp" />
+    <ClCompile Include="libthps\swizzle.cpp" />
+    <ClCompile Include="libthps\texture.cpp" />
+    <ClCompile Include="libthps\texturetable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modules.cpp" />
     <ClCompile Include="pngExporter.cpp" />
@@ -129,6 +144,15 @@
     <ClInclude Include="CGeneric.h" />
     <ClInclude Include="CGTASA.h" />
     <ClInclude Include="CImage.h" />
+    <ClInclude Include="CTHPSImg.h" />
+    <ClInclude Include="libthps\Material.h" />
+    <ClInclude Include="libthps\Mesh.h" />
+    <ClInclude Include="libthps\misc.h" />
+    <ClInclude Include="libthps\Scene.h" />
+    <ClInclude Include="libthps\Sector.h" />
+    <ClInclude Include="libthps\swizzle.h" />
+    <ClInclude Include="libthps\texture.h" />
+    <ClInclude Include="libthps\texturetable.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="modules.h" />
     <ClInclude Include="pngExporter.h" />

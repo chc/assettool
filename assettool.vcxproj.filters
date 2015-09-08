@@ -31,6 +31,12 @@
     <Filter Include="Header Files\THPS">
       <UniqueIdentifier>{84d2b98d-31fa-4ec8-9113-6bff2229aa5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\THPS\libthps">
+      <UniqueIdentifier>{f9dda7b7-76dc-4acc-94fb-1342e584718b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\THPS\libthps">
+      <UniqueIdentifier>{2c95a281-bac6-45e0-8193-5d3dd281e681}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,6 +64,48 @@
       <Filter>Source Files\Generic</Filter>
     </ClCompile>
     <ClCompile Include="CGameTHPS.cpp">
+      <Filter>Source Files\THPS</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\buffreader.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\buffwriter.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\chc_endian.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Font.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Image.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Material.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Mesh.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\misc.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Scene.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\Sector.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\swizzle.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\texture.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="libthps\texturetable.cpp">
+      <Filter>Source Files\THPS\libthps</Filter>
+    </ClCompile>
+    <ClCompile Include="CTHPSImg.cpp">
       <Filter>Source Files\THPS</Filter>
     </ClCompile>
   </ItemGroup>
@@ -90,6 +138,33 @@
       <Filter>Header Files\Generic</Filter>
     </ClInclude>
     <ClInclude Include="CGameTHPS.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\texturetable.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\Material.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\Mesh.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\misc.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\Scene.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\Sector.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\swizzle.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="libthps\texture.h">
+      <Filter>Header Files\THPS\libthps</Filter>
+    </ClInclude>
+    <ClInclude Include="CTHPSImg.h">
       <Filter>Header Files\THPS</Filter>
     </ClInclude>
   </ItemGroup>
