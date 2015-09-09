@@ -38,7 +38,7 @@ bool CTHPSImg::write(CTexture *img, const char *path) {
 
 	fwrite(&palette_size,sizeof(palette_size),1,fd);
 
-	void *col_data = img->getRBGA();
+	void *col_data = img->getRGBA();
 	switch(colour_depth) {
 		case PSMCT32:
 			LibTHPS::flip_32bit_buffer((uint32_t *)col_data, width, height, true);
@@ -49,7 +49,7 @@ bool CTHPSImg::write(CTexture *img, const char *path) {
 			LibTHPS::flip_8bit_buffer((uint8_t *)col_data, width, height);
 		break;
 	}
-	fwrite(img->getRBGA(),width*height*(depth/8),1,fd);
+	fwrite(img->getRGBA(),width*height*(depth/8),1,fd);
 
 
 	fclose(fd);

@@ -206,9 +206,9 @@ void make_empty_txd(FILE* fd) {
 	record.RWVersionA = 402915327;
 }
 
-long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record) {
+long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record, int &cnt) {
 	TXDImgHeader img;
-	int pos = ftell(fd), retoffset;
+	int pos = ftell(fd), retoffset = -1;
 	for(int i=0;i<record->texturecount;i++) {
 		fread(&img,sizeof(img),1,fd);
 		printf("%s %s\n",img.name,name);
@@ -216,10 +216,11 @@ long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record) {
 			retoffset = ftell(fd);
 			fseek(fd,pos,SEEK_SET);
 			printf("file exists in txd\n");
-			return retoffset;
+			cnt++;
 		}
 	}
-	return -1;
+	fseek(fd,pos,SEEK_SET);
+	return retoffset;
 }
 
 bool gta_rw_export_txd(ExportOptions *expOpts) {
@@ -234,9 +235,10 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	memset(&record,0,sizeof(record));
 
 	const char *testname = "test";
-
+	int cnt = 0;
 	fd = fopen(expOpts->path,"rb");
 	bool create = !fd;
+	int offset = -1;
 	if(create) {
 		fd = fopen(expOpts->path,"wb");
 		head.type = 22;
@@ -260,9 +262,9 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		 
 		fread(&head,sizeof(head),1,fd);
 		fread(&record,sizeof(record),1,fd);
-		gta_rw_txd_file_exists(fd, testname, &record);
-		record.texturecount = 6262;
-		fseek(fd,-sizeof(record),SEEK_CUR);
+		offset = gta_rw_txd_file_exists(fd, testname, &record, cnt);
+		record.texturecount++;
+		fseek(fd,-((int)sizeof(record)),SEEK_CUR);
 		fwrite(&record,sizeof(record),1,fd);
 		fseek(fd,0,SEEK_END);
 	}
@@ -274,8 +276,9 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.RWVersionB = 402915327;
 	img.TXDVersion = 9;
 	img.FilterFlags = 4353;
-	img.image_flags = 512;//means dxt
-	img.dxt_cc = ID_DXT3;
+	img.image_flags = 0;//means dxt
+	img.dxt_cc = 0;
+	//img.dxtcompression = 8;
 
 	CTexture *tex = (CTexture*)expOpts->dataClass;
 	uint32_t w,h;
@@ -283,21 +286,52 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.width = w;
 	img.height = h;
 	img.mipmaps = 1;
+	img.BitsPerPixel = 32;
 
-	strcpy(img.name,"test");
-	strcpy(img.alphaname,"test_a");
+	if(offset != -1) {
+		offset = gta_rw_txd_file_exists(fd, "xxxx", &record, cnt);
+		if(offset != -1) {
+			strcpy(img.name,"bbbb");
+			strcpy(img.alphaname,"bbbb_aa");
+		} else {
+			strcpy(img.name,"xxxx");
+			strcpy(img.alphaname,"tasdst_x");
+		}
+	} else {
+		strcpy(img.name,"test");
+		strcpy(img.alphaname,"test_a");
+	}
 
-	int dxt_flags = squish::kDxt3;
-	int col_len = squish::GetStorageRequirements(w,h,dxt_flags);
-	char *rbga_data = (char *)malloc(col_len);
-	memset(rbga_data,0,col_len);
-	squish::CompressImage((squish::u8*)tex->getRBGA(),w,h,(void *)rbga_data,dxt_flags);
-	img.data_size = col_len;
-	fwrite(&head,sizeof(head),1,fd);
-	fwrite(&record,sizeof(record),1,fd);
+	int dxt_flags = squish::kDxt1;
+	//uint32_t col_len = (squish::GetStorageRequirements(w,h,dxt_flags));
+	//char *rbga_data = (char *)malloc(col_len);
+	//memset(rbga_data,0,col_len);
+	//squish::CompressImage((squish::u8*)tex->getRBGA(),w,h,(void *)rbga_data,dxt_flags);
+	img.data_size = w*h*4;
+	printf("%d is data size: %dx%d*4\n",img.data_size,w,h);
+
+	if(record.texturecount != 1) {
+		record.RwTxdExt = 4;
+		record.RWVersion = 402915327;
+		record.texturecount = -1;
+		record.dummy = 6147;
+		record.texturenative = 21;
+		record.sizeofTextureNative = 8308;
+		record.RWVersionA = 402915327;
+		record.texturecount = -1;
+		fwrite(&record,sizeof(record),1,fd);
+	}
 	fwrite(&img,sizeof(img),1,fd);
-	fwrite(rbga_data,col_len,1,fd);
-	free(rbga_data);
+	void *rgba = tex->getRGBA();
+	/*
+	if(create) {
+		memset(rgba,0xFF,img.data_size);
+	} else {
+		memset(rgba,0xAA,img.data_size);
+	}
+	*/
+	fwrite(rgba,img.data_size,1,fd);
+	//free(rbga_data);
 	fclose(fd);
 	return false;
 }

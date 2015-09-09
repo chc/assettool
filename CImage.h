@@ -21,7 +21,7 @@ public:
 		m_colourType = type;
 		m_rgba = colour_data;
 	}
-	void *getRBGA() {
+	void *getRGBA() {
 		return m_rgba;
 	}
 	EColourType getColourType() {

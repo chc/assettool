@@ -22,7 +22,7 @@ bool png_export_img(ExportOptions *expOpts) {
 	int bit_depth = 0;
 	EColourType colour = img->getColourType();
 	int dxt_flags = 0, has_alpha = 0;
-	void *rbga_data = img->getRBGA();
+	void *rbga_data = img->getRGBA();
 	switch(colour) {
 		case EColourType_DXT1:
 			dxt_flags = squish::kDxt1;
