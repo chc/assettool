@@ -258,12 +258,12 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	} else {
 		
 		fclose(fd);
-		fd = fopen(expOpts->path,"r+");
-		 
+		fd = fopen(expOpts->path,"rb+");
 		fread(&head,sizeof(head),1,fd);
-		fread(&record,sizeof(record),1,fd);
-		offset = gta_rw_txd_file_exists(fd, testname, &record, cnt);
+		fread(&record,sizeof(record),1,fd);	
 		record.texturecount++;
+		offset = gta_rw_txd_file_exists(fd, testname, &record, cnt);
+	
 		fseek(fd,-((int)sizeof(record)),SEEK_CUR);
 		fwrite(&record,sizeof(record),1,fd);
 		fseek(fd,0,SEEK_END);
@@ -276,9 +276,9 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.RWVersionB = 402915327;
 	img.TXDVersion = 9;
 	img.FilterFlags = 4353;
-	img.image_flags = 0;//means dxt
-	img.dxt_cc = 0;
-	//img.dxtcompression = 8;
+	img.image_flags = 512;//means dxt
+	img.dxt_cc = ID_DXT3;
+	img.dxtcompression = 8;
 
 	CTexture *tex = (CTexture*)expOpts->dataClass;
 	uint32_t w,h;
@@ -286,7 +286,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.width = w;
 	img.height = h;
 	img.mipmaps = 1;
-	img.BitsPerPixel = 32;
+	img.BitsPerPixel = 16;
 
 	if(offset != -1) {
 		offset = gta_rw_txd_file_exists(fd, "xxxx", &record, cnt);
@@ -302,13 +302,12 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		strcpy(img.alphaname,"test_a");
 	}
 
-	int dxt_flags = squish::kDxt1;
-	//uint32_t col_len = (squish::GetStorageRequirements(w,h,dxt_flags));
-	//char *rbga_data = (char *)malloc(col_len);
-	//memset(rbga_data,0,col_len);
-	//squish::CompressImage((squish::u8*)tex->getRBGA(),w,h,(void *)rbga_data,dxt_flags);
-	img.data_size = w*h*4;
-	printf("%d is data size: %dx%d*4\n",img.data_size,w,h);
+	int dxt_flags = squish::kDxt3;
+	uint32_t col_len = (squish::GetStorageRequirements(w,h,dxt_flags));
+	char *rbga_data = (char *)malloc(col_len);
+	memset(rbga_data,0,col_len);
+	squish::CompressImage((squish::u8*)tex->getRGBA(),w,h,(void *)rbga_data,dxt_flags);
+	img.data_size = col_len;
 
 	if(record.texturecount != 1) {
 		record.RwTxdExt = 4;
@@ -322,15 +321,8 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		fwrite(&record,sizeof(record),1,fd);
 	}
 	fwrite(&img,sizeof(img),1,fd);
-	void *rgba = tex->getRGBA();
-	/*
-	if(create) {
-		memset(rgba,0xFF,img.data_size);
-	} else {
-		memset(rgba,0xAA,img.data_size);
-	}
-	*/
-	fwrite(rgba,img.data_size,1,fd);
+
+	int wlen = fwrite(rbga_data,img.data_size,1,fd);
 	//free(rbga_data);
 	fclose(fd);
 	return false;
