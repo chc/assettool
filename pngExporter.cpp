@@ -258,6 +258,7 @@ bool png_import_img(ImportOptions *impOpts) {
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.path = impOpts->outpath;
+	expOpts.srcPath = impOpts->path;
 	expOpts.dataClass = (void *)tex;
 	expOpts.args = impOpts->expArgs;
 	impOpts->exporter(&expOpts);

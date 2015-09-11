@@ -10,6 +10,7 @@ enum FileType {
 };
 typedef struct {
 	const char *path;
+	const char *srcPath;
 	FileType type; //FileType_Texture means void *dataClass = CImage *
 	const char *args;
 	void *dataClass;
