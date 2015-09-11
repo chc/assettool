@@ -197,7 +197,7 @@ bool png_import_img(ImportOptions *impOpts) {
 	png_set_swap(png_ptr);
 
 	/* Add filler (or alpha) byte (before/after each RGB triplet) */
-	//png_set_filler(png_ptr, 0x22, PNG_FILLER_AFTER);
+	png_set_filler(png_ptr, 0x22, PNG_FILLER_AFTER);
 
 	/* Turn on interlace handling.  REQUIRED if you are not using
 	* png_read_image().  To see how to handle interlacing passes,

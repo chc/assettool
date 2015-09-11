@@ -271,6 +271,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 			record.texturecount++;
 			fseek(fd,-((int)sizeof(record)),SEEK_CUR);
 			fwrite(&record,sizeof(record),1,fd);
+			fseek(fd,0,SEEK_END);
 		}
 	}
 
@@ -282,7 +283,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.TXDVersion = 9;
 	img.FilterFlags = 4353;
 	img.image_flags = 512;//means dxt
-	img.dxt_cc = ID_DXT1;
+	img.dxt_cc = ID_DXT3;
 	img.dxtcompression = 8;
 
 	CTexture *tex = (CTexture*)expOpts->dataClass;
@@ -293,7 +294,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.mipmaps = 1;
 	img.BitsPerPixel = 16;
 
-	int dxt_flags = squish::kDxt1;
+	int dxt_flags = squish::kDxt3;
 	uint32_t col_len = (squish::GetStorageRequirements(w,h,dxt_flags));
 	char *rbga_data = (char *)malloc(col_len);
 	memset(rbga_data,0,col_len);
