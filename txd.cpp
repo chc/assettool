@@ -201,8 +201,10 @@ void make_empty_txd(FILE* fd) {
 
 long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record, TXDImgHeader *txdimg) {
 	TXDImgHeader img;
+	TXDRecordInfo rec;
 	int pos = ftell(fd), retoffset = -1;
 	for(int i=0;i<record->texturecount;i++) {
+		fread(&rec,sizeof(rec),1,fd);
 		fread(&img,sizeof(img),1,fd);
 		if(!strcmp(name,img.name)) {
 			retoffset = ftell(fd);
@@ -258,6 +260,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		fd = fopen(expOpts->path,"rb+");
 		fread(&head,sizeof(head),1,fd);
 		fread(&record,sizeof(record),1,fd);	
+		fseek(fd,-((int)sizeof(record)),SEEK_CUR);
 
 		offset = gta_rw_txd_file_exists(fd, img.name, &record, &findImg);
 		int imgdata_sz =  gta_rw_get_txd_img_size(&findImg);
