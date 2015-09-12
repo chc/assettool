@@ -210,7 +210,7 @@ long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record, T
 			retoffset = ftell(fd);
 			fseek(fd,pos,SEEK_SET);
 			memcpy(txdimg,&img,sizeof(img));
-			return retoffset-sizeof(img);
+			return retoffset-sizeof(img)-sizeof(rec);
 		}
 		fseek(fd,gta_rw_get_txd_img_size(&img),SEEK_CUR);
 	}
@@ -267,7 +267,9 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		if(offset != -1) {
 			//remove file from record
 			fclose(fd);
-			fd = slice_file(expOpts->path,expOpts->path,offset,imgdata_sz+sizeof(TXDImgHeader));
+			fd = slice_file(expOpts->path,expOpts->path,offset,imgdata_sz+sizeof(TXDImgHeader)+sizeof(TXDRecordInfo));
+			fseek(fd,sizeof(TXDFileHeader),SEEK_SET);
+			fwrite(&record,sizeof(record),1,fd);
 			fseek(fd,0,SEEK_END);
 		} else {
 			//incement record count because adding
