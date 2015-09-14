@@ -114,11 +114,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="args_handler.cpp" />
+    <ClCompile Include="CFile.cpp" />
     <ClCompile Include="CGame.cpp" />
     <ClCompile Include="CGameSA.cpp" />
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
+    <ClCompile Include="fileExporter.cpp" />
+    <ClCompile Include="imgv2.cpp" />
     <ClCompile Include="libthps\buffreader.cpp" />
     <ClCompile Include="libthps\buffwriter.cpp" />
     <ClCompile Include="libthps\chc_endian.cpp" />
@@ -136,15 +139,19 @@
     <ClCompile Include="modules.cpp" />
     <ClCompile Include="pngExporter.cpp" />
     <ClCompile Include="txd.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="args_handler.h" />
+    <ClInclude Include="CFile.h" />
     <ClInclude Include="CGame.h" />
     <ClInclude Include="CGameTHPS.h" />
     <ClInclude Include="CGeneric.h" />
     <ClInclude Include="CGTASA.h" />
     <ClInclude Include="CImage.h" />
     <ClInclude Include="CTHPSImg.h" />
+    <ClInclude Include="fileExport.h" />
+    <ClInclude Include="imgv2.h" />
     <ClInclude Include="libthps\Material.h" />
     <ClInclude Include="libthps\Mesh.h" />
     <ClInclude Include="libthps\misc.h" />
@@ -157,6 +164,7 @@
     <ClInclude Include="modules.h" />
     <ClInclude Include="pngExporter.h" />
     <ClInclude Include="txd.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -108,6 +108,18 @@
     <ClCompile Include="CTHPSImg.cpp">
       <Filter>Source Files\THPS</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="imgv2.cpp">
+      <Filter>Source Files\GTA-RW</Filter>
+    </ClCompile>
+    <ClCompile Include="fileExporter.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="CFile.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -166,6 +178,18 @@
     </ClInclude>
     <ClInclude Include="CTHPSImg.h">
       <Filter>Header Files\THPS</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="imgv2.h">
+      <Filter>Header Files\GTA-RW</Filter>
+    </ClInclude>
+    <ClInclude Include="fileExport.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="CFile.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

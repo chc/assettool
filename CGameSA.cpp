@@ -2,6 +2,7 @@
 #include "CGTASA.h"
 #include "CImage.h"
 #include "txd.h"
+#include "imgv2.h"
 CGTASA::CGTASA() {
 	FileFormat txdFmt;
 	memset(&txdFmt,0,sizeof(txdFmt));
@@ -9,12 +10,20 @@ CGTASA::CGTASA() {
 	txdFmt.name = "txd";
 	txdFmt.mp_impFunc = gta_rw_import_txd;
 	txdFmt.mp_expFunc = gta_rw_export_txd;
-	m_fileFmtCount = 1;
+	m_fileFmtCount = 2;
 
 	mp_shortName = "GTASA";
 	mp_fullName = "Grand Theft Auto: San Andreas";
 	mp_fileFormats = (FileFormat **)malloc(sizeof(FileFormat *) * m_fileFmtCount);
-	mp_fileFormats[0] = (FileFormat *)malloc(sizeof(FileFormat));
 
+	mp_fileFormats[0] = (FileFormat *)malloc(sizeof(FileFormat));
 	memcpy(mp_fileFormats[0],&txdFmt,sizeof(FileFormat));
+
+	mp_fileFormats[1] = (FileFormat *)malloc(sizeof(FileFormat));
+	memset(&txdFmt,0,sizeof(txdFmt));
+	txdFmt.description = "GTA: IMG File Directory";
+	txdFmt.name = "img";
+	txdFmt.mp_impFunc = gta_rw_import_imgv2;
+	txdFmt.mp_expFunc = gta_rw_export_imgv2;
+	memcpy(mp_fileFormats[1],&txdFmt,sizeof(FileFormat));
 }

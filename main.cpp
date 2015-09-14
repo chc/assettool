@@ -39,7 +39,8 @@ int main(int argc, const char* argv[]) {
 		memset(&opts,0,sizeof(opts));
 		opts.path = g_toolState.inPath;
 		opts.outpath = g_toolState.outPath;
-		opts.exporter = g_toolState.outFmt->mp_expFunc;
+		if(g_toolState.outFmt)
+			opts.exporter = g_toolState.outFmt->mp_expFunc;
 		opts.expArgs = g_toolState.outFmtArgs;
 		opts.args = g_toolState.inFmtArgs;
 		g_toolState.inFmt->mp_impFunc(&opts);
