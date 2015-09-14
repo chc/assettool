@@ -120,6 +120,7 @@
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
+    <ClCompile Include="dff.cpp" />
     <ClCompile Include="fileExporter.cpp" />
     <ClCompile Include="imgv2.cpp" />
     <ClCompile Include="libthps\buffreader.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="CGTASA.h" />
     <ClInclude Include="CImage.h" />
     <ClInclude Include="CTHPSImg.h" />
+    <ClInclude Include="dff.h" />
     <ClInclude Include="fileExport.h" />
     <ClInclude Include="imgv2.h" />
     <ClInclude Include="libthps\Material.h" />

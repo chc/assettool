@@ -120,6 +120,9 @@
     <ClCompile Include="CFile.cpp">
       <Filter>Source Files\Generic</Filter>
     </ClCompile>
+    <ClCompile Include="dff.cpp">
+      <Filter>Source Files\GTA-RW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="CFile.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dff.h">
+      <Filter>Header Files\GTA-RW</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
