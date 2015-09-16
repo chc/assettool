@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-ingame GTASA -infmt dff -inpath infernus.dff -outpath out -outfmt fs</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-infmt ply -inpath test.ply -outpath out.mesh -outgame CHC  -outfmt mesh</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

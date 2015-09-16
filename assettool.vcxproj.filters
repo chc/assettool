@@ -37,6 +37,12 @@
     <Filter Include="Header Files\THPS\libthps">
       <UniqueIdentifier>{2c95a281-bac6-45e0-8193-5d3dd281e681}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CHCEngine">
+      <UniqueIdentifier>{8daf3cdf-5086-4a86-b41a-44056e26f55c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CHCEngine">
+      <UniqueIdentifier>{bde78076-6367-4cc4-913c-adf3c2348c31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -123,6 +129,21 @@
     <ClCompile Include="dff.cpp">
       <Filter>Source Files\GTA-RW</Filter>
     </ClCompile>
+    <ClCompile Include="rply.c">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="plyloader.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="CCHCEngine.cpp">
+      <Filter>Source Files\CHCEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="CHCMesh.cpp">
+      <Filter>Source Files\CHCEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="CMesh.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -196,6 +217,21 @@
     </ClInclude>
     <ClInclude Include="dff.h">
       <Filter>Header Files\GTA-RW</Filter>
+    </ClInclude>
+    <ClInclude Include="rply.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="plyloader.h">
+      <Filter>Header Files\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="CCHCEngine.h">
+      <Filter>Header Files\CHCEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="CHCMesh.h">
+      <Filter>Header Files\CHCEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="CMesh.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

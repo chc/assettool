@@ -1,6 +1,7 @@
 #ifndef _GTA_TXD_H
 #define _GTA_TXD_H
 #include <stdint.h>
+#include "CGTASA.h"
 #include "CGame.h"
 #include "CImage.h"
 /*

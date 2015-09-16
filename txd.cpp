@@ -191,12 +191,12 @@ void make_empty_txd(FILE* fd) {
 	head.split = 1;
 
 	record.RwTxdExt = 4;
-	record.RWVersion = 402915327;
+	record.RWVersion = ERWVersion_3_18;
 	record.texturecount = 0;
 	record.dummy = 2;
 	record.texturenative = 21;
 	record.sizeofTextureNative = 8308;
-	record.RWVersionA = 402915327;
+	record.RWVersionA = ERWVersion_3_18;
 }
 
 long gta_rw_txd_file_exists(FILE *fd, const char *name, TXDRecordInfo *record, TXDImgHeader *txdimg) {
@@ -242,16 +242,16 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 		fd = fopen(expOpts->path,"wb");
 		head.type = 22;
 		head.size = 0;
-		head.gameid = 402915327;
+		head.gameid = ERWVersion_3_18;
 		head.split = 1;
 
 		record.RwTxdExt = 4;
-		record.RWVersion = 402915327;
+		record.RWVersion = ERWVersion_3_18;
 		record.texturecount = 1;
 		record.dummy = 2;
 		record.texturenative = 21;
 		record.sizeofTextureNative = 8308;
-		record.RWVersionA = 402915327;
+		record.RWVersionA = ERWVersion_3_18;
 		fwrite(&head,sizeof(head),1,fd);
 		fwrite(&record,sizeof(record),1,fd);
 	} else {
@@ -284,11 +284,11 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 
 	img.TxdStruct = 1;
 	img.sizeofTXDStruct = 8284;
-	img.RWVersionB = 402915327;
+	img.RWVersionB = ERWVersion_3_18;
 	img.TXDVersion = 9;
 	img.FilterFlags = 4353;
 	img.image_flags = 512;//means dxt
-	img.dxt_cc = ID_DXT3;
+	img.dxt_cc = ID_DXT1;
 	img.dxtcompression = 8;
 
 	CTexture *tex = (CTexture*)expOpts->dataClass;
@@ -299,7 +299,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.mipmaps = 1;
 	img.BitsPerPixel = 16;
 
-	int dxt_flags = squish::kDxt3;
+	int dxt_flags = squish::kDxt1;
 	uint32_t col_len = (squish::GetStorageRequirements(w,h,dxt_flags));
 	char *rbga_data = (char *)malloc(col_len);
 	memset(rbga_data,0,col_len);
@@ -308,12 +308,12 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 
 	if(record.texturecount != 1) {
 		record.RwTxdExt = 4;
-		record.RWVersion = 402915327;
+		record.RWVersion = ERWVersion_3_18;
 		record.texturecount = -1;
 		record.dummy = 6147;
 		record.texturenative = 21;
 		record.sizeofTextureNative = 8308;
-		record.RWVersionA = 402915327;
+		record.RWVersionA = ERWVersion_3_18;
 		record.texturecount = -1;
 		fwrite(&record,sizeof(record),1,fd);
 	}

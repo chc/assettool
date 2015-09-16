@@ -114,11 +114,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="args_handler.cpp" />
+    <ClCompile Include="CCHCEngine.cpp" />
     <ClCompile Include="CFile.cpp" />
     <ClCompile Include="CGame.cpp" />
     <ClCompile Include="CGameSA.cpp" />
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
+    <ClCompile Include="CHCMesh.cpp" />
+    <ClCompile Include="CMesh.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
     <ClCompile Include="dff.cpp" />
     <ClCompile Include="fileExporter.cpp" />
@@ -138,18 +141,23 @@
     <ClCompile Include="libthps\texturetable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modules.cpp" />
+    <ClCompile Include="plyloader.cpp" />
     <ClCompile Include="pngExporter.cpp" />
+    <ClCompile Include="rply.c" />
     <ClCompile Include="txd.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="args_handler.h" />
+    <ClInclude Include="CCHCEngine.h" />
     <ClInclude Include="CFile.h" />
     <ClInclude Include="CGame.h" />
     <ClInclude Include="CGameTHPS.h" />
     <ClInclude Include="CGeneric.h" />
     <ClInclude Include="CGTASA.h" />
+    <ClInclude Include="CHCMesh.h" />
     <ClInclude Include="CImage.h" />
+    <ClInclude Include="CMesh.h" />
     <ClInclude Include="CTHPSImg.h" />
     <ClInclude Include="dff.h" />
     <ClInclude Include="fileExport.h" />
@@ -164,7 +172,9 @@
     <ClInclude Include="libthps\texturetable.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="modules.h" />
+    <ClInclude Include="plyloader.h" />
     <ClInclude Include="pngExporter.h" />
+    <ClInclude Include="rply.h" />
     <ClInclude Include="txd.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
