@@ -30,12 +30,16 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 	if(normals) head.flags |= ECHCMeshFlag_HasNormals;
 
 	fwrite(&head,sizeof(head),1,fd);
-	
-	fwrite(verts,sizeof(float)*3,head.num_verts,fd);
-	if(head.flags & ECHCMeshFlag_HasNormals) {
-		fwrite(normals,sizeof(float)*3,head.num_verts,fd);
-	}
 
+	float *p_verts = verts,*p_norms = normals;
+
+	for(int i=0;i<head.num_verts;i++,p_verts+=3,p_norms+=3) {
+		fwrite(p_verts,3,sizeof(float),fd);
+		if(head.flags & ECHCMeshFlag_HasNormals) {
+			fwrite(p_norms,3,sizeof(float),fd);
+		}
+	}
+	
 	if(indicies) {
 		fwrite(indicies,sizeof(uint32_t),head.num_indices,fd);
 	}
