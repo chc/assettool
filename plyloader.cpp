@@ -126,7 +126,13 @@ bool ply_import_mesh(ImportOptions* opts) {
 	}
 	mesh->setNormals(verts);
 
-	uint32_t *faces = (uint32_t *)malloc(nfaces * sizeof(uint32_t));
+	uint32_t *faces = (uint32_t *)malloc(nfaces * sizeof(uint32_t) * 3);
+
+	for(int i=0, o = 0;i<nfaces;i++, o += 3) {
+		faces[o + 0] = cb_info.indicies[i].x;
+		faces[o + 1] = cb_info.indicies[i].y;
+		faces[o + 2] = cb_info.indicies[i].z;
+	}
 
 	mesh->setIndices(faces,nfaces);
 

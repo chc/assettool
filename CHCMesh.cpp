@@ -41,7 +41,7 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 	}
 	
 	if(indicies) {
-		fwrite(indicies,sizeof(uint32_t),head.num_indices,fd);
+		fwrite(indicies,sizeof(uint32_t) * 3,head.num_indices,fd);
 	}
 
 	fclose(fd);

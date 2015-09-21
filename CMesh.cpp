@@ -41,4 +41,5 @@ void CMesh::setIndices(uint32_t *indices, int num_indices) {
 	if(m_indices || num_indices == 0) return;
 	m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t) * 3);
 	memcpy(m_indices,indices,num_indices * sizeof(uint32_t) * 3);
+	m_num_indices = num_indices;
 }
