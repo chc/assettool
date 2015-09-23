@@ -119,12 +119,14 @@ bool ply_import_mesh(ImportOptions* opts) {
 		verts[o + 2] = cb_info.verticies[i].z;
 	}
 	mesh->setVerticies(verts);
-	for(int i=0, o = 0;i<nvertices;i++,o+=3) {
-		verts[o + 0] = cb_info.normals[i].x;
-		verts[o + 1] = cb_info.normals[i].y;
-		verts[o + 2] = cb_info.normals[i].z;
+	if(nnormals > 0) {
+		for(int i=0, o = 0;i<nvertices;i++,o+=3) {
+			verts[o + 0] = cb_info.normals[i].x;
+			verts[o + 1] = cb_info.normals[i].y;
+			verts[o + 2] = cb_info.normals[i].z;
+		}
+		mesh->setNormals(verts);
 	}
-	mesh->setNormals(verts);
 
 	uint32_t *faces = (uint32_t *)malloc(nfaces * sizeof(uint32_t) * 3);
 
