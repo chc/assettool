@@ -144,6 +144,9 @@
     <ClCompile Include="CMesh.cpp">
       <Filter>Source Files\Generic</Filter>
     </ClCompile>
+    <ClCompile Include="CHCTexture.cpp">
+      <Filter>Source Files\CHCEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -232,6 +235,9 @@
     </ClInclude>
     <ClInclude Include="CMesh.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CHCTexture.h">
+      <Filter>Header Files\CHCEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ typedef struct {
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
 }
+
 bool chc_engine_export_mesh(ExportOptions* opts) {
 	FILE *fd = fopen(opts->path, "wb");
 	CMesh *mesh = (CMesh *)opts->dataClass;

@@ -121,6 +121,7 @@
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
     <ClCompile Include="CHCMesh.cpp" />
+    <ClCompile Include="CHCTexture.cpp" />
     <ClCompile Include="CMesh.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
     <ClCompile Include="dff.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="CGeneric.h" />
     <ClInclude Include="CGTASA.h" />
     <ClInclude Include="CHCMesh.h" />
+    <ClInclude Include="CHCTexture.h" />
     <ClInclude Include="CImage.h" />
     <ClInclude Include="CMesh.h" />
     <ClInclude Include="CTHPSImg.h" />

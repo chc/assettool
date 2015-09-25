@@ -245,7 +245,7 @@ bool png_import_img(ImportOptions *impOpts) {
 		p += len;
 	}
 
-	tex->setColourData(EColourType_32BPP,col_data);
+	tex->setColourData(EColourType_32BPP,col_data, sizeof(uint32_t) * width * height);
 
 	/* clean up after the read, and free any memory allocated - REQUIRED */
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);

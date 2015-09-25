@@ -17,12 +17,16 @@ public:
 		m_width = width;
 		m_height = height;
 	}
-	void setColourData(EColourType type, void *colour_data) {
+	void setColourData(EColourType type, void *colour_data, int len = 0) {
 		m_colourType = type;
 		m_rgba = colour_data;
+		m_data_size = len;
 	}
 	void *getRGBA() {
 		return m_rgba;
+	}
+	int getDataSize() {
+		return m_data_size;
 	}
 	EColourType getColourType() {
 		return m_colourType;
@@ -42,6 +46,7 @@ protected:
 	uint32_t m_height;
 	EColourType m_colourType;
 	void *m_rgba;
+	int m_data_size; //sizeof m_rgba, useful for dxt
 	void *m_palette;
 };
 #endif //_CIMAGE_H
