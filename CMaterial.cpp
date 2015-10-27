@@ -70,3 +70,17 @@ void CMaterial::getDiffuseColour(float &r, float &g, float &b, float &a) {
 	b = m_diffuse_colour[2];
 	a = m_diffuse_colour[3];
 }
+
+const char *CMaterial::getName() {
+	return m_name;
+}
+void CMaterial::setName(const char *name) {
+	strcpy(m_name, name);
+}
+
+void CMaterial::setTexture(CTexture *tex, int level) {
+	m_textures[level] = tex;
+}
+CTexture* CMaterial::getTexture(int level) {
+	return m_textures[level];
+}
