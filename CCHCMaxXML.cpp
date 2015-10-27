@@ -1,4 +1,5 @@
 #include "CCHCMaxXML.h"
+#include "CMaterial.h"
 #include "CMesh.h"
 #include <iostream>
 #include <pugixml.hpp>
@@ -54,17 +55,31 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 bool chc_max_xml_import(ImportOptions *impOpts) {
 	pugi::xml_document doc;
 
+	//load mesh data
 	char name[FILENAME_MAX+1];
-
 	sprintf(name,"%s.mesh.xml",impOpts->path);
 	doc.load_file(name);
 	CMesh *mesh = new CMesh();
 	pugi::xml_node meshes = doc.child("mesh");
-	 for (pugi::xml_node tool = meshes.first_child(); tool; tool = tool.next_sibling()) {
+	for (pugi::xml_node tool = meshes.first_child(); tool; tool = tool.next_sibling()) {
 		int size = std::distance(tool.children().begin(),tool.children().end());
 		std::cout << tool.name() << " " << size<< std::endl; 
 		load_mesh_data(tool,mesh);
 	}
+
+
+	sprintf(name,"%s.mat.xml",impOpts->path);
+	doc.load_file(name);
+	pugi::xml_node::iterator it = doc.begin();
+	int num_materials = std::distance(doc.begin(),doc.end());
+	while(it != doc.end()) {
+		pugi::xml_node node = *it;
+		std::cout << node.name() << " " << num_materials << std::endl; 
+		it++;
+		//load_mesh_data(tool,mesh);
+	}
+
+	 //load material data
 	return false;
 }
 bool chc_max_xml_export(ExportOptions *expOpts) {
