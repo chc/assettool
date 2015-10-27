@@ -1,6 +1,6 @@
 #include "CHCMesh.h"
 #include "CMesh.h"
-#define CHCMESH_VERSION 1
+#define CHCMESH_VERSION 2
 enum ECHCMeshFlags {
 	ECHCMeshFlag_ColAsInt = 1,
 	ECHCMeshFlag_HasNormals = 2,
@@ -11,6 +11,7 @@ typedef struct {
 	uint32_t num_verts;
 	uint32_t num_indices;
 	uint8_t flags;
+	uint32_t num_uvlayers;
 } CHCMeshHead;
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
