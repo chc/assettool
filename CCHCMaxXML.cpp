@@ -153,12 +153,16 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	char name[FILENAME_MAX+1];
 	sprintf(name,"%s.mesh.xml",impOpts->path);
 	doc.load_file(name);
-	CMesh *mesh = new CMesh();
-	pugi::xml_node meshes = doc.child("mesh");
-	for (pugi::xml_node tool = meshes.first_child(); tool; tool = tool.next_sibling()) {
+	int num_meshes = std::distance(doc.begin(),doc.end());
+	int i =0;
+	CMesh **meshes = (CMesh**)malloc(num_meshes*sizeof(CMesh*));
+	pugi::xml_node xmeshes = doc.child("mesh");
+	for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
 		int size = std::distance(tool.children().begin(),tool.children().end());
 		std::cout << tool.name() << " " << size<< std::endl; 
-		load_mesh_data(tool,mesh);
+		meshes[i] = new CMesh();
+		load_mesh_data(tool,meshes[i]);
+		i++;
 	}
 
 	//load material data
@@ -167,7 +171,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	pugi::xml_node::iterator it = doc.begin();
 	int num_materials = std::distance(doc.begin(),doc.end());
 	CMaterial **materials = (CMaterial**)malloc(num_materials*sizeof(CMaterial*));
-	int i =0;
+	i = 0;
 	while(it != doc.end()) {
 		pugi::xml_node node = *it;
 		std::cout << node.name() << " " << num_materials << std::endl; 
