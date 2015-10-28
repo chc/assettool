@@ -1,6 +1,7 @@
 #include "CCHCMaxXML.h"
 #include "CMaterial.h"
 #include "CMesh.h"
+#include <gd.h>
 #include <iostream>
 #include <pugixml.hpp>
 #include <iterator>
@@ -97,6 +98,26 @@ materialOutput *getMaterialOutput(const char *name, const char *attr) {
 	}
 	return NULL;
 }
+CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset) {
+	FILE *fd = fopen(path,"rb");
+	gdImagePtr img =  gdImageCreateFromPng(fd);
+	if(img) {
+		CTexture *tex = new CTexture();
+		tex->setDimensions(img->sx, img->sy);
+
+		//TODO: free this somewhere
+		uint32_t *img_data = (uint32_t *)malloc(img->sx*img->sy*sizeof(uint32_t));
+		int i =0;
+		for(int x = 0;x<img->sx;x++) {
+			for(int y = 0;y<img->sy;y++) {
+				img_data[i++] = gdImageGetPixel(img,x,y);
+			}
+		}	
+		tex->setColourData(EColourType_32BPP, img_data, img->sx*img->sy*sizeof(uint32_t), true);
+		return tex;
+	}
+	return NULL;
+}
 void load_material_data(pugi::xml_node node, CMaterial *material) {
 	pugi::xml_attribute name_attr = node.attribute("name");
 	if(!name_attr.empty()) {
@@ -117,6 +138,8 @@ void load_material_data(pugi::xml_node node, CMaterial *material) {
 				((*material).*(output->mpFuncFloat))(tool.attribute(output->attribute).as_float());
 				break;
 			case EOSig_Texture: 
+				//gdImageCreateFromFile
+				((*material).*(output->mpFuncTexture))(load_texture(tool.attribute("path").as_string(),tool.attribute("tile_u").as_bool(),tool.attribute("tile_v").as_bool(),tool.attribute("u_offset").as_float(),tool.attribute("v_offset").as_float()),0);
 				//CTexture *tex = new CTexture();
 				break;
 			}
