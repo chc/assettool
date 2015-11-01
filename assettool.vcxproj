@@ -79,11 +79,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\depends\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BGDWIN32;NONDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\depends\lib-x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;pugixml.lib;libgd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,14 +116,18 @@
   <ItemGroup>
     <ClCompile Include="args_handler.cpp" />
     <ClCompile Include="CCHCEngine.cpp" />
+    <ClCompile Include="CCHCMaxXML.cpp" />
     <ClCompile Include="CFile.cpp" />
     <ClCompile Include="CGame.cpp" />
     <ClCompile Include="CGameSA.cpp" />
     <ClCompile Include="CGameTHPS.cpp" />
     <ClCompile Include="CGeneric.cpp" />
+    <ClCompile Include="CHCMax.cpp" />
     <ClCompile Include="CHCMesh.cpp" />
     <ClCompile Include="CHCTexture.cpp" />
+    <ClCompile Include="CMaterial.cpp" />
     <ClCompile Include="CMesh.cpp" />
+    <ClCompile Include="CTexture.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
     <ClCompile Include="dff.cpp" />
     <ClCompile Include="fileExporter.cpp" />
@@ -177,6 +182,7 @@
     <ClInclude Include="plyloader.h" />
     <ClInclude Include="pngExporter.h" />
     <ClInclude Include="rply.h" />
+    <ClInclude Include="ScenePack.h" />
     <ClInclude Include="txd.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>

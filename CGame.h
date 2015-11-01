@@ -42,4 +42,5 @@ protected:
 	FileFormat** mp_fileFormats;
 	int			m_fileFmtCount;
 };
+
 #endif //_IGAME_H

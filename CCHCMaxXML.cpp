@@ -1,6 +1,7 @@
 #include "CCHCMaxXML.h"
 #include "CMaterial.h"
 #include "CMesh.h"
+#include "ScenePack.h"
 #include <gd.h>
 #include <iostream>
 #include <pugixml.hpp>
@@ -181,7 +182,10 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	}
 
 	//run exporter
-
+	ScenePack scene;
+	memset(&scene,0,sizeof(scene));
+	scene.num_meshes = num_meshes;
+	scene.num_materials = num_materials;
 
 
 	//free resources

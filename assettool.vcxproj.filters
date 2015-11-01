@@ -43,6 +43,9 @@
     <Filter Include="Header Files\CHCEngine">
       <UniqueIdentifier>{bde78076-6367-4cc4-913c-adf3c2348c31}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CHCMax">
+      <UniqueIdentifier>{92befe58-1e5d-4dc9-9394-48f5c4db8fb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -147,6 +150,18 @@
     <ClCompile Include="CHCTexture.cpp">
       <Filter>Source Files\CHCEngine</Filter>
     </ClCompile>
+    <ClCompile Include="CHCMax.cpp">
+      <Filter>Source Files\CHCMax</Filter>
+    </ClCompile>
+    <ClCompile Include="CCHCMaxXML.cpp">
+      <Filter>Source Files\CHCMax</Filter>
+    </ClCompile>
+    <ClCompile Include="CMaterial.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="CTexture.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -238,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="CHCTexture.h">
       <Filter>Header Files\CHCEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePack.h">
+      <Filter>Header Files\Generic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
