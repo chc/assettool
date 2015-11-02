@@ -2,6 +2,9 @@
 #include "CMesh.h"
 #include "crc32.h"
 #include "ScenePack.h"
+#include "CImage.h"
+#include <algorithm>
+
 #define CHCMESH_VERSION 2
 enum ECHCMeshFlags {
 	ECHCMeshFlag_ColAsInt = (1<<0),
@@ -18,6 +21,24 @@ typedef struct {
 } CHCMeshHead;
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
+}
+
+void write_texture(CTexture *tex, FILE *fd) {
+	tex->compress();
+
+	uint32_t w,h;
+	CImage *img = tex->getImage();
+	img->getDimensions(w,h);
+	fwrite(&w,sizeof(uint32_t),1,fd);
+	fwrite(&h,sizeof(uint32_t),1,fd);
+	char colType = img->getColourType();
+	fwrite(&colType,sizeof(char),1,fd);
+
+	void *data = img->getRawData();
+
+	fwrite(data,img->getDataSize(),1,fd);
+
+
 }
 
 void write_mesh(CMesh *mesh, FILE* fd) {
@@ -118,7 +139,9 @@ void write_material(CMaterial *material, FILE* fd) {
 	} while(tex != NULL);
 }
 bool chc_engine_export_mesh(ExportOptions* opts) {
-	FILE *fd = fopen(opts->path, "wb");
+	char fname[FILENAME_MAX+1];
+	sprintf(fname,"%s.mesh",opts->path);
+	FILE *fd = fopen(fname, "wb");
 	ScenePack *scenepack = (ScenePack *)opts->dataClass;
 
 
@@ -131,6 +154,31 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		write_material(scenepack->m_materials[i],fd);
 	}
 	
+
+	sprintf(fname,"%s.tex",opts->path);
+	FILE *texfd = fopen(fname, "wb");
+
+	std::vector<CTexture *> textures;
+	for(int i=0;i<scenepack->num_materials;i++) {
+		//materials[i]->getTexture(0)
+		for(int j=0;j<MAX_MATERIAL_TEXTURES;j++) {
+			CTexture *tex = scenepack->m_materials[i]->getTexture(j);
+			if(tex != NULL) {
+				textures.push_back(tex);
+			}
+		}		
+	}
+	std::sort( textures.begin(), textures.end() );
+	textures.erase( std::unique( textures.begin(), textures.end() ), textures.end() );
+
+	uint32_t num_textures = textures.size();
+	fwrite(&num_textures,sizeof(uint32_t),1,texfd);
+
+	std::vector<CTexture *>::iterator it = textures.begin();
+	while(it != textures.end()) {
+		write_texture(*it, texfd);
+		it++;
+	}
 	fclose(fd);
 	return false;
 }

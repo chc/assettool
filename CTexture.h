@@ -12,6 +12,8 @@ public:
 
 	void getTile(bool &tile_u, bool &tile_v);
 	void getOffset(float &u_offset, float &v_offset);
+
+	void setPath(const char *path);
 	const char *getPath();
 
 	void setImage(CImage *img);
@@ -19,6 +21,9 @@ public:
 
 	uint32_t getChecksum();
 	void setChecksum(uint32_t checksum);
+
+	int GetDXTLevel();
+	void compress();
 private:
 	char path[FILENAME_MAX+1];
 	bool tile_u;

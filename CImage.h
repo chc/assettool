@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <squish.h>
+#include "Utils.h"
 enum EColourType {
 	EColourType_8BPP_256Palette,
 	EColourType_16BPP,
@@ -47,6 +49,9 @@ public:
 	void *getRGBA() {
 		return m_rgba;
 	}
+	void *getRawData() {
+		return m_rgba;
+	}
 	int getDataSize() {
 		return m_data_size;
 	}
@@ -63,6 +68,69 @@ public:
 	void *getPalette() {
 		return m_palette;
 	}
+	/*
+		Its assumed data is 32bit if this is happening
+	*/
+	int GetDXTLevel()
+	{
+		if(!isPowerOfTwo(m_width) || !isPowerOfTwo(m_height)) return 0;
+
+		int has_holes = 0;
+		uint32_t *pTex = (uint32_t *)getRGBA();
+		for( int lp = 0; lp < ( m_width * m_height ); ++lp )
+		{
+			unsigned int alpha = (( pTex[lp] >> 24 ) & 0xFF );
+			if(( alpha > 0 ) && ( alpha < 255 ))
+			{
+				// Texture has meaningful alpha. Requires DXT 5.
+				return 5;
+			}
+			else if( alpha == 0 )
+			{
+				has_holes = 1;
+			}
+		}
+
+		// If a texture has holes, requires DXT1A.
+		if( has_holes )
+			return 2;
+	
+		// Standard DXT.
+		return 1;
+	}
+
+	void compress() {
+		int level = GetDXTLevel();
+		if(level == 0) return;
+		EColourType type;
+		int flags = 0;
+		switch(level) {
+		case 2:
+		case 1:
+			flags |= squish::kDxt1;
+			type = EColourType_DXT1;
+			break;
+
+		case 3:
+			flags |= squish::kDxt3;
+			type = EColourType_DXT3;
+			break;
+		case 5:
+			flags |= squish::kDxt5;
+			type = EColourType_DXT5;
+			break;
+		}
+
+		int alloc_size = squish::GetStorageRequirements(m_width,m_height,flags);
+		void *m_out_data = (void *)malloc(alloc_size);
+		squish::CompressImage((squish::u8*)m_rgba,m_width,m_height,m_out_data,flags);
+
+		m_colourType = type;
+		free(m_rgba);
+		m_rgba = m_out_data;
+		m_data_size = alloc_size;
+	}
+
 protected:
 	bool m_allocated;
 	uint32_t m_width;

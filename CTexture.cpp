@@ -1,6 +1,8 @@
 #include "CImage.h"
 #include "CTexture.h"
 #include <string.h>
+
+#include <squish.h>
 CTexture::CTexture() {
 }
 CTexture::~CTexture() {
@@ -23,7 +25,9 @@ void CTexture::getOffset(float &u_offset, float &v_offset) {
 	u_offset = this->u_offset;
 	v_offset = this->v_offset;
 }
-
+void CTexture::setPath(const char *path) {
+	strcpy(this->path,path);
+}
 const char *CTexture::getPath() {
 	return (const char *)&path;
 }
@@ -40,4 +44,8 @@ uint32_t CTexture::getChecksum() {
 }
 void CTexture::setChecksum(uint32_t checksum) {
 	m_checksum = checksum;
+}
+
+void CTexture::compress() {
+	m_image->compress();
 }

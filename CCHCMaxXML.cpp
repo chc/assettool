@@ -102,6 +102,16 @@ materialOutput *getMaterialOutput(const char *name, const char *attr) {
 	return NULL;
 }
 CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset) {
+
+	static std::vector<CTexture *> loaded_textures;
+	std::vector<CTexture *>::iterator it = loaded_textures.begin();
+	while(it != loaded_textures.end()) {
+		CTexture *t = *it;
+		if(strcmp(path,t->getPath()) == 0) {
+			return t;
+		}
+		it++;
+	}
 	FILE *fd = fopen(path,"rb");
 	gdImagePtr gdImg =  gdImageCreateFromPng(fd);
 	if(gdImg) {
@@ -122,6 +132,9 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 		tex->setUVOffset(u_offset, v_offset);
 		tex->setUVTiling(tile_u, tile_v);
 		tex->setImage(img);
+		tex->setPath(path);
+
+		loaded_textures.push_back(tex);
 		return tex;
 	}
 	return NULL;

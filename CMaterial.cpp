@@ -1,13 +1,5 @@
 #include "CMaterial.h"
-/*
-	float m_specular_colour[4];
-	float m_ambient_colour[4];
-	float m_diffuse_colour[4];
 
-	float m_shine;
-	float m_shine_strength;
-	std::vector<CTexture *> m_textures;
-*/
 CMaterial::CMaterial() {
 	for(int i=0;i<4;i++) {
 		m_specular_colour[i] = 0.0;
