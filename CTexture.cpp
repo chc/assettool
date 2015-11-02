@@ -1,7 +1,7 @@
+#include "CImage.h"
 #include "CTexture.h"
 #include <string.h>
-CTexture::CTexture(const char *path) {
-	strcpy(this->path,path);
+CTexture::CTexture() {
 }
 CTexture::~CTexture() {
 }
@@ -22,4 +22,22 @@ void CTexture::getTile(bool &tile_u, bool &tile_v) {
 void CTexture::getOffset(float &u_offset, float &v_offset) {
 	u_offset = this->u_offset;
 	v_offset = this->v_offset;
+}
+
+const char *CTexture::getPath() {
+	return (const char *)&path;
+}
+
+void CTexture::setImage(CImage *img) {
+	m_image = img;
+}
+CImage *CTexture::getImage() {
+	return m_image;
+}
+
+uint32_t CTexture::getChecksum() {
+	return m_checksum;
+}
+void CTexture::setChecksum(uint32_t checksum) {
+	m_checksum = checksum;
 }

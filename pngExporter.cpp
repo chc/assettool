@@ -5,7 +5,7 @@
 #include "CImage.h"
 #include "pngExporter.h"
 bool png_export_img(ExportOptions *expOpts) {
-	CTexture *img = (CTexture *)expOpts->dataClass;
+	CImage *img = (CImage *)expOpts->dataClass;
 	FILE *fd = fopen(expOpts->path,"wb");
 	if(!fd) return false;
 	uint32_t width, height;
@@ -127,7 +127,7 @@ bool png_export_img(ExportOptions *expOpts) {
 bool png_import_img(ImportOptions *impOpts) {
 	FILE *fd = fopen(impOpts->path,"rb");
 	if(!fd) return false;
-	CTexture *tex = new CTexture();
+	CImage *tex = new CImage();
 	png_uint_32 width, height;
 	int bit_depth, color_type;
 

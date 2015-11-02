@@ -17,6 +17,10 @@ CMaterial::CMaterial() {
 
 	m_shine = 0.0;
 	m_shine_strength = 0.0;
+
+	memset(&m_name,0,sizeof(m_name));
+
+	memset(&m_textures,0,sizeof(m_textures));
 }
 CMaterial::~CMaterial() {
 }

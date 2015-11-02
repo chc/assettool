@@ -3,5 +3,5 @@
 class CTHPSImg : public LibTHPS::Image {
 public:
 	CTHPSImg() : Image(LibTHPS::Platform_Xbox){ };
-	bool write(CTexture *img, const char *path);
+	bool write(CImage *img, const char *path);
 };

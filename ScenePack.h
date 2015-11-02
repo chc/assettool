@@ -10,4 +10,5 @@ typedef struct {
 	CMaterial **m_materials;
 	uint32_t num_materials;
 } ScenePack;
+
 #endif //_SCEHEPACK_H

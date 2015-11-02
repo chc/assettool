@@ -1,6 +1,6 @@
 #include "CTHPSImg.h"
 #include <libthps/misc.h>
-bool CTHPSImg::write(CTexture *img, const char *path) {
+bool CTHPSImg::write(CImage *img, const char *path) {
 	FILE *fd = fopen(path,"wb");
 	if(!fd) {
 		return false;

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <pugixml.hpp>
 #include <iterator>
+#include "crc32.h"
 void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 	int size = std::distance(node.children().begin(),node.children().end());
 	float *vert_data = (float *)malloc(size * sizeof(float) * 3);
@@ -41,6 +42,7 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 				*p++ = atof(attr.value());
 			}
 		}
+		mesh->setUVWs(vert_data, 0);
 	}else if(strcmp(node.name(),"indices") == 0) {
 		for (pugi::xml_node mesh_data = node.first_child(); mesh_data; mesh_data = mesh_data.next_sibling())
 		{
@@ -51,7 +53,7 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 		}
 		mesh->setIndices(indicies,size);
 	}
-
+	free(indicies);
 	free(vert_data);
 }
 enum EOutputSignature {
@@ -101,20 +103,25 @@ materialOutput *getMaterialOutput(const char *name, const char *attr) {
 }
 CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset) {
 	FILE *fd = fopen(path,"rb");
-	gdImagePtr img =  gdImageCreateFromPng(fd);
-	if(img) {
+	gdImagePtr gdImg =  gdImageCreateFromPng(fd);
+	if(gdImg) {
 		CTexture *tex = new CTexture();
-		tex->setDimensions(img->sx, img->sy);
+		CImage *img = new CImage();
+		img->setDimensions(gdImg->sx, gdImg->sy);
 
 		//TODO: free this somewhere
-		uint32_t *img_data = (uint32_t *)malloc(img->sx*img->sy*sizeof(uint32_t));
+		uint32_t *img_data = (uint32_t *)malloc(gdImg->sx*gdImg->sy*sizeof(uint32_t));
 		int i =0;
-		for(int x = 0;x<img->sx;x++) {
-			for(int y = 0;y<img->sy;y++) {
-				img_data[i++] = gdImageGetPixel(img,x,y);
+		for(int x = 0;x<gdImg->sx;x++) {
+			for(int y = 0;y<gdImg->sy;y++) {
+				img_data[i++] = gdImageGetPixel(gdImg,x,y);
 			}
 		}	
-		tex->setColourData(EColourType_32BPP, img_data, img->sx*img->sy*sizeof(uint32_t), true);
+		img->setColourData(EColourType_32BPP, img_data, gdImg->sx*gdImg->sy*sizeof(uint32_t), true);
+		tex->setChecksum(crc32(0,path,strlen(path)));
+		tex->setUVOffset(u_offset, v_offset);
+		tex->setUVTiling(tile_u, tile_v);
+		tex->setImage(img);
 		return tex;
 	}
 	return NULL;
@@ -147,24 +154,17 @@ void load_material_data(pugi::xml_node node, CMaterial *material) {
 		}
 	}
 }
+CMaterial *find_material_by_name(CMaterial **mats, int num_mats, const char *name) {
+	for(int i=0;i<num_mats;i++) {
+		if(strcmp(mats[i]->getName(),name) == 0) {
+			return mats[i];
+		}
+	}
+	return NULL;
+}
 bool chc_max_xml_import(ImportOptions *impOpts) {
 	pugi::xml_document doc;
-
-	//load mesh data
 	char name[FILENAME_MAX+1];
-	sprintf(name,"%s.mesh.xml",impOpts->path);
-	doc.load_file(name);
-	int num_meshes = std::distance(doc.begin(),doc.end());
-	int i =0;
-	CMesh **meshes = (CMesh**)malloc(num_meshes*sizeof(CMesh*));
-	pugi::xml_node xmeshes = doc.child("mesh");
-	for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
-		int size = std::distance(tool.children().begin(),tool.children().end());
-		std::cout << tool.name() << " " << size<< std::endl; 
-		meshes[i] = new CMesh();
-		load_mesh_data(tool,meshes[i]);
-		i++;
-	}
 
 	//load material data
 	sprintf(name,"%s.mat.xml",impOpts->path);
@@ -172,7 +172,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	pugi::xml_node::iterator it = doc.begin();
 	int num_materials = std::distance(doc.begin(),doc.end());
 	CMaterial **materials = (CMaterial**)malloc(num_materials*sizeof(CMaterial*));
-	i = 0;
+	int i =0;
 	while(it != doc.end()) {
 		pugi::xml_node node = *it;
 		std::cout << node.name() << " " << num_materials << std::endl; 
@@ -181,11 +181,45 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 		it++;
 	}
 
+	//load mesh data
+	sprintf(name,"%s.mesh.xml",impOpts->path);
+	doc.load_file(name);
+	int num_meshes = std::distance(doc.begin(),doc.end());
+	CMesh **meshes = (CMesh**)malloc(num_meshes*sizeof(CMesh*));
+	i = 0;
+	it = doc.begin();
+	while(it != doc.end()) {
+		pugi::xml_node xmeshes = *it;
+		CMaterial *mat = find_material_by_name(materials,num_materials,xmeshes.attribute("material_name").as_string());		
+		meshes[i] = new CMesh();
+		meshes[i]->setMaterial(mat);
+		for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
+			int size = std::distance(tool.children().begin(),tool.children().end());
+			std::cout << tool.name() << " " << size<< std::endl; 
+			load_mesh_data(tool,meshes[i]);
+			
+		}
+		i++;
+		it++;
+	}
+
 	//run exporter
 	ScenePack scene;
 	memset(&scene,0,sizeof(scene));
+	scene.m_meshes = (CMesh**)meshes;
+	scene.m_materials = (CMaterial**)materials;
 	scene.num_meshes = num_meshes;
 	scene.num_materials = num_materials;
+	
+	ExportOptions opts;
+	memset(&opts,0,sizeof(opts));
+
+
+	opts.dataClass = &scene;
+	opts.srcPath = impOpts->path;
+	opts.args = impOpts->expArgs;
+	opts.path = impOpts->outpath;
+	impOpts->exporter(&opts);
 
 
 	//free resources

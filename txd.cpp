@@ -136,7 +136,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.type = FileType_Texture;
 	expOpts.path = (const char *)&out_path;
-	CTexture *tex = new CTexture();
+	CImage *tex = new CImage();
 	expOpts.dataClass = (void *)tex;
 
 	int tex_count;
@@ -291,7 +291,7 @@ bool gta_rw_export_txd(ExportOptions *expOpts) {
 	img.dxt_cc = ID_DXT1;
 	img.dxtcompression = 8;
 
-	CTexture *tex = (CTexture*)expOpts->dataClass;
+	CImage *tex = (CImage *)expOpts->dataClass;
 	uint32_t w,h;
 	tex->getDimensions(w,h);
 	img.width = w;

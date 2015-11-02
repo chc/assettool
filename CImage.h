@@ -13,15 +13,15 @@ enum EColourType {
 	EColourType_DXT3,
 	EColourType_DXT5,
 };
-class CTexture {
+class CImage {
 public:
-	CTexture() {
+	CImage() {
 		m_allocated = false;
 		m_rgba = NULL;
 		m_height = 0;
 		m_width = 0;
 	}
-	~CTexture() {
+	~CImage() {
 		if(m_allocated) {
 			if(m_rgba) {
 				free(m_rgba);

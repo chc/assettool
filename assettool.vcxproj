@@ -127,6 +127,7 @@
     <ClCompile Include="CHCTexture.cpp" />
     <ClCompile Include="CMaterial.cpp" />
     <ClCompile Include="CMesh.cpp" />
+    <ClCompile Include="crc32.cpp" />
     <ClCompile Include="CTexture.cpp" />
     <ClCompile Include="CTHPSImg.cpp" />
     <ClCompile Include="dff.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="CHCTexture.h" />
     <ClInclude Include="CImage.h" />
     <ClInclude Include="CMesh.h" />
+    <ClInclude Include="crc32.h" />
     <ClInclude Include="CTHPSImg.h" />
     <ClInclude Include="dff.h" />
     <ClInclude Include="fileExport.h" />

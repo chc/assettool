@@ -41,7 +41,7 @@ bool thps_xbx_import_img(ImportOptions* opts) {
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.type = FileType_Texture;
 	expOpts.path = (const char *)&out_path;
-	CTexture *tex = new CTexture();
+	CImage *tex = new CImage();
 	uint32_t width, height;
 	img->getDimensions(width,height);
 	tex->setDimensions(width,height);
@@ -68,7 +68,7 @@ bool thps_xbx_import_img(ImportOptions* opts) {
 bool thps_xbx_export_img(ExportOptions *expOpts) {
 	CTHPSImg img;
 	memset(&img,0,sizeof(img));
-	img.write((CTexture *)expOpts->dataClass,expOpts->path);
+	img.write((CImage *)expOpts->dataClass,expOpts->path);
 	return false;
 }
 bool thps_xbx_export_textable(ExportOptions *expOpts) {
@@ -81,7 +81,7 @@ bool thps_xbx_import_textable(ImportOptions* opts) {
 	int count = 0;
 	LibTHPS::Texture **texes = textbl->getTextures(count);
 
-	CTexture *tex = new CTexture();
+	CImage *tex = new CImage();
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.type = FileType_Texture;
