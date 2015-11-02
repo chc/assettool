@@ -12,13 +12,6 @@ enum ECHCMeshFlags {
 	ECHCMeshFlag_HasCol = (1<<2),
 	ECHCMeshFlag_HasUVs = (1<<3),
 };
-typedef struct {
-	uint32_t version;
-	uint32_t num_verts;
-	uint32_t num_indices;
-	uint8_t flags;
-	uint32_t num_uvlayers;
-} CHCMeshHead;
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
 }
@@ -29,6 +22,9 @@ void write_texture(CTexture *tex, FILE *fd) {
 	uint32_t w,h;
 	CImage *img = tex->getImage();
 	img->getDimensions(w,h);
+
+	uint32_t checksum = tex->getChecksum();
+	fwrite(&checksum, sizeof(uint32_t), 1, fd);
 	fwrite(&w,sizeof(uint32_t),1,fd);
 	fwrite(&h,sizeof(uint32_t),1,fd);
 	char colType = img->getColourType();
@@ -36,7 +32,9 @@ void write_texture(CTexture *tex, FILE *fd) {
 
 	void *data = img->getRawData();
 
-	fwrite(data,img->getDataSize(),1,fd);
+	uint32_t size = img->getDataSize();
+	fwrite(&size, sizeof(uint32_t), 1, fd);
+	fwrite(data,size,1,fd);
 
 
 }
@@ -44,6 +42,7 @@ void write_texture(CTexture *tex, FILE *fd) {
 void write_mesh(CMesh *mesh, FILE* fd) {
 
 	uint32_t num_verts = mesh->getNumVertices();
+	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
 
 	float *verts = mesh->getVerticies();
@@ -60,37 +59,41 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
 	}
 
-	uint32_t stride = 0;
+	uint32_t stride = sizeof(float) * 3;
 	if(normals) {
 		flags |= ECHCMeshFlag_HasNormals;
 		stride += sizeof(float) * 3;
 	}
 	if(colours) {
 		flags |= ECHCMeshFlag_HasCol;
-		stride += sizeof(float);
+		stride += sizeof(float) * 3;
 	}
 	if(uvs) {
 		flags |= ECHCMeshFlag_HasUVs;
-		stride += sizeof(float) * 2;
+		stride += sizeof(float) * 3;
 	}
+	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
 	fwrite(&material_checksum,sizeof(uint32_t),1,fd);
 	for(uint32_t i=0;i<num_verts;i++) {
 		fwrite(verts,sizeof(float),3,fd);
 		verts += 3;
 		if(colours != NULL) {
-			fwrite(colours,sizeof(float),1,fd);
-			colours++;
+			fwrite(colours,sizeof(float),3,fd);
+			colours += 3;
 		}
 		if(normals != NULL) {
 			fwrite(normals,sizeof(float),3,fd);
 			normals +=  3;
 		}
 		if(uvs != NULL) {
-			fwrite(uvs,sizeof(float),2,fd);
-			uvs += 3; //W component is skipped
+			fwrite(uvs,sizeof(float),3,fd);
+			uvs += 3;
 		}
 	}
+
+	fwrite(&num_indicies,sizeof(uint32_t),1,fd);
+	fwrite(mesh->getIndices(),sizeof(uint32_t) * 3,num_indicies,fd);
 }
 
 void write_material(CMaterial *material, FILE* fd) {
@@ -115,7 +118,7 @@ void write_material(CMaterial *material, FILE* fd) {
 	//write textures
 	CTexture *tex;
 	bool tile[2];
-	char c = 0;
+	uint8_t c = 0;
 	int i = 0;
 
 	uint32_t tex_count = 0;
@@ -133,9 +136,9 @@ void write_material(CMaterial *material, FILE* fd) {
 		fwrite(&col,sizeof(float),2,fd);
 		tex->getTile(tile[0], tile[1]);
 		c = tile[0] != 0;
-		fwrite(&c,sizeof(char),1,fd);
+		fwrite(&c,sizeof(uint8_t),1,fd);
 		c = tile[1] != 0;
-		fwrite(&c,sizeof(char),1,fd);		
+		fwrite(&c,sizeof(uint8_t),1,fd);		
 	} while(tex != NULL);
 }
 bool chc_engine_export_mesh(ExportOptions* opts) {
@@ -154,6 +157,7 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		write_material(scenepack->m_materials[i],fd);
 	}
 	
+	fclose(fd);
 
 	sprintf(fname,"%s.tex",opts->path);
 	FILE *texfd = fopen(fname, "wb");
@@ -179,6 +183,6 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		write_texture(*it, texfd);
 		it++;
 	}
-	fclose(fd);
+	
 	return false;
 }

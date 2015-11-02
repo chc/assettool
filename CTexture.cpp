@@ -47,5 +47,5 @@ void CTexture::setChecksum(uint32_t checksum) {
 }
 
 void CTexture::compress() {
-	m_image->compress();
+	//m_image->compress();
 }

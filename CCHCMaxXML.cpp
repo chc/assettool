@@ -51,6 +51,7 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 				*i++ = atoi(attr.value());
 			}
 		}
+		std::cout << "Index count: " << size << std::endl;
 		mesh->setIndices(indicies,size);
 	}
 	free(indicies);
@@ -145,7 +146,7 @@ void load_material_data(pugi::xml_node node, CMaterial *material) {
 		material->setName(name_attr.as_string());
 	}
 	for (pugi::xml_node tool = node.first_child(); tool; tool = tool.next_sibling()) {
-		std::cout << tool.name() << std::endl; 
+		//std::cout << tool.name() << std::endl; 
 		materialOutput *output = getMaterialOutput(tool.name(), NULL);
 		if(output != NULL) {
 			switch(output->signature) {
@@ -188,7 +189,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	int i =0;
 	while(it != doc.end()) {
 		pugi::xml_node node = *it;
-		std::cout << node.name() << " " << num_materials << std::endl; 
+		//std::cout << node.name() << " " << num_materials << std::endl; 
 		materials[i] = new CMaterial();
 		load_material_data(node,materials[i++]);
 		it++;
@@ -208,7 +209,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 		meshes[i]->setMaterial(mat);
 		for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
 			int size = std::distance(tool.children().begin(),tool.children().end());
-			std::cout << tool.name() << " " << size<< std::endl; 
+			//std::cout << tool.name() << " " << size<< std::endl; 
 			load_mesh_data(tool,meshes[i]);
 			
 		}
