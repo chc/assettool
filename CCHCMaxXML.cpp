@@ -3,6 +3,7 @@
 #include "CMesh.h"
 #include "ScenePack.h"
 #include <gd.h>
+#include <png.h>
 #include <iostream>
 #include <pugixml.hpp>
 #include <iterator>
@@ -113,32 +114,135 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 		}
 		it++;
 	}
+
 	FILE *fd = fopen(path,"rb");
-	gdImagePtr gdImg =  gdImageCreateFromPng(fd);
-	if(gdImg) {
-		CTexture *tex = new CTexture();
-		CImage *img = new CImage();
-		img->setDimensions(gdImg->sx, gdImg->sy);
+	if(!fd) return false;
+	CImage *tex = new CImage();
+	png_uint_32 width, height;
+	int bit_depth, color_type;
 
-		//TODO: free this somewhere
-		uint32_t *img_data = (uint32_t *)malloc(gdImg->sx*gdImg->sy*sizeof(uint32_t));
-		int i =0;
-		for(int x = 0;x<gdImg->sx;x++) {
-			for(int y = 0;y<gdImg->sy;y++) {
-				img_data[i++] = gdImageGetPixel(gdImg,x,y);
-			}
-		}	
-		img->setColourData(EColourType_32BPP, img_data, gdImg->sx*gdImg->sy*sizeof(uint32_t), true);
-		tex->setChecksum(crc32(0,path,strlen(path)));
-		tex->setUVOffset(u_offset, v_offset);
-		tex->setUVTiling(tile_u, tile_v);
-		tex->setImage(img);
-		tex->setPath(path);
+	png_structp png_ptr;
+	png_infop info_ptr;
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,NULL);
 
-		loaded_textures.push_back(tex);
-		return tex;
+	info_ptr = png_create_info_struct(png_ptr);	
+	png_init_io(png_ptr, fd);
+	png_byte color;
+	png_read_info(png_ptr, info_ptr);
+
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
+		&color_type, NULL, NULL, NULL);
+
+	/* tell libpng to strip 16 bit/color files down to 8 bits/color */
+	png_set_strip_16(png_ptr);
+
+	/* Strip alpha bytes from the input data without combining with the
+	* background (not recommended).
+	*/
+	//png_set_strip_alpha(png_ptr);
+
+	/* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
+	* byte into separate bytes (useful for paletted and grayscale images).
+	*/
+	png_set_packing(png_ptr);
+
+	/* Change the order of packed pixels to least significant bit first
+	* (not useful if you are using png_set_packing). */
+	//png_set_packswap(png_ptr);
+
+	png_set_expand(png_ptr);
+
+	/* Set the background color to draw transparent and alpha images over.
+	* It is possible to set the red, green, and blue components directly
+	* for paletted images instead of supplying a palette index.  Note that
+	* even if the PNG file supplies a background, you are not required to
+	* use it - you should use the (solid) application background if it has one.
+	*/
+
+	png_color_16 my_background, *image_background;
+
+	if (png_get_bKGD(png_ptr, info_ptr, &image_background))
+		png_set_background(png_ptr, image_background,
+							PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+
+	/* invert monochrome files to have 0 as white and 1 as black */
+	png_set_invert_mono(png_ptr);
+
+	/* If you want to shift the pixel values from the range [0,255] or
+	* [0,65535] to the original [0,7] or [0,31], or whatever range the
+	* colors were originally in:
+	*/
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT))
+	{
+		png_color_8p sig_bit;
+
+		png_get_sBIT(png_ptr, info_ptr, &sig_bit);
+		png_set_shift(png_ptr, sig_bit);
 	}
-	return NULL;
+
+	/* swap the RGBA or GA data to ARGB or AG (or BGRA to ABGR) */
+	//png_set_swap_alpha(png_ptr);
+
+	/* swap bytes of 16 bit files to least significant byte first */
+	png_set_swap(png_ptr);
+
+	/* Add filler (or alpha) byte (before/after each RGB triplet) */
+	png_set_filler(png_ptr, 0x22, PNG_FILLER_AFTER);
+
+	/* Turn on interlace handling.  REQUIRED if you are not using
+	* png_read_image().  To see how to handle interlacing passes,
+	* see the png_read_row() method below:
+	*/
+	int number_passes = png_set_interlace_handling(png_ptr);
+
+	png_read_update_info(png_ptr,info_ptr);
+
+	tex->setDimensions(width,height);
+
+	int num_palette = 256, num_trans = 256;
+	png_color palette[256];
+	png_byte transparency[256];
+	png_bytepp row_pointers;
+
+	row_pointers = (png_bytepp)png_malloc(png_ptr, height * sizeof(png_bytep));
+
+	for (int row = 0; row < height; row++)
+	{
+		row_pointers[row] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr,info_ptr));
+	}
+	png_read_image(png_ptr,row_pointers);
+
+
+	//make this for all colour types
+	void *col_data = malloc(sizeof(uint32_t) * width * height);
+	char *p = (char *)col_data;
+	int len = png_get_rowbytes(png_ptr,info_ptr);
+	for(int i=0;i<height;i++) {
+		memcpy(p,row_pointers[i],len);
+		p += len;
+	}
+
+	tex->setColourData(EColourType_32BPP,col_data, sizeof(uint32_t) * width * height);
+
+	/* clean up after the read, and free any memory allocated - REQUIRED */
+	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+	/* close the file */
+	fclose(fd);
+
+	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+	
+
+	CTexture *real_tex = new CTexture();
+
+	real_tex->setChecksum(crc32(0,path,strlen(path)));
+	real_tex->setUVOffset(u_offset, v_offset);
+	real_tex->setUVTiling(tile_u, tile_v);
+	real_tex->setImage(tex);
+	real_tex->setPath(path);
+
+	loaded_textures.push_back(real_tex);
+	return real_tex;
 }
 void load_material_data(pugi::xml_node node, CMaterial *material) {
 	pugi::xml_attribute name_attr = node.attribute("name");

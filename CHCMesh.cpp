@@ -183,6 +183,6 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		write_texture(*it, texfd);
 		it++;
 	}
-	
+	fclose(texfd);
 	return false;
 }
