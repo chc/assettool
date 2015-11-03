@@ -26,8 +26,8 @@ void CMesh::setNumVerts(int count) {
 	m_num_vertices = count;
 }
 void CMesh::setUVWs(float *uvs, int layer) {
-	m_uvws[layer] =  (float *)malloc(m_num_vertices * sizeof(float) * 2);
-	memcpy(m_uvws[layer],uvs,m_num_vertices * sizeof(float) * 2);
+	m_uvws[layer] =  (float *)malloc(m_num_vertices * sizeof(float) * 3);
+	memcpy(m_uvws[layer],uvs,m_num_vertices * sizeof(float) * 3);
 }
 float *CMesh::getUVWs(int layer) {
 	return m_uvws[layer];
