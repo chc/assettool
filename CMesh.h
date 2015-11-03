@@ -27,7 +27,7 @@ public:
 	CMaterial *getMaterial();
 
 private:
-	CMaterial *m_material;
+	CMaterial *mp_material;
 	float *m_uvws[MAX_MESH_TEXTURES];
 	float *m_vertices;
 	int m_num_vertices;
