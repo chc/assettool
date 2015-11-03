@@ -165,6 +165,9 @@
     <ClCompile Include="crc32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TTF.cpp">
+      <Filter>Source Files\Generic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -261,6 +264,12 @@
       <Filter>Header Files\Generic</Filter>
     </ClInclude>
     <ClInclude Include="crc32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CFont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TTF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

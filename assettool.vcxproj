@@ -84,7 +84,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\depends\lib-x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;pugixml.lib;libgd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libpng.lib;zlib.lib;libsquishd.lib;pugixml.lib;freetyped.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,11 +106,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\depends\include;.;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\depends\lib-x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpng.lib;zlib.lib;libsquish.lib;pugixml.lib;libgd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -151,6 +154,7 @@
     <ClCompile Include="plyloader.cpp" />
     <ClCompile Include="pngExporter.cpp" />
     <ClCompile Include="rply.c" />
+    <ClCompile Include="TTF.cpp" />
     <ClCompile Include="txd.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -158,6 +162,7 @@
     <ClInclude Include="args_handler.h" />
     <ClInclude Include="CCHCEngine.h" />
     <ClInclude Include="CFile.h" />
+    <ClInclude Include="CFont.h" />
     <ClInclude Include="CGame.h" />
     <ClInclude Include="CGameTHPS.h" />
     <ClInclude Include="CGeneric.h" />
@@ -185,6 +190,7 @@
     <ClInclude Include="pngExporter.h" />
     <ClInclude Include="rply.h" />
     <ClInclude Include="ScenePack.h" />
+    <ClInclude Include="TTF.h" />
     <ClInclude Include="txd.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
