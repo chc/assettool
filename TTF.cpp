@@ -22,7 +22,7 @@ void saveFontTex(FT_GlyphSlot g) {
 
 	info_ptr = png_create_info_struct(png_ptr);	
 	png_init_io(png_ptr, fd);
-	png_byte color = PNG_COLOR_TYPE_GA;
+	png_byte color = PNG_COLOR_TYPE_RGBA;
 
 	int width = ( g->bitmap.width );
 	int height =( g->bitmap.rows );
@@ -39,12 +39,12 @@ void saveFontTex(FT_GlyphSlot g) {
 	for(uint32_t y1=0;y1<height;y1++) {			
 		for(uint32_t x1=0;x1<width;x1++) {
 				uint8_t col = ((uint8_t *)rbga_data)[y1*width + x1];
-				uint16_t true_col = 0x00000000;
+				uint32_t true_col = 0x00000000;
 				true_col |= (col << 24);
 				true_col |= (col << 16);
 				true_col |= (col << 8);
 				true_col |= (col);
-				memcpy(&(row[x1 * 4]),&true_col, sizeof(uint16_t));
+				memcpy(&(row[x1 * 4]),&true_col, sizeof(uint32_t));
 			}
 			png_write_row(png_ptr, row);
 	}

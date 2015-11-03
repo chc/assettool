@@ -2,6 +2,8 @@
 #include "rply.h"
 #include "CMesh.h"
 #include <glm/glm.hpp>
+
+#include <ScenePack.h>
 typedef struct {
 	glm::vec3 *verticies;
 	int vert_index;
@@ -142,11 +144,21 @@ bool ply_import_mesh(ImportOptions* opts) {
 	free(faces);
 
 
+	//run exporter
+	ScenePack scene;
+	memset(&scene,0,sizeof(scene));
+	scene.m_meshes = (CMesh**)&mesh;
+	scene.m_materials = (CMaterial**)NULL;
+	scene.num_meshes = 1;
+	scene.num_materials = 0;
+	
+
+
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.path = opts->outpath;
 	expOpts.srcPath = opts->path;
-	expOpts.dataClass = (void *)mesh;
+	expOpts.dataClass = (void *)&scene;
 	expOpts.args = opts->expArgs;
 	opts->exporter(&expOpts);
 

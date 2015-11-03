@@ -9,6 +9,7 @@ CMesh::CMesh() {
 	m_normals = NULL;
 	m_vert_cols = NULL;
 	m_vertices = NULL;
+	mp_material = NULL;
 
 	memset(&m_uvws, 0, sizeof(m_uvws));
 }
@@ -54,8 +55,8 @@ void CMesh::setIndices(uint32_t *indices, int num_indices) {
 	m_num_indices = num_indices;
 }
 void CMesh::setMaterial(CMaterial *material) {
-	m_material = material;
+	mp_material = material;
 }
 CMaterial *CMesh::getMaterial() {
-	return m_material;
+	return mp_material;
 }
