@@ -60,3 +60,10 @@ void CMesh::setMaterial(CMaterial *material) {
 CMaterial *CMesh::getMaterial() {
 	return mp_material;
 }
+
+void CMesh::setGroupId(uint32_t id) {
+	m_group_id = id;
+}
+uint32_t CMesh::getGroupId() {
+	return m_group_id;
+}

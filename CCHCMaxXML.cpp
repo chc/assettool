@@ -187,7 +187,7 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 	png_set_swap(png_ptr);
 
 	/* Add filler (or alpha) byte (before/after each RGB triplet) */
-	png_set_filler(png_ptr, 0x22, PNG_FILLER_AFTER);
+	png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
 
 	/* Turn on interlace handling.  REQUIRED if you are not using
 	* png_read_image().  To see how to handle interlacing passes,
@@ -280,6 +280,60 @@ CMaterial *find_material_by_name(CMaterial **mats, int num_mats, const char *nam
 	}
 	return NULL;
 }
+int count_nodes_named(const char *name, pugi::xml_document *doc, pugi::xml_node *node) {
+	int count = 0;
+	if(doc) {
+		pugi::xml_node::iterator it = doc->begin();
+		while(it != doc->end()) {
+			pugi::xml_node child = *it;
+			if(strcmp(child.name(),name) == 0) count++;
+			count += count_nodes_named(name,NULL,&child);
+			it++;
+		}
+	} else {
+		for (pugi::xml_node mesh_data = node->first_child(); mesh_data; mesh_data = mesh_data.next_sibling()) {
+			if(strcmp(mesh_data.name(),name) == 0) {
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
+void chc_mesh_do_import(pugi::xml_node *child, CMesh *out_mesh, CMaterial **materials, uint32_t num_materials, uint32_t group_id) {
+	CMaterial *mat = find_material_by_name(materials,num_materials,child->attribute("material_name").as_string());		
+	printf("do_mesh_import: %s %s\n",child->name(),child->attribute("name").as_string());
+	(out_mesh)->setMaterial(mat);
+	out_mesh->setGroupId(group_id);
+	for (pugi::xml_node tool = child->first_child(); tool; tool = tool.next_sibling()) {
+		load_mesh_data(tool,out_mesh);
+	}
+}
+void chc_max_import_meshes(CMesh **meshes, pugi::xml_document *doc, pugi::xml_node *node, CMaterial **materials, uint32_t num_materials, uint32_t group_id = 0) {
+	const char *name = "mesh";
+	static int idx = -1;
+	if(doc) idx = -1;
+	idx++;
+	if(doc) {
+		pugi::xml_node::iterator it = doc->begin();
+		while(it != doc->end()) {
+			pugi::xml_node child = *it;
+			const char *name = child.name();
+			if(!strcmp(name,"group")) {			
+				const char *group_name = child.attribute("name").as_string();
+				uint32_t group_checksum = crc32(0,group_name,strlen(group_name));
+				for (pugi::xml_node tool = child.first_child(); tool; tool = tool.next_sibling()) {
+					chc_max_import_meshes(&meshes[idx],NULL,&tool,materials,num_materials, group_checksum);
+				}
+			} else {
+				chc_max_import_meshes(&meshes[idx],NULL,&child,materials,num_materials, 0);
+			}
+			it++;
+		}
+	} else {
+		chc_mesh_do_import(node,*meshes,materials,num_materials, group_id);
+	}
+}
 bool chc_max_xml_import(ImportOptions *impOpts) {
 	pugi::xml_document doc;
 	char name[FILENAME_MAX+1];
@@ -302,8 +356,17 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	//load mesh data
 	sprintf(name,"%s.mesh.xml",impOpts->path);
 	doc.load_file(name);
-	int num_meshes = std::distance(doc.begin(),doc.end());
+	doc.child("mesh");
+	int num_meshes = count_nodes_named("mesh",&doc,NULL);
+
+
 	CMesh **meshes = (CMesh**)malloc(num_meshes*sizeof(CMesh*));
+	memset(meshes,0,sizeof(CMesh*)*num_meshes);
+	for(int i=0;i<num_meshes;i++) {
+		meshes[i] = new CMesh();
+	}
+	chc_max_import_meshes(meshes, &doc, NULL, materials, num_materials);
+	/*
 	i = 0;
 	it = doc.begin();
 	while(it != doc.end()) {
@@ -313,13 +376,13 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 		meshes[i]->setMaterial(mat);
 		for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
 			int size = std::distance(tool.children().begin(),tool.children().end());
-			//std::cout << tool.name() << " " << size<< std::endl; 
 			load_mesh_data(tool,meshes[i]);
 			
 		}
 		i++;
 		it++;
 	}
+	*/
 
 	//run exporter
 	ScenePack scene;

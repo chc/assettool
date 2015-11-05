@@ -75,6 +75,9 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
 	fwrite(&material_checksum,sizeof(uint32_t),1,fd);
+
+	uint32_t group_checksum = mesh->getGroupId();
+	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
 	for(uint32_t i=0;i<num_verts;i++) {
 		fwrite(verts,sizeof(float),3,fd);
 		verts += 3;

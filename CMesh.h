@@ -23,6 +23,9 @@ public:
 
 	float *getUVWs(int layer);
 
+	void setGroupId(uint32_t id);
+	uint32_t getGroupId();
+
 	void setMaterial(CMaterial *material);
 	CMaterial *getMaterial();
 
@@ -35,5 +38,6 @@ private:
 	float *m_vert_cols;
 	uint32_t *m_indices;
 	int m_num_indices;
+	uint32_t m_group_id;
 };
 #endif //_CMESH_H
