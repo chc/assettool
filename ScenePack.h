@@ -3,12 +3,15 @@
 #include "CMaterial.h"
 #include "CMesh.h"
 #include "CTexture.h"
+#include "CCollision.h"
 typedef struct {
 	CMesh **m_meshes;
 	uint32_t num_meshes;
 
 	CMaterial **m_materials;
 	uint32_t num_materials;
+
+	CCollision *m_collision;
 } ScenePack;
 
 #endif //_SCEHEPACK_H

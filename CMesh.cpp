@@ -1,5 +1,6 @@
 #include "CMesh.h"
 #include "CMaterial.h"
+#include "CCollision.h"
 #include <stdlib.h>
 #include <string.h>
 CMesh::CMesh() {
@@ -66,4 +67,11 @@ void CMesh::setGroupId(uint32_t id) {
 }
 uint32_t CMesh::getGroupId() {
 	return m_group_id;
+}
+
+void CMesh::setCollision(CCollision *collision) {
+	mp_collision = collision;
+}
+CCollision *CMesh::getCollision() {
+	return mp_collision;
 }

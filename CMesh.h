@@ -3,6 +3,7 @@
 #include <stdint.h>
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
+class CCollision;
 class CMesh { 
 public:
 	CMesh();
@@ -29,8 +30,11 @@ public:
 	void setMaterial(CMaterial *material);
 	CMaterial *getMaterial();
 
+	void setCollision(CCollision *collision);
+	CCollision *getCollision();
 private:
 	CMaterial *mp_material;
+	CCollision *mp_collision;
 	float *m_uvws[MAX_MESH_TEXTURES];
 	float *m_vertices;
 	int m_num_vertices;

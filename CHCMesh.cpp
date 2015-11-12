@@ -5,7 +5,7 @@
 #include "CImage.h"
 #include <algorithm>
 
-#define CHCMESH_VERSION 2
+#define CHCMESH_VERSION 3
 enum ECHCMeshFlags {
 	ECHCMeshFlag_ColAsInt = (1<<0),
 	ECHCMeshFlag_HasNormals = (1<<1),
@@ -144,13 +144,31 @@ void write_material(CMaterial *material, FILE* fd) {
 		fwrite(&c,sizeof(uint8_t),1,fd);		
 	} while(tex != NULL);
 }
+
+void write_collision(FILE *fd, CCollision *collision) {
+	uint32_t version = CHCMESH_VERSION;
+	fwrite(&version,sizeof(uint32_t),1,fd);
+
+	std::vector<BBox> boxes = collision->getBBoxes();
+	uint32_t num_bboxes = boxes.size();
+	fwrite(&num_bboxes, sizeof(uint32_t), 1, fd);
+	std::vector<BBox>::iterator it = boxes.begin();
+	while(it != boxes.end()) {
+		BBox box = *it;
+		fwrite(&box.checksum, sizeof(uint32_t), 1, fd);
+		fwrite(&box.min, sizeof(float), 3, fd);
+		fwrite(&box.max, sizeof(float), 3, fd);
+		it++;
+	}
+}
 bool chc_engine_export_mesh(ExportOptions* opts) {
 	char fname[FILENAME_MAX+1];
 	sprintf(fname,"%s.mesh",opts->path);
 	FILE *fd = fopen(fname, "wb");
 	ScenePack *scenepack = (ScenePack *)opts->dataClass;
 
-
+	uint32_t version = CHCMESH_VERSION;
+	fwrite(&version,sizeof(uint32_t),1,fd);
 	fwrite(&scenepack->num_meshes,sizeof(uint32_t),1,fd);
 	for(int i=0;i<scenepack->num_meshes;i++) {
 		write_mesh(scenepack->m_meshes[i],fd);
@@ -187,5 +205,13 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		it++;
 	}
 	fclose(texfd);
+
+
+	sprintf(fname,"%s.col",opts->path);
+	FILE *colfd = fopen(fname, "wb");
+
+	write_collision(colfd, scenepack->m_collision);
+
+	fclose(colfd);
 	return false;
 }

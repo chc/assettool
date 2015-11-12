@@ -8,6 +8,7 @@
 #include <pugixml.hpp>
 #include <iterator>
 #include "crc32.h"
+#include "CCollision.h"
 void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 	int size = std::distance(node.children().begin(),node.children().end());
 	float *vert_data = (float *)malloc(size * sizeof(float) * 3);
@@ -65,7 +66,7 @@ enum EOutputSignature {
 	EOSig_Int,
 	EOSig_Texture,
 };
-
+std::vector<void (CMaterial::*)()> funcs;
 struct materialOutput {
 	const char *name;
 	const char *attribute;
@@ -244,6 +245,7 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 	loaded_textures.push_back(real_tex);
 	return real_tex;
 }
+
 void load_material_data(pugi::xml_node node, CMaterial *material) {
 	pugi::xml_attribute name_attr = node.attribute("name");
 	if(!name_attr.empty()) {
@@ -302,7 +304,6 @@ int count_nodes_named(const char *name, pugi::xml_document *doc, pugi::xml_node 
 
 void chc_mesh_do_import(pugi::xml_node *child, CMesh *out_mesh, CMaterial **materials, uint32_t num_materials, uint32_t group_id) {
 	CMaterial *mat = find_material_by_name(materials,num_materials,child->attribute("material_name").as_string());		
-	printf("do_mesh_import: %s %s\n",child->name(),child->attribute("name").as_string());
 	(out_mesh)->setMaterial(mat);
 	out_mesh->setGroupId(group_id);
 	for (pugi::xml_node tool = child->first_child(); tool; tool = tool.next_sibling()) {
@@ -332,6 +333,25 @@ void chc_max_import_meshes(CMesh **meshes, pugi::xml_document *doc, pugi::xml_no
 		}
 	} else {
 		chc_mesh_do_import(node,*meshes,materials,num_materials, group_id);
+	}
+}
+void chc_max_import_collision(CCollision *collision, pugi::xml_document *doc) {
+	for (pugi::xml_node tool = doc->first_child(); tool; tool = tool.next_sibling()) {
+		if(strcmp(tool.attribute("type").as_string(), "bbox") == 0) {
+			BBox box;
+			memset(&box,0, sizeof(box));
+			box.checksum = crc32(0, tool.attribute("name").as_string(), strlen(tool.attribute("name").as_string()));
+			pugi::xml_node bounds_node = tool.child("bounds");
+
+			box.min[0] = bounds_node.attribute("minx").as_float();
+			box.min[1] = bounds_node.attribute("miny").as_float();
+			box.min[2] = bounds_node.attribute("minz").as_float();
+
+			box.max[0] = bounds_node.attribute("maxx").as_float();
+			box.max[1] = bounds_node.attribute("maxy").as_float();
+			box.max[2] = bounds_node.attribute("maxz").as_float();
+			collision->addBBOX(box);
+		}
 	}
 }
 bool chc_max_xml_import(ImportOptions *impOpts) {
@@ -366,23 +386,20 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 		meshes[i] = new CMesh();
 	}
 	chc_max_import_meshes(meshes, &doc, NULL, materials, num_materials);
-	/*
-	i = 0;
-	it = doc.begin();
-	while(it != doc.end()) {
-		pugi::xml_node xmeshes = *it;
-		CMaterial *mat = find_material_by_name(materials,num_materials,xmeshes.attribute("material_name").as_string());		
-		meshes[i] = new CMesh();
-		meshes[i]->setMaterial(mat);
-		for (pugi::xml_node tool = xmeshes.first_child(); tool; tool = tool.next_sibling()) {
-			int size = std::distance(tool.children().begin(),tool.children().end());
-			load_mesh_data(tool,meshes[i]);
-			
-		}
-		i++;
-		it++;
-	}
-	*/
+
+
+	//load collision data
+	sprintf(name,"%s.col.xml",impOpts->path);
+	doc.load_file(name);
+	doc.child("mesh");
+
+	int num_colobjs = count_nodes_named("mesh",&doc,NULL);
+
+
+	CCollision *collision = new CCollision();
+	chc_max_import_collision(collision, &doc);
+
+
 
 	//run exporter
 	ScenePack scene;
@@ -391,6 +408,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	scene.m_materials = (CMaterial**)materials;
 	scene.num_meshes = num_meshes;
 	scene.num_materials = num_materials;
+	scene.m_collision = collision;
 	
 	ExportOptions opts;
 	memset(&opts,0,sizeof(opts));
