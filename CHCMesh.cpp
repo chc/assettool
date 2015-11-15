@@ -6,11 +6,15 @@
 #include <algorithm>
 
 #define CHCMESH_VERSION 3
-enum ECHCMeshFlags {
+enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_ColAsInt = (1<<0),
 	ECHCMeshFlag_HasNormals = (1<<1),
 	ECHCMeshFlag_HasCol = (1<<2),
 	ECHCMeshFlag_HasUVs = (1<<3),
+};
+enum ECHCPrimType { //must corrospond to game
+	ECHCPrimType_TriangleList,
+	ECHCPrimType_TriangleStrips,
 };
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
@@ -44,10 +48,29 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t num_verts = mesh->getNumVertices();
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
+	uint8_t primtype = ECHCPrimType_TriangleList;
+	if(mesh->getPrimType() == CMeshPrimType_TriangleStrips) {
+		primtype = ECHCPrimType_TriangleStrips;
+	}
+	fwrite(&primtype, sizeof(uint8_t), 1, fd);
 
 	float *verts = mesh->getVerticies();
 	float *normals = mesh->getNormals();
-	float *colours = mesh->getColours();
+	uint32_t *colours = mesh->getColours();
+	float *float_colours = NULL;
+	if(colours != NULL) {
+		float_colours = (float *)malloc(num_verts * sizeof(float) * 4);
+		float *p = float_colours;
+		uint32_t *c = colours;
+		for(int i=0;i<num_verts;i++) {
+			uint32_t colour = *c++;
+			float r = ((colour>>24)&0xff) / 255.0,g = ((colour>>16)&0xff) / 255.0,b= ((colour>>8)&0xff) / 255.0,a = (colour&0xff) / 255.0;
+			*p++ = r;
+			*p++ = g;
+			*p++ = b;
+			*p++ = a;
+		}
+	}
 	float *uvs = mesh->getUVWs(0);
 
 	uint32_t flags = 0;
@@ -64,9 +87,9 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		flags |= ECHCMeshFlag_HasNormals;
 		stride += sizeof(float) * 3;
 	}
-	if(colours) {
+	if(float_colours) {
 		flags |= ECHCMeshFlag_HasCol;
-		stride += sizeof(float) * 3;
+		stride += sizeof(float) * 4;
 	}
 	if(uvs) {
 		flags |= ECHCMeshFlag_HasUVs;
@@ -81,9 +104,9 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	for(uint32_t i=0;i<num_verts;i++) {
 		fwrite(verts,sizeof(float),3,fd);
 		verts += 3;
-		if(colours != NULL) {
-			fwrite(colours,sizeof(float),3,fd);
-			colours += 3;
+		if(float_colours != NULL) {
+			fwrite(float_colours,sizeof(float),4,fd);
+			float_colours += 4;
 		}
 		if(normals != NULL) {
 			fwrite(normals,sizeof(float),3,fd);
@@ -207,11 +230,11 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 	fclose(texfd);
 
 
-	sprintf(fname,"%s.col",opts->path);
-	FILE *colfd = fopen(fname, "wb");
-
-	write_collision(colfd, scenepack->m_collision);
-
-	fclose(colfd);
+	if(scenepack->m_collision) {
+		sprintf(fname,"%s.col",opts->path);
+		FILE *colfd = fopen(fname, "wb");
+		write_collision(colfd, scenepack->m_collision);
+		fclose(colfd);
+	}
 	return false;
 }

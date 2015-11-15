@@ -44,10 +44,10 @@ void CMesh::setNormals(float *normals) {
 	m_normals = (float *)malloc(m_num_vertices * sizeof(float) * 3);
 	memcpy(m_normals,normals,sizeof(float) * m_num_vertices * 3);
 }
-void CMesh::setColours(float *colours) { 
+void CMesh::setColours(uint32_t *colours) { 
 	if(m_vert_cols || m_num_vertices == 0) return;
-	m_vert_cols = (float *)malloc(m_num_vertices * sizeof(float) * 3);
-	memcpy(m_vert_cols,colours,sizeof(float) * m_num_vertices * 3);
+	m_vert_cols = (uint32_t *)malloc(m_num_vertices * sizeof(uint32_t));
+	memcpy(m_vert_cols,colours,m_num_vertices * sizeof(uint32_t));
 }
 void CMesh::setIndices(uint32_t *indices, int num_indices) {
 	if(m_indices || num_indices == 0) return;
