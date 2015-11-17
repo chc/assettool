@@ -49,6 +49,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
 	uint8_t primtype = ECHCPrimType_TriangleList;
+
 	if(mesh->getPrimType() == CMeshPrimType_TriangleStrips) {
 		primtype = ECHCPrimType_TriangleStrips;
 	}
@@ -117,9 +118,22 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			uvs += 3;
 		}
 	}
-
-	fwrite(&num_indicies,sizeof(uint32_t),1,fd);
-	fwrite(mesh->getIndices(),sizeof(uint32_t) * 3,num_indicies,fd);
+	int num_index_sets = mesh->getNumIndexLevels();
+	
+	if(num_index_sets == 0) {
+		num_index_sets = 1;
+		fwrite(&num_index_sets, sizeof(uint32_t), 1, fd);
+		fwrite(&num_indicies,sizeof(uint32_t),1,fd);
+		fwrite(mesh->getIndices(),sizeof(uint32_t) * 3,num_indicies,fd);
+	} else {
+		fwrite(&num_index_sets, sizeof(uint32_t), 1, fd);
+		for(int i=0;i<num_index_sets;i++) {
+			uint32_t* indices =  mesh->getIndices(i);
+			num_indicies = mesh->getNumIndicies(i);
+			fwrite(&num_indicies,sizeof(uint32_t),1,fd);
+			fwrite(indices, sizeof(uint32_t) * 3, num_indicies, fd);
+		}
+	}
 }
 
 void write_material(CMaterial *material, FILE* fd) {

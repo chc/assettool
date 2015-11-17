@@ -11,7 +11,9 @@ CMesh::CMesh() {
 	m_vert_cols = NULL;
 	m_vertices = NULL;
 	mp_material = NULL;
-
+	num_index_levels = 0;
+	m_group_id = 0;
+	m_prim_type = CMeshPrimType_TriangleList;
 	memset(&m_uvws, 0, sizeof(m_uvws));
 }
 CMesh::~CMesh() {
@@ -49,10 +51,38 @@ void CMesh::setColours(uint32_t *colours) {
 	m_vert_cols = (uint32_t *)malloc(m_num_vertices * sizeof(uint32_t));
 	memcpy(m_vert_cols,colours,m_num_vertices * sizeof(uint32_t));
 }
-void CMesh::setIndices(uint32_t *indices, int num_indices) {
-	if(m_indices || num_indices == 0) return;
-	m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t) * 3);
-	memcpy(m_indices,indices,num_indices * sizeof(uint32_t) * 3);
+void CMesh::setIndexLevels(int levels) {
+	num_index_levels = levels;
+	m_indices = (uint32_t *)malloc(num_index_levels * sizeof(uint32_t* ) * 3);
+	memset(m_indices,0,num_index_levels * sizeof(uint32_t* ) * 3);
+	m_num_indexed_levels = (int*)malloc(sizeof(int) * levels);
+
+	//allocate materials
+	mp_material = (CMaterial *)malloc(num_index_levels * sizeof(CMaterial *));
+}
+int CMesh::getNumIndicies(int layer) { 
+	if(layer == -1) {
+		return m_num_indices;
+	} else {
+		return m_num_indexed_levels[layer];
+	}
+}
+uint32_t *CMesh::getIndices(int level) {
+	if(level == -1) {
+		return m_indices;
+	} else {
+		return ((uint32_t**)m_indices)[level];
+	}
+}
+void CMesh::setIndices(uint32_t *indices, int num_indices, int level) {
+	if(level < 0) {
+		m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t) * 3);
+		memcpy(m_indices,indices,num_indices * sizeof(uint32_t) * 3);
+	} else {
+		m_num_indexed_levels[level] = num_indices;
+		((uint32_t**)m_indices)[level] = (uint32_t*) malloc(num_indices * sizeof(uint32_t) * 3);
+		memcpy(((uint32_t**)m_indices)[level],indices,num_indices * sizeof(uint32_t) * 3);
+	}
 	m_num_indices = num_indices;
 }
 void CMesh::setMaterial(CMaterial *material) {
@@ -60,6 +90,13 @@ void CMesh::setMaterial(CMaterial *material) {
 }
 CMaterial *CMesh::getMaterial() {
 	return mp_material;
+}
+
+void CMesh::setIndexMaterial(CMaterial *material, int level) {
+	((CMaterial**)mp_material)[level] = material;
+}
+CMaterial *CMesh::getIndexMaterial(int level) {
+	return ((CMaterial**)mp_material)[level];
 }
 
 void CMesh::setGroupId(uint32_t id) {
