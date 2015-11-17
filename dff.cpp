@@ -217,7 +217,13 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 		case DFFTag_rwGEOMETRY: {
 			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
 			GeometryRecord *rec = new GeometryRecord;
-			memset(rec,0,sizeof(GeometryRecord));
+			//memset(rec,0,sizeof(GeometryRecord));
+			rec->vertex_count = 0;
+			rec->face_count = 0;
+			rec->normal_data = NULL;
+			rec->vertex_data = NULL;
+			rec->uv_data = NULL;
+			rec->indicies = NULL;
 			fread(&rec->flags, sizeof(uint16_t), 1, fd);
 			fread(&rec->uvcount, sizeof(uint8_t), 1, fd);
 			fread(&rec->unknown, sizeof(uint8_t), 1, fd);
@@ -540,7 +546,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			CMaterial *cmat = new CMaterial();
 			getMaterialFromRecord(matrec, cmat);
 			materials.push_back(cmat);
-			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level++);
+			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level);
 
 
 			uint32_t *indices = (uint32_t*) malloc(sizeof(uint32_t) * 3 * item.second.size());
