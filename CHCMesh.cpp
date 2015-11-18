@@ -97,6 +97,9 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	}
 	if(uvs) {
 		flags |= ECHCMeshFlag_HasUVs;
+		if (num_uv_sets == 0) {
+			num_uv_sets = 1;
+		}
 		stride += (sizeof(float) * 3) * num_uv_sets;
 	}
 
@@ -123,7 +126,6 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			} else {
 				k = crc32(0,mat->getName(),strlen(mat->getName()));
 				fwrite(&k,sizeof(uint32_t),1,fd);
-				printf("Writing Mat to mesh: %08X %s\n", k, mat->getName());
 			}
 			
 		}

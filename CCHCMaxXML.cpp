@@ -2,7 +2,7 @@
 #include "CMaterial.h"
 #include "CMesh.h"
 #include "ScenePack.h"
-#include <gd.h>
+//#include <gd.h>
 #include <png.h>
 #include <iostream>
 #include <pugixml.hpp>

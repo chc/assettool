@@ -419,52 +419,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	int num_geom_records = info.m_geom_records.size();
 	CMesh** meshes = (CMesh**)malloc(num_geom_records * sizeof(CMesh*));
 	memset(meshes,0,num_geom_records * sizeof(CMesh*));
-	for(int i=0;i<num_geom_records;i++) {
-		GeometryRecord *geoinfo = info.m_geom_records[i];
-		meshes[i] = new CMesh();
-		meshes[i]->setUseIndexedMaterials(true);
-		/*
-		if(geoinfo.flags & EDFFVertFlag_TriStrip) {
-			meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
-		} else {
-			meshes[i]->setPrimType(CMeshPrimType_TriangleList);
-		}
-		*/
-		meshes[i]->setPrimType(CMeshPrimType_TriangleList);
 
-		uint32_t *indices = (uint32_t *)malloc(geoinfo->face_count * sizeof(uint32_t) * 3);
-		uint32_t *p = indices;
-		for(int j=0;j<geoinfo->face_count;j++) {
-			*p++ = geoinfo->indicies[j].x;
-			*p++ = geoinfo->indicies[j].y;
-			*p++ = geoinfo->indicies[j].z;
-		}
-		meshes[i]->setIndices(indices, geoinfo->face_count);
-		free(indices);
-
-		float *verts = (float*)malloc(geoinfo->vertex_count * sizeof(float) * 3);
-		float *x = verts;
-		for(int j=0;j<geoinfo->vertex_count;j++) {
-			*x++ = geoinfo->vertex_data[j].x;
-			*x++ = geoinfo->vertex_data[j].y;
-			*x++ = geoinfo->vertex_data[j].z;
-		}
-		meshes[i]->setNumVerts(geoinfo->vertex_count);
-		meshes[i]->setVerticies(verts);
-
-		if(geoinfo->flags & EDFFVertFlag_HasNormal) {
-			x = verts;
-			for(int j=0;j<geoinfo->vertex_count;j++) {
-				*x++ = geoinfo->normal_data[j].x;
-				*x++ = geoinfo->normal_data[j].y;
-				*x++ = geoinfo->normal_data[j].z;
-			}
-			meshes[i]->setNormals(verts);
-		}
-		if(geoinfo->flags & EDFFVertFlag_HasColour) {
-			meshes[i]->setColours(geoinfo->vertex_colours);
-		}
-	}
 
 	std::vector<GeometryRecord *>::iterator it = info.m_geom_records.begin();
 	int num_materials = 0, num_verts = 0;
@@ -571,8 +526,8 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 			for(int i=0;i<g->uvcount;i++) {
 				for(int j=0;j<g->vertex_count;j++) {
-					memcpy(temp_verts_p,glm::value_ptr(g->uv_data[i][j]), sizeof(float) * 2);
-					temp_verts += 2;
+					memcpy(temp_verts_p,glm::value_ptr(g->uv_data[i][j]), sizeof(float) * 3);
+					temp_verts_p += 3;
 				}
 				output_meshes[mesh_buffer_idx]->setUVWs(temp_verts, i);
 			}
