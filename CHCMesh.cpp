@@ -11,6 +11,7 @@ enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_HasNormals = (1<<1),
 	ECHCMeshFlag_HasCol = (1<<2),
 	ECHCMeshFlag_HasUVs = (1<<3),
+	ECHCMeshFlag_MaterialIndexID = (1<<4),
 };
 enum ECHCPrimType { //must corrospond to game
 	ECHCPrimType_TriangleList,
@@ -96,9 +97,36 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		flags |= ECHCMeshFlag_HasUVs;
 		stride += sizeof(float) * 3;
 	}
+
+	if(mesh->getUseIndexedMaterials()) {
+		flags |= ECHCMeshFlag_MaterialIndexID;
+	}
+
 	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
-	fwrite(&material_checksum,sizeof(uint32_t),1,fd);
+
+	uint32_t num_materials = mesh->getNumMaterials();
+	if(num_materials == -1) {
+		num_materials = 1;
+		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
+		fwrite(&material_checksum,sizeof(uint32_t),1,fd);
+	} else {
+		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
+		
+		for(int i=0;i<num_materials;i++) {
+			mat = mesh->getIndexMaterial(i);
+			uint32_t k = 0;
+			if(mat == NULL) {
+				fwrite(&k, sizeof(uint32_t), 1, fd);
+			} else {
+				k = crc32(0,mat->getName(),strlen(mat->getName()));
+				fwrite(&k,sizeof(uint32_t),1,fd);
+				printf("Writing Mat to mesh: %08X %s\n", k, mat->getName());
+			}
+			
+		}
+	}
+	
 
 	uint32_t group_checksum = mesh->getGroupId();
 	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
@@ -138,6 +166,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 void write_material(CMaterial *material, FILE* fd) {
 	uint32_t checksum = crc32(0,material->getName(),strlen(material->getName()));
+	printf("Writing Mat: %08X %s\n", checksum, material->getName());
 	fwrite(&checksum,sizeof(uint32_t),1,fd);
 
 	float col[4], s;

@@ -9,6 +9,7 @@
 #include <iterator>
 #include "crc32.h"
 #include "CCollision.h"
+#include <fstream>
 void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 	int size = std::distance(node.children().begin(),node.children().end());
 	float *vert_data = (float *)malloc(size * sizeof(float) * 3);
@@ -430,6 +431,98 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 	free(materials);
 	return false;
 }
+void export_xml_mesh(pugi::xml_document *m_mesh_xml, CMesh *mesh) {
+	pugi::xml_node main_node = m_mesh_xml->append_child();
+	main_node.set_name("mesh");
+	pugi::xml_node xnode = main_node.append_child();
+    xnode.set_name("verticies");
+	int num_verts = mesh->getNumVertices();
+	float *verts = mesh->getVerticies();
+	float *p = verts;
+	for (int i=0; i<num_verts; i++) {
+		pugi::xml_node param = xnode.append_child();
+		param.set_name("point");
+
+		// add attributes to param node
+		param.append_attribute("x") = *p++;
+		param.append_attribute("y") = *p++;
+		param.append_attribute("z") = *p++;
+	}
+
+
+	float *normals = mesh->getNormals();
+	p = normals;
+	if(normals) {
+		xnode = main_node.append_child();
+		xnode.set_name("normals");
+		for (int i=0; i<num_verts; i++) {
+			pugi::xml_node param = xnode.append_child();
+			param.set_name("point");
+
+			// add attributes to param node
+			param.append_attribute("x") = *p++;
+			param.append_attribute("y") = *p++;
+			param.append_attribute("z") = *p++;
+		}
+	}
+
+	int num_uv_sets = mesh->getUVLayers();
+	if(num_uv_sets > 0) {
+		xnode = main_node.append_child();
+		xnode.set_name("uvs");	
+		
+		for(int i=0;i<num_uv_sets;i++) {
+			pugi::xml_node uv_node = xnode.append_child();
+			uv_node.set_name("set"); //idk what to call it
+			uv_node.append_attribute("layer") = i;
+			float *uvs = mesh->getUVWs(i);
+			p = uvs;
+			for(int j=0;j<num_verts;j++) {
+				pugi::xml_node param = uv_node.append_child();
+				param.set_name("point");
+				param.append_attribute("u") = *p++;
+				param.append_attribute("v") = *p++;
+			}
+		}
+	}
+
+	xnode = main_node.append_child();
+	xnode.set_name("indices");	
+
+
+	int num_index_levels = mesh->getNumIndexLevels();
+	
+	for(int i=0;i<num_index_levels;i++) {
+			uint32_t *index = mesh->getIndices(i);
+			pugi::xml_node index_node = xnode.append_child();
+			index_node.set_name("set"); //idk what to call it
+			index_node.append_attribute("layer") = i;
+			for(int j=0;j<mesh->getNumIndicies(i);j++) {
+				pugi::xml_node param = index_node.append_child();
+				param.set_name("point");
+				param.append_attribute("x") = *index++;
+				param.append_attribute("y") = *index++;
+				param.append_attribute("z") = *index++;
+			}
+	}
+
+	
+}
 bool chc_max_xml_export(ExportOptions *expOpts) {
+	pugi::xml_document m_mesh_xml;
+	char out_name[64];
+	sprintf(out_name,"%s.mesh.xml",expOpts->path);
+	std::ofstream mesh_xml_out;
+
+	ScenePack *pack = (ScenePack *)expOpts->dataClass;
+
+	for(int i=0;i<pack->num_meshes;i++) {
+		export_xml_mesh(&m_mesh_xml, pack->m_meshes[i]);
+	}
+
+	mesh_xml_out.open(out_name);
+	m_mesh_xml.save(mesh_xml_out);
+	mesh_xml_out.close();
+
 	return false;
 }

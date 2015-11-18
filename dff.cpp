@@ -421,7 +421,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	for(int i=0;i<num_geom_records;i++) {
 		GeometryRecord *geoinfo = info.m_geom_records[i];
 		meshes[i] = new CMesh();
-
+		meshes[i]->setUseIndexedMaterials(true);
 		/*
 		if(geoinfo.flags & EDFFVertFlag_TriStrip) {
 			meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
@@ -478,27 +478,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		uint16_t last_materialid = -1;
 		for(int i=0;i<rec->face_count;i++) {
 			glm::ivec4 indices = rec->indicies[i];
-			std::vector<glm::ivec3> m_pass_indicies;
-			
-			if(indices.w != last_materialid) {
-				glm::vec3 vert;
-				vert.x = rec->vertex_data[indices.x].x;
-				vert.y = rec->vertex_data[indices.y].y;
-				vert.z = rec->vertex_data[indices.z].z;
-				m_pass_indicies.push_back(glm::ivec3(indices));
-				printf("Switch at vert at index %d: (%d,%d,%d) (%f, %f, %f)\n",i, indices.x, indices.y, indices.z,vert.x, vert.y, vert.z);
-				last_materialid = indices.w;
-				if(rec->m_index_buffers[indices.w].size() != 0) {
-					rec->m_index_buffers[indices.w].insert(m_pass_indicies.begin(),m_pass_indicies.end(), m_index_buffers[indices.w].end());
-				} else {
-					rec->m_index_buffers[indices.w] = m_pass_indicies;
-				}
-				
-				m_pass_indicies.clear();
-				m_pass_indicies.push_back(glm::ivec3(indices.x, indices.y, indices.z));
-			} else {
-				m_pass_indicies.push_back(glm::ivec3(indices.x, indices.y, indices.z));
-			}
+			rec->m_index_buffers[indices.w].push_back(glm::ivec3(indices.x, indices.y, indices.z));
 		}
 		it++;
 	}
@@ -520,6 +500,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	std::map<int, int> m_mat_instance_counts;
 	while(it != info.m_geom_records.end()) {
 		output_meshes[mesh_buffer_idx] = new CMesh();
+		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
 		GeometryRecord *g = *it;
 		std::map<int, int> found_materials; 
 		for(int i=0;i<g->face_count;i++) {
@@ -559,7 +540,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 				*p++ = cur_indices.x;
 				*p++ = cur_indices.y;
 				*p++ = cur_indices.z;
-				p += 3;
 				it3++;
 			}
 			output_meshes[mesh_buffer_idx]->setIndices(indices, item.second.size(), level);
@@ -571,23 +551,32 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 		output_meshes[mesh_buffer_idx]->setNumVerts(g->vertex_count);
 		for(int i=0;i<g->vertex_count;i++) {
-			memcpy(temp_verts,glm::value_ptr(g->vertex_data[i]), sizeof(float) * 3);
+			memcpy(temp_verts_p,glm::value_ptr(g->vertex_data[i]), sizeof(float) * 3);
+			temp_verts_p += 3;
 		}
 		output_meshes[mesh_buffer_idx]->setVerticies(temp_verts);
+		temp_verts_p = temp_verts;
+
 		if(g->normal_data) {
 			for(int i=0;i<g->vertex_count;i++) {
-				memcpy(temp_verts,glm::value_ptr(g->normal_data[i]), sizeof(float) * 3);
+				memcpy(temp_verts_p,glm::value_ptr(g->normal_data[i]), sizeof(float) * 3);
+				temp_verts_p += 3;
 			}
 			output_meshes[mesh_buffer_idx]->setNormals(temp_verts);
 		}
+		temp_verts_p = temp_verts;
+
 		if(g->uv_data) {
+
 			for(int i=0;i<g->uvcount;i++) {
 				for(int j=0;j<g->vertex_count;j++) {
-					memcpy(temp_verts,glm::value_ptr(g->uv_data[i][j]), sizeof(float) * 2);
+					memcpy(temp_verts_p,glm::value_ptr(g->uv_data[i][j]), sizeof(float) * 2);
+					temp_verts += 2;
 				}
 				output_meshes[mesh_buffer_idx]->setUVWs(temp_verts, i);
 			}
 		}
+		temp_verts_p = temp_verts;
 		mesh_buffer_idx++;
 		it++;
 	}

@@ -11,8 +11,11 @@ CMesh::CMesh() {
 	m_vert_cols = NULL;
 	m_vertices = NULL;
 	mp_material = NULL;
+	mp_collision = NULL;
 	num_index_levels = 0;
 	m_group_id = 0;
+	m_num_materials = 0;
+	m_indexed_materials = false;
 	m_prim_type = CMeshPrimType_TriangleList;
 	memset(&m_uvws, 0, sizeof(m_uvws));
 }
@@ -32,6 +35,9 @@ void CMesh::setNumVerts(int count) {
 void CMesh::setUVWs(float *uvs, int layer) {
 	m_uvws[layer] =  (float *)malloc(m_num_vertices * sizeof(float) * 3);
 	memcpy(m_uvws[layer],uvs,m_num_vertices * sizeof(float) * 3);
+	if(layer > m_num_uv_layers) {
+		m_num_uv_layers = layer;
+	}
 }
 float *CMesh::getUVWs(int layer) {
 	return m_uvws[layer];
@@ -59,6 +65,8 @@ void CMesh::setIndexLevels(int levels) {
 
 	//allocate materials
 	mp_material = (CMaterial *)malloc(num_index_levels * sizeof(CMaterial *));
+
+	m_num_materials = num_index_levels;
 }
 int CMesh::getNumIndicies(int layer) { 
 	if(layer == -1) {
