@@ -64,7 +64,7 @@ typedef struct {
 	uint32_t vertex_count;
 	uint32_t frame_count;
 
-	glm::vec2 **uv_data;
+	glm::vec3 **uv_data;
 	glm::vec3 *vertex_data;
 	glm::vec3 *normal_data;
 
@@ -231,9 +231,9 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&rec->vertex_count, sizeof(uint32_t), 1, fd);
 			fread(&rec->frame_count, sizeof(uint32_t), 1, fd);
 			rec->m_index_buffers = std::map<int, std::vector<glm::ivec3>>();
-			rec->uv_data = (glm::vec2**)malloc(sizeof(glm::vec2*) * rec->uvcount);
+			rec->uv_data = (glm::vec3**)malloc(sizeof(glm::vec3*) * rec->uvcount);
 			for(int i=0;i<rec->uvcount;i++) {
-				rec->uv_data[i] = new glm::vec2[rec->vertex_count];
+				rec->uv_data[i] = new glm::vec3[rec->vertex_count];
 			}
 
 			if(rec->flags & EDFFVertFlag_HasColour) {
@@ -245,6 +245,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			for(int i=0;i<rec->uvcount;i++) {
 				for(int j=0;j<rec->vertex_count;j++) {
 					fread(glm::value_ptr(rec->uv_data[i][j]), sizeof(float),2,fd);
+					rec->uv_data[i][j].z = 0.0;
 					printf("%f %f\n",rec->uv_data[i][j].x,rec->uv_data[i][j].y);
 				}
 			}

@@ -84,6 +84,8 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
 	}
 
+	uint32_t num_uv_sets = mesh->getUVLayers();
+
 	uint32_t stride = sizeof(float) * 3;
 	if(normals) {
 		flags |= ECHCMeshFlag_HasNormals;
@@ -95,7 +97,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	}
 	if(uvs) {
 		flags |= ECHCMeshFlag_HasUVs;
-		stride += sizeof(float) * 3;
+		stride += (sizeof(float) * 3) * num_uv_sets;
 	}
 
 	if(mesh->getUseIndexedMaterials()) {
@@ -104,7 +106,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
-
+	fwrite(&num_uv_sets, sizeof(uint32_t), 1, fd);
 	uint32_t num_materials = mesh->getNumMaterials();
 	if(num_materials == -1) {
 		num_materials = 1;
@@ -130,6 +132,12 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 	uint32_t group_checksum = mesh->getGroupId();
 	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
+
+	float *uv_sets[MAX_MESH_TEXTURES];
+	memset(&uv_sets,0,sizeof(uv_sets));
+	for(int i=0;i<MAX_MESH_TEXTURES;i++) {
+		uv_sets[i] = mesh->getUVWs(i);
+	}
 	for(uint32_t i=0;i<num_verts;i++) {
 		fwrite(verts,sizeof(float),3,fd);
 		verts += 3;
@@ -141,10 +149,13 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			fwrite(normals,sizeof(float),3,fd);
 			normals +=  3;
 		}
-		if(uvs != NULL) {
-			fwrite(uvs,sizeof(float),3,fd);
-			uvs += 3;
+		for(int j=0;j<num_uv_sets;j++) {
+			if(uv_sets[j] != NULL) {
+				fwrite(uv_sets[j],sizeof(float),3,fd);
+				uv_sets[j] += 3;
+			}
 		}
+
 	}
 	int num_index_sets = mesh->getNumIndexLevels();
 	
