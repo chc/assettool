@@ -34,6 +34,22 @@ enum EDFFVertexFlags {
 	EDFFVertFlag_ModuleMaterials = (1<<6),
 	EDFFVertFlag_Textured = (1<<7),
 };
+enum EDFFTextureFilterModes {
+	EDFFTexFilterMode_None,
+	EDFFTexFilterMode_Nearest,
+	EDFFTexFilterMode_Linear,
+	EDFFTexFilterMode_MipNearest,
+	EDFFTexFilterMode_MipLinear,
+	EDFFTexFilterMode_LinearMipNearest,
+	EDFFTexFilterMode_LinearMipLinear,
+};
+enum EDFFTextureAddresingModes {
+	EDFFTextureAddressMode_NoTiling,
+	EDFFTextureAddressMode_Wrap,
+	EDFFTextureAddressMode_Mirror,
+	EDFFTextureAddressMode_Clamp,
+	EDFFTextureAddressMode_Border,
+};
 typedef struct {
 	glm::mat3 rotation_matrix;
 	glm::vec3 position;
@@ -46,6 +62,9 @@ typedef struct {
 	uint16_t unknown;
 	char texturename[64];
 	char alphaname[64];
+
+	ETextureFilterMode mat_filter_mode;
+	ETextureAddresingMode u_mode, v_mode;
 }TextureRecord;
 
 typedef struct {
@@ -96,6 +115,26 @@ typedef struct {
 	uint32_t material_count;
 	uint32_t unknown[4];
 } MaterialHeader;
+
+enum DFFTags {
+	DFFTag_rwDATA = 1,
+	DFFTag_rwSTRING = 2,
+	DFFTag_rwEXTENSION = 3,
+	DFFTag_rwTEXTURE = 6,
+	DFFTag_rwMATERIALLIST = 8,
+	DFFTag_rwMATERIAL = 7,
+	DFFTag_rwFRAMELIST = 14,
+	DFFTag_rwGEOMETRY = 15,
+	DFFTag_rwCLUMP = 16,
+	DFFTag_rwATOMIC = 20,
+	DFFTag_rwGEOMETRYLIST = 26,
+	DFFTag_rwANIMPLUGIN = 286,
+	DFFTag_rwMATERLIALEFFECTS = 288,
+	DFFTag_rwMATERIALSPLIT = 1294,
+	DFFTag_rwFRAME = 0x253F2FE,
+	DFFTag_nvCOLOURS = 0x253F2F9,
+};
+
 void dump_vec3(glm::vec3 vec) {
 	printf("%f %f %f\n",vec.x,vec.y,vec.z);
 }
@@ -121,24 +160,7 @@ void dump_header(DFFChunkInfo *head) {
 	printf("size: %d\n", head->size);
 	printf("version: %08X\n", head->version);
 }
-enum DFFTags {
-	DFFTag_rwDATA = 1,
-	DFFTag_rwSTRING = 2,
-	DFFTag_rwEXTENSION = 3,
-	DFFTag_rwTEXTURE = 6,
-	DFFTag_rwMATERIALLIST = 8,
-	DFFTag_rwMATERIAL = 7,
-	DFFTag_rwFRAMELIST = 14,
-	DFFTag_rwGEOMETRY = 15,
-	DFFTag_rwCLUMP = 16,
-	DFFTag_rwATOMIC = 20,
-	DFFTag_rwGEOMETRYLIST = 26,
-	DFFTag_rwANIMPLUGIN = 286,
-	DFFTag_rwMATERLIALEFFECTS = 288,
-	DFFTag_rwMATERIALSPLIT = 1294,
-	DFFTag_rwFRAME = 0x253F2FE,
-	DFFTag_nvCOLOURS = 0x253F2F9,
-};
+
 bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_tag = (DFFTags)-1) {
 	dump_header(chunk);
 	DFFChunkInfo clumpHead;
@@ -352,6 +374,71 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					uint16_t flags, unknown;
 					TextureRecord *texrec = new TextureRecord;
 					fread(&texrec->filter_flags, sizeof(uint16_t), 1, fd);
+					EDFFTextureFilterModes filter_mode = (EDFFTextureFilterModes)(texrec->filter_flags & 0xFF);
+					uint8_t addressing = (texrec->filter_flags & 0xFF << 8) >> 8;
+					uint8_t addressing_v = (addressing & 0xF0) >> 4, addressing_u = addressing & 0x0F;
+
+					ETextureFilterMode mat_filter_mode;
+					switch (filter_mode) {
+					default:
+					case EDFFTexFilterMode_None:
+						texrec->mat_filter_mode = ETexFilterMode_None;
+						break;
+					case EDFFTexFilterMode_Nearest:
+						texrec->mat_filter_mode = ETexFilterMode_Nearest;
+						break;
+					case EDFFTexFilterMode_Linear:
+						texrec->mat_filter_mode = ETexFilterMode_Linear;
+						break;
+					case EDFFTexFilterMode_MipNearest:
+						texrec->mat_filter_mode = ETexFilterMode_MipNearest;
+						break;
+					case EDFFTexFilterMode_MipLinear:
+						texrec->mat_filter_mode = ETexFilterMode_MipLinear;
+						break;
+					case EDFFTexFilterMode_LinearMipNearest:
+						texrec->mat_filter_mode = ETexFilterMode_LinearMipNearest;
+						break;
+					case EDFFTexFilterMode_LinearMipLinear:
+						texrec->mat_filter_mode = ETexFilterMode_LinearMipLinear;
+						break;
+					}
+					ETextureAddresingMode u_mode, v_mode;
+					switch (addressing_u) {
+					case EDFFTextureAddressMode_NoTiling:
+						texrec->u_mode = ETextureAddressMode_NoTiling;
+						break;
+					case EDFFTextureAddressMode_Wrap:
+						texrec->u_mode = ETextureAddressMode_Wrap;
+						break;
+					case EDFFTextureAddressMode_Mirror:
+						texrec->u_mode = ETextureAddressMode_Mirror;
+						break;
+					case EDFFTextureAddressMode_Clamp:
+						texrec->u_mode = ETextureAddressMode_Clamp;
+						break;
+					case EDFFTextureAddressMode_Border:
+						texrec->u_mode = ETextureAddressMode_Border;
+						break;
+					}
+					switch (addressing_v) {
+					case EDFFTextureAddressMode_NoTiling:
+						texrec->v_mode = ETextureAddressMode_NoTiling;
+						break;
+					case EDFFTextureAddressMode_Wrap:
+						texrec->v_mode = ETextureAddressMode_Wrap;
+						break;
+					case EDFFTextureAddressMode_Mirror:
+						texrec->v_mode = ETextureAddressMode_Mirror;
+						break;
+					case EDFFTextureAddressMode_Clamp:
+						texrec->v_mode = ETextureAddressMode_Clamp;
+						break;
+					case EDFFTextureAddressMode_Border:
+						texrec->v_mode = ETextureAddressMode_Border;
+						break;
+					}
+					printf("Filter flags 0x%04X Filter: %d %d\n", texrec->filter_flags, (addressing & 0xF0)>>4, addressing & 0x0F);
 					fread(&texrec->unknown, sizeof(uint16_t), 1, fd);
 					char str[256];
 
@@ -364,7 +451,8 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					printf("%s\n",texrec->texturename);
 					printf("%s\n",texrec->alphaname);
 
-					
+
+				
 					dff_out->last_material->textures.push_back(texrec);
 
 					fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read empty extension..
@@ -398,7 +486,9 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 		TextureRecord *texrec = *it;
 		sprintf(name,"tex/%s.PNG",texrec->texturename);
 		CTexture *tex = load_texture(name, true, true, 0.0, 0.0);
-		mat->setTexture(tex, level++);
+		mat->setTexture(tex, level);
+		mat->setTextureFilterMode(texrec->mat_filter_mode, level);
+		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);
 		it++;
 	}
 }

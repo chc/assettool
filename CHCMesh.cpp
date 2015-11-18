@@ -210,17 +210,24 @@ void write_material(CMaterial *material, FILE* fd) {
 	i=0;
 	fwrite(&tex_count,sizeof(uint32_t),1,fd);
 	do {
-		tex = material->getTexture(i++);
+		tex = material->getTexture(i);
 		if(tex == NULL) break;
 		checksum = crc32(0,tex->getPath(),strlen(tex->getPath()));
 		fwrite(&checksum,sizeof(uint32_t),1,fd);
 		tex->getOffset(col[0], col[1]);
 		fwrite(&col,sizeof(float),2,fd);
-		tex->getTile(tile[0], tile[1]);
-		c = tile[0] != 0;
-		fwrite(&c,sizeof(uint8_t),1,fd);
-		c = tile[1] != 0;
-		fwrite(&c,sizeof(uint8_t),1,fd);		
+	
+		uint8_t filter_mode = (uint8_t)material->getTextureFilterMode(i);
+		ETextureAddresingMode u_mode, v_mode;
+		material->getTextureAddressModes(u_mode, v_mode, i);
+		uint8_t u, v;
+		u = (uint8_t)u_mode;
+		v = (uint8_t)v_mode;
+		fwrite(&filter_mode, sizeof(uint8_t), 1, fd);
+		fwrite(&u, sizeof(uint8_t), 1, fd);
+		fwrite(&v, sizeof(uint8_t), 1, fd);
+		i++;
+
 	} while(tex != NULL);
 }
 

@@ -80,3 +80,20 @@ void CMaterial::setTexture(CTexture *tex, int level) {
 CTexture* CMaterial::getTexture(int level) {
 	return m_textures[level];
 }
+
+void CMaterial::setTextureFilterMode(ETextureFilterMode mode, int level) {
+	m_filter_modes[level] = mode;
+	
+}
+void CMaterial::setTextureAddressMode(ETextureAddresingMode u, ETextureAddresingMode v, int level) {
+	m_address_modes[level][0] = u;
+	m_address_modes[level][1] = v;
+}
+
+void CMaterial::getTextureAddressModes(ETextureAddresingMode &u, ETextureAddresingMode &v, int level) {
+	u = m_address_modes[level][0];
+	v = m_address_modes[level][1];
+}
+ETextureFilterMode CMaterial::getTextureFilterMode(int level) {
+	return m_filter_modes[level];
+}

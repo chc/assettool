@@ -4,6 +4,22 @@
 #include <vector>
 #define MAX_MATERIAL_TEXTURES 4
 class CTexture;
+enum ETextureFilterMode {
+	ETexFilterMode_None,
+	ETexFilterMode_Nearest,
+	ETexFilterMode_Linear,
+	ETexFilterMode_MipNearest,
+	ETexFilterMode_MipLinear,
+	ETexFilterMode_LinearMipNearest,
+	ETexFilterMode_LinearMipLinear,
+};
+enum ETextureAddresingMode {
+	ETextureAddressMode_NoTiling,
+	ETextureAddressMode_Wrap,
+	ETextureAddressMode_Mirror,
+	ETextureAddressMode_Clamp,
+	ETextureAddressMode_Border,
+};
 class CMaterial { 
 public:
 	CMaterial();
@@ -22,6 +38,12 @@ public:
 	void getAmbientColour(float &r, float &g, float &b, float &a);
 	void getDiffuseColour(float &r, float &g, float &b, float &a);
 	const char *getName();
+	
+	void setTextureFilterMode(ETextureFilterMode mode, int level);
+	void setTextureAddressMode(ETextureAddresingMode u, ETextureAddresingMode v, int level);
+
+	void getTextureAddressModes(ETextureAddresingMode &u, ETextureAddresingMode &v, int level);
+	ETextureFilterMode getTextureFilterMode(int level);
 
 	void setTexture(CTexture *tex, int level);
 	CTexture* getTexture(int level);
@@ -34,6 +56,9 @@ private:
 	float m_shine_strength;
 
 	char m_name[FILENAME_MAX+1];
+
+	ETextureFilterMode m_filter_modes[MAX_MATERIAL_TEXTURES];
+	ETextureAddresingMode m_address_modes[MAX_MATERIAL_TEXTURES][3]; //UVW
 	CTexture* m_textures[MAX_MATERIAL_TEXTURES];
 };
 #endif //_CMESH_H
