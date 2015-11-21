@@ -111,9 +111,11 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	fwrite(&stride,sizeof(uint32_t),1,fd);
 	fwrite(&num_uv_sets, sizeof(uint32_t), 1, fd);
 	uint32_t num_materials = mesh->getNumMaterials();
-	if(num_materials == -1) {
+	if(num_materials == -1 || !mesh->getUseIndexedMaterials()) {
 		num_materials = 1;
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
+		CMaterial *mat = mesh->getMaterial();
+		material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
 		fwrite(&material_checksum,sizeof(uint32_t),1,fd);
 	} else {
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
