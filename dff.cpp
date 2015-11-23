@@ -126,6 +126,7 @@ enum DFFTags {
 	DFFTag_rwFRAMELIST = 14,
 	DFFTag_rwGEOMETRY = 15,
 	DFFTag_rwCLUMP = 16,
+	DFFTag_rwLIGHT = 18,
 	DFFTag_rwATOMIC = 20,
 	DFFTag_rwGEOMETRYLIST = 26,
 	DFFTag_rwANIMPLUGIN = 286,
@@ -165,6 +166,17 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 	dump_header(chunk);
 	DFFChunkInfo clumpHead;
 	switch(chunk->tag) {
+		case DFFTag_rwLIGHT: {
+			uint32_t unknown_int;
+			glm::vec4 unknown_vec;
+			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read struct head
+			fread(&unknown_int, sizeof(uint32_t), 1, fd);
+			fread(glm::value_ptr(unknown_vec), sizeof(float), 4, fd);
+			fread(&unknown_int, sizeof(uint32_t), 1, fd);
+
+			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //skip empty extension
+			break;
+		}
 		case DFFTag_rwCLUMP: {
 				fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
 				parse_chunk(dff_out,&clumpHead, fd,(DFFTags)chunk->tag);
@@ -312,6 +324,10 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 		}
 		case DFFTag_rwDATA: {
 			switch(last_tag) {
+				default: {
+					fseek(fd, chunk->size, SEEK_CUR);
+					break;
+				}
 				case DFFTag_rwFRAMELIST: {
 					uint32_t num_frames;
 					fread(&num_frames, sizeof(uint32_t), 1, fd);
@@ -414,6 +430,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					case EDFFTextureAddressMode_Mirror:
 						texrec->u_mode = ETextureAddressMode_Mirror;
 						break;
+					default:
 					case EDFFTextureAddressMode_Clamp:
 						texrec->u_mode = ETextureAddressMode_Clamp;
 						break;
@@ -431,6 +448,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					case EDFFTextureAddressMode_Mirror:
 						texrec->v_mode = ETextureAddressMode_Mirror;
 						break;
+					default:
 					case EDFFTextureAddressMode_Clamp:
 						texrec->v_mode = ETextureAddressMode_Clamp;
 						break;
