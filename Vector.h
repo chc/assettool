@@ -25,15 +25,11 @@ namespace Core {
 		}
 		Vector(int num_elements) {
 			initalize(num_elements);
-			printf("vec const this %p\n",this);
 		}
 		Vector() {
-			printf("vec def const this %p\n",this);
 			initalize(10);
 		}
 		~Vector() {
-			printf("free this %p\n",this);
-			printf("Free %p\n",items);
 			free(items);
 		}
 		void add(T val) {

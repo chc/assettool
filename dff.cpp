@@ -508,8 +508,6 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 	}
 }
 bool gta_rw_import_dff(ImportOptions* impOpts) {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
 	DFFInfo info;
