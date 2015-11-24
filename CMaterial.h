@@ -20,6 +20,15 @@ enum ETextureAddresingMode {
 	ETextureAddressMode_Clamp,
 	ETextureAddressMode_Border,
 };
+enum EMaterialFlags {
+	EMaterialFlag_HasAmbientIntensitiy = (1<<0),
+	EMaterialFlag_HasDiffuseIntensitiy = (1<<1),
+	EMaterialFlag_HasSpecIntensitiy = (1<<2),
+	EMaterialFlag_HasAmbientColour = (1<<3),
+	EMaterialFlag_HasDiffuseColour = (1<<4),
+	EMaterialFlag_HasSpecColour = (1<<5),
+	EMaterialFlag_HasShineStrength = (1<<6),
+};
 class CMaterial { 
 public:
 	CMaterial();
@@ -47,10 +56,26 @@ public:
 
 	void setTexture(CTexture *tex, int level);
 	CTexture* getTexture(int level);
+
+	void setAmbientReflectionCoeff(float v);
+	void setSpecularReflectionCoeff(float v);
+	void setDiffuseReflectionCoeff(float v);
+
+	float getAmbientReflectionCoeff();
+	float getSpecularReflectionCoeff();
+	float getDiffuseReflectionCoeff();
+
+	uint64_t getFlags();
 private:
+	uint64_t m_flags;
+
 	float m_specular_colour[4];
 	float m_ambient_colour[4];
 	float m_diffuse_colour[4];
+
+	float m_specular_intensity;
+	float m_ambient_intensity;
+	float m_diffuse_intensity;
 
 	float m_shine;
 	float m_shine_strength;

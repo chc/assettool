@@ -55,6 +55,7 @@ typedef struct {
 	glm::vec3 position;
 	uint32_t parent_frame;
 	uint32_t flags;
+	char name[64];
 } FrameInfo;
 
 typedef struct {
@@ -68,12 +69,23 @@ typedef struct {
 }TextureRecord;
 
 typedef struct {
-	uint32_t integer_1;
+	uint32_t flags;
 	uint32_t colour;
 	uint32_t integer_2;
 	uint32_t texture_count;
 	Core::Vector<TextureRecord *> textures;
-	glm::vec3 unknown;
+	
+	/**
+ * \ingroup fundtypesdatatypes
+ * \struct RwSurfaceProperties
+ *  This type represents the ambient, diffuse and
+ * specular reflection coefficients of a particular geometry. Each coefficient
+ * is specified in the range 0.0 (no reflection) to 1.0 (maximum reflection). 
+ * Note that currently the specular element is not used.
+ */
+	float ambient;   /**< ambient reflection coefficient */
+    float specular;  /**< specular reflection coefficient */
+    float diffuse;   /**< reflection coefficient */
 } MaterialRecord;
 
 typedef struct {
@@ -102,11 +114,13 @@ typedef struct {
 
 	Core::Map<int, Core::Vector<glm::ivec3>> m_index_buffers;
 
+	char name[64];
+
 } GeometryRecord;
 
 typedef struct {
 	std::vector<GeometryRecord *> m_geom_records;
-	
+	Core::Vector<FrameInfo *> m_frames;
 
 	MaterialRecord *last_material;
 	GeometryRecord *last_geometry;
@@ -194,8 +208,15 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 		}
 		case DFFTag_rwATOMIC: {
 			static int icount = 0;
+			uint32_t frame_index, geometry_index, unknown[2];
 			printf("Skipping atomic %d at %08X...\n",icount++,ftell(fd));
-			fseek(fd, chunk->size, SEEK_CUR); //skip atomic data
+			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
+			fread(&frame_index, sizeof(uint32_t), 1, fd);
+			fread(&geometry_index, sizeof(uint32_t), 1, fd);
+			fread(&unknown, sizeof(uint32_t), 2, fd);
+
+			strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
+			printf("Atomic name: %d %s\n", frame_index, dff_out->m_frames[frame_index]->name);
 			break;
 	  }
 		case DFFTag_rwMATERIALLIST: {
@@ -211,7 +232,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 		case DFFTag_rwEXTENSION: {
 			fseek(fd, chunk->size, SEEK_CUR);
 			if(last_tag == (DFFTags)-1) {
-				return false;
 			} else if(last_tag == DFFTag_rwMATERIAL) {
 				
 				/*
@@ -227,11 +247,14 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			MaterialRecord *mat = new MaterialRecord;
 			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read data header
 
-			fread(&mat->integer_1, sizeof(uint32_t), 1, fd);
+			fread(&mat->flags, sizeof(uint32_t), 1, fd);
 			fread(&mat->colour, sizeof(uint32_t), 1, fd);
 			fread(&mat->integer_2, sizeof(uint32_t), 1, fd);
 			fread(&mat->texture_count, sizeof(uint32_t), 1, fd);
-			fread(glm::value_ptr(mat->unknown), sizeof(float), 3, fd);
+			//fread(glm::value_ptr(mat->unknown), sizeof(float), 3, fd);
+			fread(&mat->ambient, sizeof(float), 1, fd);
+			fread(&mat->specular, sizeof(float), 1, fd);
+			fread(&mat->diffuse, sizeof(float), 1, fd);
 			dff_out->last_material = mat;
 
 			for(int i=0;i<mat->texture_count;i++) {
@@ -317,7 +340,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			}
 			dff_out->m_geom_records.push_back(rec);
 			dff_out->last_geometry = rec;
-			printf("Finish geom read at %08X\n",ftell(fd));
+			printf("Finish geom read at %08X %d\n",ftell(fd), dff_out->m_geom_records.size());
 			break;
 		}
 		case DFFTag_rwDATA: {
@@ -330,23 +353,24 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					uint32_t num_frames;
 					fread(&num_frames, sizeof(uint32_t), 1, fd);
 					printf("Num Frames: %d\n",num_frames);
-					FrameInfo frame;
+					FrameInfo *frame;
 					for(int i=0;i<num_frames;i++) {
-						fread(glm::value_ptr(frame.rotation_matrix), sizeof(float), 9, fd);
-						fread(glm::value_ptr(frame.position), sizeof(float), 3, fd);
-						fread(&frame.parent_frame, sizeof(uint32_t), 1, fd);
-						fread(&frame.flags, sizeof(uint32_t), 1, fd);
-						dump_frame_info(&frame);
+						frame = new FrameInfo;
+						memset(frame,0,sizeof(FrameInfo));
+						fread(glm::value_ptr(frame->rotation_matrix), sizeof(float), 9, fd);
+						fread(glm::value_ptr(frame->position), sizeof(float), 3, fd);
+						fread(&frame->parent_frame, sizeof(uint32_t), 1, fd);
+						fread(&frame->flags, sizeof(uint32_t), 1, fd);
+						dump_frame_info(frame);
+						dff_out->m_frames.add(frame);
 					}
-					char str[256];
 					//read frame names
 					for(int i=0;i<num_frames;i++) {
-						memset(&str,0,sizeof(str));
+
 						fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //data header
 						
 						fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read string
-						fread(&str, clumpHead.size, 1, fd);
-						printf("%s\n",str);
+						fread(&dff_out->m_frames[i]->name, clumpHead.size, 1, fd);
 
 					}
 
@@ -376,7 +400,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					fread(&mat.material_count, sizeof(uint32_t), 1, fd);
 					//fread(&mat.unknown, sizeof(uint32_t), 4, fd);
 					fseek(fd, sizeof(uint32_t)*mat.material_count,SEEK_CUR);
-					printf("Reading %d matmerials\n",mat.material_count);
+					printf("Reading %d materials\n",mat.material_count);
 
 					for(int i=0;i<mat.material_count;i++) {
 						fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
@@ -497,6 +521,9 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 	mat->setName(name);
 	Core::Iterator<Core::Vector<TextureRecord *>, TextureRecord *> it = matrec->textures.begin();
 	int level = 0;
+	mat->setAmbientReflectionCoeff(matrec->ambient);
+	mat->setDiffuseReflectionCoeff(matrec->diffuse);
+	mat->setSpecularReflectionCoeff(matrec->specular);
 	while(it != matrec->textures.end()) {
 		TextureRecord *texrec = *it;
 		sprintf(name,"tex/%s.PNG",texrec->texturename);
@@ -559,8 +586,10 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	while(it != info.m_geom_records.end()) {
 
 		output_meshes[mesh_buffer_idx] = new CMesh();
+		
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
 		GeometryRecord *g = *it;
+		output_meshes[mesh_buffer_idx]->setName(g->name);
 		float *temp_verts = (float *)malloc(g->vertex_count * sizeof(float) * 3);
 		float *temp_verts_p = temp_verts;
 		Core::Map<int, int> found_materials; 

@@ -436,6 +436,7 @@ bool chc_max_xml_import(ImportOptions *impOpts) {
 void export_xml_mesh(pugi::xml_document *m_mesh_xml, CMesh *mesh) {
 	pugi::xml_node main_node = m_mesh_xml->append_child();
 	main_node.set_name("mesh");
+	main_node.append_attribute("name") = mesh->getName();
 	pugi::xml_node xnode = main_node.append_child();
     xnode.set_name("verticies");
 	int num_verts = mesh->getNumVertices();
@@ -510,8 +511,44 @@ void export_xml_mesh(pugi::xml_document *m_mesh_xml, CMesh *mesh) {
 
 	
 }
+void export_xml_material(pugi::xml_document *m_mat_xml, CMaterial *mat) {
+	pugi::xml_node main_node = m_mat_xml->append_child();
+	main_node.set_name("material");
+	uint64_t flags = mat->getFlags();
+
+	main_node.append_attribute("name") = mat->getName();
+
+	if(flags & EMaterialFlag_HasAmbientIntensitiy)
+		main_node.append_attribute("ambient_reflection_coeff") = mat->getAmbientReflectionCoeff();
+	if(flags & EMaterialFlag_HasSpecIntensitiy)
+		main_node.append_attribute("specular_reflection_coeff") = mat->getSpecularReflectionCoeff();
+	if(flags & EMaterialFlag_HasDiffuseIntensitiy)
+		main_node.append_attribute("diffuse_reflection_coeff") = mat->getDiffuseReflectionCoeff();
+
+	CTexture *tex = NULL;
+	int i = 0;
+	while((tex = mat->getTexture(i)) != NULL) {
+		pugi::xml_node node = main_node.append_child();
+		node.set_name("texture");
+		node.append_attribute("path") = tex->getPath();
+		/*
+				mat->setTextureFilterMode(texrec->mat_filter_mode, level);
+		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);
+		*/
+
+		ETextureAddresingMode u, v;
+		mat->getTextureAddressModes(u, v, i);
+		node.append_attribute("address_u_mode") = u;
+		node.append_attribute("address_v_mode") = v;
+
+		ETextureFilterMode mode = mat->getTextureFilterMode(i);
+		node.append_attribute("filter_mode") = mode;
+		i++;
+	}
+	
+}
 bool chc_max_xml_export(ExportOptions *expOpts) {
-	pugi::xml_document m_mesh_xml;
+	pugi::xml_document m_mesh_xml, m_mat_xml;
 	char out_name[64];
 	sprintf(out_name,"%s.mesh.xml",expOpts->path);
 	std::ofstream mesh_xml_out;
@@ -524,6 +561,17 @@ bool chc_max_xml_export(ExportOptions *expOpts) {
 
 	mesh_xml_out.open(out_name);
 	m_mesh_xml.save(mesh_xml_out);
+	mesh_xml_out.close();
+
+	sprintf(out_name,"%s.mat.xml",expOpts->path);
+	std::ofstream mat_xml_out;
+
+	for(int i=0;i<pack->num_materials;i++) {
+		export_xml_material(&m_mat_xml, pack->m_materials[i]);
+	}
+
+	mat_xml_out.open(out_name);
+	m_mat_xml.save(mat_xml_out);
 	mesh_xml_out.close();
 
 	return false;

@@ -2,6 +2,7 @@
 #define _CMESH_H
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
 class CCollision;
@@ -55,7 +56,11 @@ public:
 
 	void setUseIndexedMaterials(bool set) { m_indexed_materials = set; };
 	bool getUseIndexedMaterials() { return m_indexed_materials; }
+
+	void setName(const char *name) { strcpy(m_name, name); }
+	const char *getName() { return m_name; }
 private:
+	char m_name[64];
 	CMaterial *mp_material;
 	CCollision *mp_collision;
 	float *m_uvws[MAX_MESH_TEXTURES];

@@ -13,6 +13,8 @@ CMaterial::CMaterial() {
 	memset(&m_name,0,sizeof(m_name));
 
 	memset(&m_textures,0,sizeof(m_textures));
+
+	m_flags = 0;
 }
 CMaterial::~CMaterial() {
 }
@@ -21,24 +23,31 @@ void CMaterial::setSpecColour(float r, float g, float b, float a) {
 	m_specular_colour[1] = g;
 	m_specular_colour[2] = b;
 	m_specular_colour[3] = a;
+
+	m_flags |= EMaterialFlag_HasSpecColour;
 }
 void CMaterial::setAmbientColour(float r, float g, float b, float a) {
 	m_ambient_colour[0] = r;
 	m_ambient_colour[1] = g;
 	m_ambient_colour[2] = b;
 	m_ambient_colour[3] = a;
+
+	m_flags |= EMaterialFlag_HasAmbientColour;
 }
 void CMaterial::setDiffuseColour(float r, float g, float b, float a) {
 	m_diffuse_colour[0] = r;
 	m_diffuse_colour[1] = g;
 	m_diffuse_colour[2] = b;
 	m_diffuse_colour[3] = a;
+
+	m_flags |= EMaterialFlag_HasDiffuseColour;
 }
 void CMaterial::setShine(float s) {
 	m_shine = s;
 }
 void CMaterial::setShineStrength(float s) {
 	m_shine_strength = s;
+	m_flags |= EMaterialFlag_HasShineStrength;
 }
 
 
@@ -96,4 +105,29 @@ void CMaterial::getTextureAddressModes(ETextureAddresingMode &u, ETextureAddresi
 }
 ETextureFilterMode CMaterial::getTextureFilterMode(int level) {
 	return m_filter_modes[level];
+}
+
+uint64_t CMaterial::getFlags() {
+	return m_flags;
+}
+void CMaterial::setAmbientReflectionCoeff(float v) {
+	m_ambient_intensity = v;
+	m_flags |= EMaterialFlag_HasAmbientIntensitiy;
+}
+void CMaterial::setSpecularReflectionCoeff(float v) {
+	m_specular_intensity = v;
+	m_flags |= EMaterialFlag_HasSpecIntensitiy;
+}
+void CMaterial::setDiffuseReflectionCoeff(float v) {
+	m_diffuse_intensity = v;
+	m_flags |= EMaterialFlag_HasDiffuseIntensitiy;
+}
+float CMaterial::getAmbientReflectionCoeff() {
+	return m_ambient_intensity;
+}
+float CMaterial::getSpecularReflectionCoeff() {
+	return m_specular_intensity;
+}
+float CMaterial::getDiffuseReflectionCoeff() {
+	return m_diffuse_intensity;
 }
