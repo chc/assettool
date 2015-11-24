@@ -3,8 +3,8 @@
 #include "dff.h"
 
 #include <stdlib.h>
-#include <vector>
-#include <map>
+#include "Vector.h"
+#include "Map.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -72,7 +72,7 @@ typedef struct {
 	uint32_t colour;
 	uint32_t integer_2;
 	uint32_t texture_count;
-	std::vector<TextureRecord *> textures;
+	Core::Vector<TextureRecord *> textures;
 	glm::vec3 unknown;
 } MaterialRecord;
 
@@ -98,9 +98,9 @@ typedef struct {
 
 	uint32_t unknown_postbs[2];
 
-	std::vector<MaterialRecord *> m_material_records;
+	Core::Vector<MaterialRecord *> m_material_records;
 
-	std::map<int, std::vector<glm::ivec3>> m_index_buffers;
+	Core::Map<int, Core::Vector<glm::ivec3>> m_index_buffers;
 
 } GeometryRecord;
 
@@ -225,7 +225,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 		 }
 		case DFFTag_rwMATERIAL: {
 			MaterialRecord *mat = new MaterialRecord;
-			memset(mat, 0, sizeof(mat));
 			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read data header
 
 			fread(&mat->integer_1, sizeof(uint32_t), 1, fd);
@@ -239,7 +238,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
 				parse_chunk(dff_out,&clumpHead, fd,(DFFTags)chunk->tag);
 			}
-			dff_out->last_geometry->m_material_records.push_back(mat);
+			dff_out->last_geometry->m_material_records.add(mat);
 			printf("Read mat extenstion at %08X\n",ftell(fd));
 			//read material extension
 			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
@@ -264,7 +263,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&rec->face_count, sizeof(uint32_t), 1, fd);
 			fread(&rec->vertex_count, sizeof(uint32_t), 1, fd);
 			fread(&rec->frame_count, sizeof(uint32_t), 1, fd);
-			rec->m_index_buffers = std::map<int, std::vector<glm::ivec3>>();
 			rec->uv_data = (glm::vec3**)malloc(sizeof(glm::vec3*) * rec->uvcount);
 			for(int i=0;i<rec->uvcount;i++) {
 				rec->uv_data[i] = new glm::vec3[rec->vertex_count];
@@ -471,7 +469,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 
 
 				
-					dff_out->last_material->textures.push_back(texrec);
+					dff_out->last_material->textures.add(texrec);
 
 					fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read empty extension..
 					break;
@@ -497,8 +495,7 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 	char name[64];
 	sprintf(name,"%p",mat);
 	mat->setName(name);
-
-	std::vector<TextureRecord *>::iterator it = matrec->textures.begin();
+	Core::Iterator<Core::Vector<TextureRecord *>, TextureRecord *> it = matrec->textures.begin();
 	int level = 0;
 	while(it != matrec->textures.end()) {
 		TextureRecord *texrec = *it;
@@ -511,11 +508,11 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 	}
 }
 bool gta_rw_import_dff(ImportOptions* impOpts) {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
 	DFFInfo info;
-	memset(&info,0,sizeof(info));
-	info.m_geom_records = std::vector<GeometryRecord *>();
 	while(!feof(fd)) {
 		fread(&head, sizeof(head), 1, fd);
 		if(!parse_chunk(&info,&head, fd)) 
@@ -532,7 +529,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	std::vector<GeometryRecord *>::iterator it = info.m_geom_records.begin();
 	int num_materials = 0, num_verts = 0;
 
-	std::map<int, std::vector<glm::ivec3>> m_index_buffers;
+	Core::Map<int, Core::Vector<glm::ivec3>> m_index_buffers;
 	while(it != info.m_geom_records.end()) {
 		GeometryRecord *rec = *it;
 
@@ -542,17 +539,14 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		uint16_t last_materialid = -1;
 		for(int i=0;i<rec->face_count;i++) {
 			glm::ivec4 indices = rec->indicies[i];
-			rec->m_index_buffers[indices.w].push_back(glm::ivec3(indices.x, indices.y, indices.z));
+			rec->m_index_buffers[indices.w].add(glm::ivec3(indices.x, indices.y, indices.z));
 		}
 		it++;
 	}
 
 	CMesh **output_meshes = (CMesh**)malloc(info.m_geom_records.size() * sizeof(CMesh *));
-	float *temp_verts = (float *)malloc(num_verts * sizeof(float) * 3);
-	float *temp_verts_p = temp_verts;
 	int mesh_id = 0;
 	int num_meshes = 0;
-	it = info.m_geom_records.begin();
 	uint16_t **index_buffers = (uint16_t**)malloc(num_materials * sizeof(uint16_t*));
 	memset(index_buffers,0,num_materials * sizeof(uint16_t*));
 	int mesh_vert_count = 0;
@@ -561,32 +555,30 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 	std::vector<CMaterial *> materials;
 
-	std::map<int, int> m_mat_instance_counts;
+	Core::Map<int, int> m_mat_instance_counts;
+
+	it = info.m_geom_records.begin();
 	while(it != info.m_geom_records.end()) {
+
 		output_meshes[mesh_buffer_idx] = new CMesh();
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
 		GeometryRecord *g = *it;
-		std::map<int, int> found_materials; 
+		float *temp_verts = (float *)malloc(g->vertex_count * sizeof(float) * 3);
+		float *temp_verts_p = temp_verts;
+		Core::Map<int, int> found_materials; 
 		for(int i=0;i<g->face_count;i++) {
 			uint32_t matid = g->indicies[i].w;
 			m_mat_instance_counts[matid]++;
 		}
 
-		struct MatIndicesInfo {
-			uint32_t *head;
-			uint32_t *p;
-			int num_indices;
-		};
-
-
-
 		output_meshes[mesh_buffer_idx]->setIndexLevels(g->m_index_buffers.size());
-		std::map<int, std::vector<glm::ivec3>>::iterator it2 = g->m_index_buffers.begin();
+		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3>>, Core::MapItem< int, Core::Vector<glm::ivec3>>*> it2 = g->m_index_buffers.begin();
 		int level = 0;
+		
 		while(it2 != g->m_index_buffers.end()) {
-			std::pair<int, std::vector<glm::ivec3>> item = *it2;
+			Core::MapItem< int, Core::Vector<glm::ivec3>>* item = *it2;
 
-			MaterialRecord *matrec = g->m_material_records[item.first];
+			MaterialRecord *matrec = g->m_material_records[item->key];
 
 			CMaterial *cmat = new CMaterial();
 			getMaterialFromRecord(matrec, cmat);
@@ -594,25 +586,25 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level);
 
 
-			uint32_t *indices = (uint32_t*) malloc(sizeof(uint32_t) * 3 * item.second.size());
+			uint32_t *indices = (uint32_t*) malloc(sizeof(uint32_t) * 3 * item->value.size());
 			uint32_t *p = indices;
 
-			std::vector<glm::ivec3>::iterator it3 = item.second.begin();
+			Core::Iterator<Core::Vector<glm::ivec3>, glm::ivec3> it3 = item->value.begin();
 
-			while(it3 != item.second.end()) {
+			while(it3 != item->value.end()) {
 				glm::ivec3 cur_indices = *it3;
 				*p++ = cur_indices.x;
 				*p++ = cur_indices.y;
 				*p++ = cur_indices.z;
 				it3++;
 			}
-			output_meshes[mesh_buffer_idx]->setIndices(indices, item.second.size(), level);
+			output_meshes[mesh_buffer_idx]->setIndices(indices, item->value.size(), level);
 			free(indices);
 
 			level++;
 			it2++;
 		}
-
+		
 		output_meshes[mesh_buffer_idx]->setNumVerts(g->vertex_count);
 		for(int i=0;i<g->vertex_count;i++) {
 			memcpy(temp_verts_p,glm::value_ptr(g->vertex_data[i]), sizeof(float) * 3);
@@ -628,11 +620,11 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			}
 			output_meshes[mesh_buffer_idx]->setNormals(temp_verts);
 		}
-		temp_verts_p = temp_verts;
 
 		if(g->uv_data) {
 
 			for(int i=0;i<g->uvcount;i++) {
+				temp_verts_p = temp_verts;
 				for(int j=0;j<g->vertex_count;j++) {
 					memcpy(temp_verts_p,glm::value_ptr(g->uv_data[i][j]), sizeof(float) * 3);
 					temp_verts_p += 3;
@@ -641,6 +633,8 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			}
 		}
 		temp_verts_p = temp_verts;
+
+		free(temp_verts);
 		mesh_buffer_idx++;
 		it++;
 	}

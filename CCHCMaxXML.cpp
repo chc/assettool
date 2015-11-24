@@ -10,6 +10,7 @@
 #include "crc32.h"
 #include "CCollision.h"
 #include <fstream>
+#include "Map.h"
 void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 	int size = std::distance(node.children().begin(),node.children().end());
 	float *vert_data = (float *)malloc(size * sizeof(float) * 3);
@@ -106,19 +107,15 @@ materialOutput *getMaterialOutput(const char *name, const char *attr) {
 	return NULL;
 }
 CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset) {
-
-	static std::vector<CTexture *> loaded_textures;
-	std::vector<CTexture *>::iterator it = loaded_textures.begin();
-	while(it != loaded_textures.end()) {
-		CTexture *t = *it;
-		if(strcmp(path,t->getPath()) == 0) {
-			return t;
-		}
-		it++;
+	static int cnt = 0;
+	static Core::Map<int, CTexture *> loaded_textures;
+	int checksum = crc32(0, path, strlen(path));
+	if(loaded_textures[checksum] != NULL) {
+		return loaded_textures[checksum];
 	}
 
 	FILE *fd = fopen(path,"rb");
-	if(!fd) return false;
+	if(!fd) return NULL;
 	CImage *tex = new CImage();
 	png_uint_32 width, height;
 	int bit_depth, color_type;
@@ -226,14 +223,19 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 
 	tex->setColourData(EColourType_32BPP,col_data, sizeof(uint32_t) * width * height);
 
+
+	for (int row = 0; row < height; row++)
+	{
+		png_free(png_ptr, row_pointers[row]);
+	}
+	png_free(png_ptr, row_pointers);
+
 	/* clean up after the read, and free any memory allocated - REQUIRED */
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 	/* close the file */
 	fclose(fd);
 
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	
 
 	CTexture *real_tex = new CTexture();
 
@@ -243,7 +245,7 @@ CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offse
 	real_tex->setImage(tex);
 	real_tex->setPath(path);
 
-	loaded_textures.push_back(real_tex);
+	loaded_textures[checksum] = real_tex;
 	return real_tex;
 }
 

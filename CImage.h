@@ -101,7 +101,7 @@ public:
 
 	void compress() {
 		int level = GetDXTLevel();
-		if(level == 0) return;
+		if(level == 0 || (m_colourType == EColourType_DXT1 || m_colourType == EColourType_DXT3 || m_colourType == EColourType_DXT5)) return;
 		EColourType type;
 		int flags = 0;
 		switch(level) {
