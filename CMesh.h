@@ -59,6 +59,12 @@ public:
 
 	void setName(const char *name) { strcpy(m_name, name); }
 	const char *getName() { return m_name; }
+
+	void setDefaultHierarchicalPosition(float *pos);
+	void setDefaultHierarchicalRotation(float *pos);
+
+	float *getDefaultHierarchialPosition();
+	float *getDefaultHiearchialRotation();
 private:
 	char m_name[64];
 	CMaterial *mp_material;
@@ -77,5 +83,9 @@ private:
 	CMeshPrimType m_prim_type;
 	bool m_indexed_materials;
 	int m_num_materials;
+
+
+	float default_hierarchical_position[3];
+	float default_hierarchical_rotation[9];
 };
 #endif //_CMESH_H

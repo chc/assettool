@@ -66,7 +66,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		uint32_t *c = colours;
 		for(int i=0;i<num_verts;i++) {
 			uint32_t colour = *c++;
-			float r = ((colour>>24)&0xff) / 255.0,g = ((colour>>16)&0xff) / 255.0,b= ((colour>>8)&0xff) / 255.0,a = (colour&0xff) / 255.0;
+			float r = ((colour>>24)&0xff) / 255.0,g = ((colour>>16)&0xff) / 255.0,b = ((colour>>8)&0xff) / 255.0,a = (colour&0xff) / 255.0;
 			*p++ = r;
 			*p++ = g;
 			*p++ = b;
@@ -115,7 +115,12 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		num_materials = 1;
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
 		CMaterial *mat = mesh->getMaterial();
-		material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
+		if(mat) {
+			material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
+		} else {
+			material_checksum = 0;
+		}
+
 		fwrite(&material_checksum,sizeof(uint32_t),1,fd);
 	} else {
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
@@ -136,6 +141,9 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 	uint32_t group_checksum = mesh->getGroupId();
 	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
+
+	fwrite(mesh->getDefaultHierarchialPosition(), sizeof(float), 3, fd);
+	fwrite(mesh->getDefaultHiearchialRotation(), sizeof(float), 9, fd);
 
 	float *uv_sets[MAX_MESH_TEXTURES];
 	memset(&uv_sets,0,sizeof(uv_sets));

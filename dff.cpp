@@ -53,7 +53,7 @@ enum EDFFTextureAddresingModes {
 	EDFFTextureAddressMode_Border,
 };
 typedef struct {
-	glm::mat3 rotation_matrix;
+	glm::mat3x3 rotation_matrix;
 	glm::vec3 position;
 	uint32_t parent_frame;
 	uint32_t flags;
@@ -119,6 +119,9 @@ typedef struct {
 	char name[64];
 
 	FrameInfo *frame;
+
+	glm::vec3 default_hierarchical_position;
+	glm::mat3x3 default_hierarchical_rotation;
 
 } GeometryRecord;
 
@@ -219,8 +222,12 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&geometry_index, sizeof(uint32_t), 1, fd);
 			fread(&unknown, sizeof(uint32_t), 2, fd);
 
-			if(dff_out->m_geom_records[geometry_index]->frame == NULL || dff_out->m_frames[frame_index]->parent_frame == -1) {
+			if(dff_out->m_geom_records[geometry_index]->frame == NULL) {
 				dff_out->m_geom_records[geometry_index]->frame = dff_out->m_frames[frame_index];
+				printf("pos: ");
+				dump_vec3(dff_out->m_frames[frame_index]->position);
+				memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float)*3);
+				memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_rotation, glm::value_ptr(dff_out->m_frames[frame_index]->rotation_matrix), sizeof(float)*9);
 				strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
 			}
 			printf("Atomic name: %d %s\n", frame_index, dff_out->m_frames[frame_index]->name);
@@ -538,7 +545,7 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 	if(r_i == 60 && g_i == 255 && b_i == 0 && a_i == 255) { //primary colour
 		const char *mat_type = "TYPE_PRIMARY_COLOUR";
 		mat->setIdentifierChecksum(crc32(0, mat_type, strlen(mat_type)));
-	} else if(r_i == 255 && g_i == 0 && b_i == 175 && a_i == 255) { //primary colour
+	} else if(r_i == 255 && g_i == 0 && b_i == 175 && a_i == 255) { //secondary colour
 		const char *mat_type = "TYPE_SECONDARY_COLOUR";
 		mat->setIdentifierChecksum(crc32(0, mat_type, strlen(mat_type)));
 	}
@@ -619,6 +626,10 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			uint32_t matid = g->indicies[i].w;
 			m_mat_instance_counts[matid]++;
 		}
+
+		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalPosition(glm::value_ptr(g->default_hierarchical_position));
+		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalRotation(glm::value_ptr(g->default_hierarchical_rotation));
+
 
 		output_meshes[mesh_buffer_idx]->setIndexLevels(g->m_index_buffers.size());
 		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3>>, Core::MapItem< int, Core::Vector<glm::ivec3>>*> it2 = g->m_index_buffers.begin();

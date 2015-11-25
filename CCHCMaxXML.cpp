@@ -437,7 +437,15 @@ void export_xml_mesh(pugi::xml_document *m_mesh_xml, CMesh *mesh) {
 	pugi::xml_node main_node = m_mesh_xml->append_child();
 	main_node.set_name("mesh");
 	main_node.append_attribute("name") = mesh->getName();
+
 	pugi::xml_node xnode = main_node.append_child();
+	xnode.set_name("default_transforms");
+	float *pos = mesh->getDefaultHierarchialPosition();
+	xnode.append_attribute("position_x") = *pos++;
+	xnode.append_attribute("position_y") = *pos++;
+	xnode.append_attribute("position_z") = *pos++;
+
+	xnode = main_node.append_child();
     xnode.set_name("verticies");
 	int num_verts = mesh->getNumVertices();
 	float *verts = mesh->getVerticies();

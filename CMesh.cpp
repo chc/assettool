@@ -18,6 +18,12 @@ CMesh::CMesh() {
 	m_indexed_materials = false;
 	m_prim_type = CMeshPrimType_TriangleList;
 	memset(&m_uvws, 0, sizeof(m_uvws));
+
+	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
+	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
+	default_hierarchical_rotation[0] = 1.0;
+	default_hierarchical_rotation[3] = 1.0;
+	default_hierarchical_rotation[6] = 1.0;
 }
 CMesh::~CMesh() {
 	if(m_vertices)
@@ -119,4 +125,18 @@ void CMesh::setCollision(CCollision *collision) {
 }
 CCollision *CMesh::getCollision() {
 	return mp_collision;
+}
+void CMesh::setDefaultHierarchicalPosition(float *pos) {
+	memcpy(default_hierarchical_position, pos, sizeof(float)*3);
+
+}
+void CMesh::setDefaultHierarchicalRotation(float *pos) {
+	memcpy(default_hierarchical_rotation, pos, sizeof(float)*16);
+}
+
+float *CMesh::getDefaultHierarchialPosition() {
+	return (float *)&default_hierarchical_position;
+}
+float *CMesh::getDefaultHiearchialRotation() {
+	return (float *)&default_hierarchical_rotation;
 }
