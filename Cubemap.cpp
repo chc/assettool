@@ -4,6 +4,7 @@
 #include "pngExporter.h"
 #include "ctexturecollection.h"
 #include <Windows.h>
+#include "crc32.h"
 struct CubemapParams {
 	CTexture *tex;
 	uint8_t current_cube_type;
@@ -63,7 +64,7 @@ bool gen_import_cubemap(ImportOptions* opts) {
 	} while (FindNextFile(hndl, &findData));
 
 	FindClose(hndl);
-
+	tex->setChecksum(crc32(0, opts->outpath, strlen(opts->outpath)));
 	CTextureCollection *tex_col = new CTextureCollection();
 	tex_col->AddTexture(tex);
 	ExportOptions expOpts;
