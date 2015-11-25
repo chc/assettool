@@ -277,6 +277,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			rec->vertex_count = 0;
 			rec->face_count = 0;
 			rec->normal_data = NULL;
+			rec->vertex_colours = NULL;
 			rec->vertex_data = NULL;
 			rec->uv_data = NULL;
 			rec->indicies = NULL;
@@ -529,6 +530,7 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 		sprintf(name,"tex/%s.PNG",texrec->texturename);
 		CTexture *tex = load_texture(name, true, true, 0.0, 0.0);
 		mat->setTexture(tex, level);
+		mat->setBlendMode(EBlendMode_Modulate, level);
 		mat->setTextureFilterMode(texrec->mat_filter_mode, level);
 		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);
 		it++;
@@ -584,7 +586,10 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 	it = info.m_geom_records.begin();
 	while(it != info.m_geom_records.end()) {
-
+		if(strstr((*it)->name, "dummy")  || strstr((*it)->name, "_vlo"))  {
+			it++;
+			continue;
+		}
 		output_meshes[mesh_buffer_idx] = new CMesh();
 		
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
@@ -638,6 +643,16 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			temp_verts_p += 3;
 		}
 		output_meshes[mesh_buffer_idx]->setVerticies(temp_verts);
+		temp_verts_p = temp_verts;
+
+		uint32_t *cols = (uint32_t*)temp_verts;
+		if(g->vertex_colours) {
+			for(int i=0;i<g->vertex_count;i++) {
+				*cols++ = g->vertex_colours[i];
+			}
+			output_meshes[mesh_buffer_idx]->setColours((uint32_t*)temp_verts);
+		}
+
 		temp_verts_p = temp_verts;
 
 		if(g->normal_data) {

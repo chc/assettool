@@ -29,6 +29,27 @@ enum EMaterialFlags {
 	EMaterialFlag_HasSpecColour = (1<<5),
 	EMaterialFlag_HasShineStrength = (1<<6),
 };
+enum EBlendMode
+{
+	EBlendMode_Diffuse,								// ( 0 - 0 ) * 0 + Src
+	EBlendMode_Add,									// ( Src - 0 ) * Src + Dst
+	EBlendMode_Fixed,								// ( Src - 0 ) * Fixed + Dst
+	EBlendMode_Subtract,								// ( 0 - Src ) * Src + Dst
+	EBlendMode_Subtract_Fixed,								// ( 0 - Src ) * Fixed + Dst
+	EBlendMode_Blend,									// ( Src * Dst ) * Src + Dst	
+	EBlendMode_Blend_Fixed,							// ( Src * Dst ) * Fixed + Dst	
+	EBlendMode_Modulate,								// ( Dst - 0 ) * Src + 0
+	EBlendMode_Modulate_Fixed,							// ( Dst - 0 ) * Fixed + 0	
+	EBlendMode_Brighten,								// ( Dst - 0 ) * Src + Dst
+	EBlendMode_Brighten_Fixed,							// ( Dst - 0 ) * Fixed + Dst	
+	EBlendMode_GlossMap,								// Specular = Specular * Src	- special mode for gloss mapping
+	EBlendMode_Previous_Mask,					// ( Src - Dst ) * Dst + Dst
+	EBlendMode_Inverse_Previous_Mask,			// ( Dst - Src ) * Dst + Src
+	EBlendMode_Modulate_Colour,	// ( Dst - 0 ) * Src(col) + 0	- special mode for the shadow.
+	EBlendMode_OneInv_SrcAlpha,	//								- special mode for imposter rendering.
+
+	vNUM_BLEND_MODES
+}; 
 class CMaterial { 
 public:
 	CMaterial();
@@ -64,7 +85,8 @@ public:
 	float getAmbientReflectionCoeff();
 	float getSpecularReflectionCoeff();
 	float getDiffuseReflectionCoeff();
-
+	EBlendMode getBlendMode(int level);
+	void setBlendMode(EBlendMode mode, int level);
 	uint64_t getFlags();
 private:
 	uint64_t m_flags;
@@ -85,5 +107,7 @@ private:
 	ETextureFilterMode m_filter_modes[MAX_MATERIAL_TEXTURES];
 	ETextureAddresingMode m_address_modes[MAX_MATERIAL_TEXTURES][3]; //UVW
 	CTexture* m_textures[MAX_MATERIAL_TEXTURES];
+
+	EBlendMode m_texture_blend_modes[MAX_MATERIAL_TEXTURES];
 };
 #endif //_CMESH_H

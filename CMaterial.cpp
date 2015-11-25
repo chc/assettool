@@ -131,3 +131,9 @@ float CMaterial::getSpecularReflectionCoeff() {
 float CMaterial::getDiffuseReflectionCoeff() {
 	return m_diffuse_intensity;
 }
+EBlendMode CMaterial::getBlendMode(int level) {
+	return m_texture_blend_modes[level];
+}
+void CMaterial::setBlendMode(EBlendMode mode, int level) {
+	m_texture_blend_modes[level] = mode;
+}

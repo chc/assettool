@@ -43,10 +43,12 @@ namespace Core {
 		T2 &operator[](T idx) {
 			MapItem<T, T2> *item = findItemByKey(idx);
 			if(item) {
+				item->initalized = true;
 				return item->value;
 			}
 			add(idx, NULL);
 			item = findItemByKey(idx);
+			item->initalized = true;
 			return item->value;
 		}
 		void add(T key, T2 *val) {

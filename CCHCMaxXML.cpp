@@ -543,6 +543,7 @@ void export_xml_material(pugi::xml_document *m_mat_xml, CMaterial *mat) {
 
 		ETextureFilterMode mode = mat->getTextureFilterMode(i);
 		node.append_attribute("filter_mode") = mode;
+		node.append_attribute("blend_mode") = mat->getBlendMode(i);
 		i++;
 	}
 	
