@@ -260,6 +260,7 @@ bool png_import_img(ImportOptions *impOpts) {
 	expOpts.path = impOpts->outpath;
 	expOpts.srcPath = impOpts->path;
 	expOpts.dataClass = (void *)tex;
+	expOpts.extra = impOpts->extra;
 	expOpts.args = impOpts->expArgs;
 	impOpts->exporter(&expOpts);
 	return true;

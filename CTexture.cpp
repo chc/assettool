@@ -4,6 +4,8 @@
 
 #include <squish.h>
 CTexture::CTexture() {
+	memset(&m_image, 0, sizeof(m_image));
+	is_cube_map = false;
 }
 CTexture::~CTexture() {
 }
@@ -32,13 +34,19 @@ const char *CTexture::getPath() {
 	return (const char *)&path;
 }
 
-void CTexture::setImage(CImage *img) {
-	m_image = img;
+void CTexture::setImage(CImage *img,uint8_t type) {
+	if (type != -1) is_cube_map = true;
+	if (type == -1) type = 0;
+	m_image[type] = img;
 }
-CImage *CTexture::getImage() {
-	return m_image;
+CImage *CTexture::getImage(uint8_t type) {
+	if (type == -1) type = 0;
+	return m_image[type];
 }
 
+bool CTexture::isCubeMap() {
+	return is_cube_map;
+}
 uint32_t CTexture::getChecksum() {
 	return m_checksum;
 }
@@ -47,5 +55,9 @@ void CTexture::setChecksum(uint32_t checksum) {
 }
 
 void CTexture::compress() {
-	m_image->compress();
+	for (int i = 0; i < ECUBEMAPTYPE_COUNT; i++) {
+		if(m_image[i] != NULL)
+			m_image[i]->compress();
+	}
+	
 }

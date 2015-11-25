@@ -20,8 +20,9 @@ namespace Core {
 			return Iterator<Vector<T>, T>(this, size());
 		}
 		Vector(const Vector<T> &v) {
-			item_count = 0;
-			items = NULL;
+			item_count = v.item_count;
+			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * v.item_count);
+			memcpy(items, v.items, sizeof(VectorItem<T>) * v.item_count);
 		}
 		Vector(int num_elements) {
 			initalize(num_elements);

@@ -1,10 +1,12 @@
+#include "CCHCEngine.h"
 #include "CHCMesh.h"
 #include "CMesh.h"
 #include "crc32.h"
 #include "ScenePack.h"
 #include "CImage.h"
 #include <algorithm>
-
+#include "CHCTexture.h"
+#include "ctexturecollection.h"
 #define CHCMESH_VERSION 3
 enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_ColAsInt = (1<<0),
@@ -19,29 +21,6 @@ enum ECHCPrimType { //must corrospond to game
 };
 bool chc_engine_import_mesh(ImportOptions* opts) {
 	return false;
-}
-
-void write_texture(CTexture *tex, FILE *fd) {
-	tex->compress();
-
-	uint32_t w,h;
-	CImage *img = tex->getImage();
-	img->getDimensions(w,h);
-
-	uint32_t checksum = tex->getChecksum();
-	fwrite(&checksum, sizeof(uint32_t), 1, fd);
-	fwrite(&w,sizeof(uint32_t),1,fd);
-	fwrite(&h,sizeof(uint32_t),1,fd);
-	char colType = img->getColourType();
-	fwrite(&colType,sizeof(char),1,fd);
-
-	void *data = img->getRawData();
-
-	uint32_t size = img->getDataSize();
-	fwrite(&size, sizeof(uint32_t), 1, fd);
-	fwrite(data,size,1,fd);
-
-
 }
 
 void write_mesh(CMesh *mesh, FILE* fd) {
@@ -279,31 +258,27 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 	
 	fclose(fd);
 
-	sprintf(fname,"%s.tex",opts->path);
-	FILE *texfd = fopen(fname, "wb");
 
-	std::vector<CTexture *> textures;
+	//run textures through CHC tex exporter
+	CTextureCollection *texture_collection = new CTextureCollection();
 	for(int i=0;i<scenepack->num_materials;i++) {
 		//materials[i]->getTexture(0)
 		for(int j=0;j<MAX_MATERIAL_TEXTURES;j++) {
 			CTexture *tex = scenepack->m_materials[i]->getTexture(j);
 			if(tex != NULL) {
-				textures.push_back(tex);
+				texture_collection->AddTexture(tex);
 			}
 		}		
 	}
-	std::sort( textures.begin(), textures.end() );
-	textures.erase( std::unique( textures.begin(), textures.end() ), textures.end() );
 
-	uint32_t num_textures = textures.size();
-	fwrite(&num_textures,sizeof(uint32_t),1,texfd);
-
-	std::vector<CTexture *>::iterator it = textures.begin();
-	while(it != textures.end()) {
-		write_texture(*it, texfd);
-		it++;
-	}
-	fclose(texfd);
+	ExportOptions texopts;
+	memset(&texopts, 0, sizeof(texopts));
+	texopts.args = opts->args;
+	texopts.dataClass = (void *)texture_collection;
+	sprintf(fname, "%s.tex", opts->path);
+	texopts.path = fname;
+	texopts.srcPath = opts->srcPath;
+	chc_tex_export_img(&texopts);
 
 
 	if(scenepack->m_collision) {

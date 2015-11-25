@@ -1,5 +1,6 @@
 #ifndef _CORE_MAP_H
 #define _CORE_MAP_H
+
 #include "Iterator.h"
 namespace Core {
 	template<typename T, typename T2>
@@ -22,6 +23,9 @@ namespace Core {
 			return Iterator<Map<T, T2>, MapItem<T, T2> *>(this, size());
 		}
 		Map(const Map& m) {
+			num_elements = m.num_elements;
+			items = (MapItem<T, T2>*)malloc(sizeof(MapItem<T, T2>) * m.num_elements);
+			memcpy(items, m.items, sizeof(MapItem<T, T2>) * m.num_elements);
 		}
 		Map() {
 			initialize(10);

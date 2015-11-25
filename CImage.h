@@ -14,6 +14,7 @@ enum EColourType {
 	EColourType_DXT2,
 	EColourType_DXT3,
 	EColourType_DXT5,
+	EColourType_CubeMap, //not really a colour type, instead the images will follow with their types
 };
 class CImage {
 public:

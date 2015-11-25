@@ -14,6 +14,7 @@ typedef struct {
 	FileType type; //FileType_Texture means void *dataClass = CImage *
 	const char *args;
 	void *dataClass;
+	void *extra;
 } ExportOptions;
 typedef bool (*ExportFunc)(ExportOptions *opts);
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
 	const char *outpath;
 	const char *expArgs;
 	ExportFunc exporter;
+	void *extra;
 }ImportOptions;
 typedef bool (*ImportFunc)(ImportOptions* opts);
 typedef struct {
