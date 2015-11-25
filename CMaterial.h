@@ -88,7 +88,11 @@ public:
 	EBlendMode getBlendMode(int level);
 	void setBlendMode(EBlendMode mode, int level);
 	uint64_t getFlags();
+
+	void setIdentifierChecksum(uint32_t checksum); //internal game checksum, type_vehicle_main_body, etc
+	uint32_t getIdentifierChecksum();
 private:
+	uint32_t m_identifier_checksum;
 	uint64_t m_flags;
 
 	float m_specular_colour[4];

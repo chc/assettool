@@ -14,6 +14,8 @@
 #include "CMesh.h"
 #include "ScenePack.h"
 
+#include "crc32.h"
+
 typedef struct {
 	uint32_t tag;
 	uint32_t size;
@@ -116,6 +118,8 @@ typedef struct {
 
 	char name[64];
 
+	FrameInfo *frame;
+
 } GeometryRecord;
 
 typedef struct {
@@ -215,7 +219,10 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&geometry_index, sizeof(uint32_t), 1, fd);
 			fread(&unknown, sizeof(uint32_t), 2, fd);
 
-			strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
+			if(dff_out->m_geom_records[geometry_index]->frame == NULL || dff_out->m_frames[frame_index]->parent_frame == -1) {
+				dff_out->m_geom_records[geometry_index]->frame = dff_out->m_frames[frame_index];
+				strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
+			}
 			printf("Atomic name: %d %s\n", frame_index, dff_out->m_frames[frame_index]->name);
 			break;
 	  }
@@ -274,6 +281,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
 			GeometryRecord *rec = new GeometryRecord;
 			//memset(rec,0,sizeof(GeometryRecord));
+			rec->frame = NULL;
 			rec->vertex_count = 0;
 			rec->face_count = 0;
 			rec->normal_data = NULL;
@@ -513,10 +521,10 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 }
 
 CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset); //in cchcmaxxml.cpp
-void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
-	float r = ((matrec->colour>>24)&0xff) / 255.0,g = ((matrec->colour>>16)&0xff) / 255.0,b= ((matrec->colour>>8)&0xff) / 255.0,a = (matrec->colour&0xff) / 255.0;
+void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecord *geom_rec) {
+	float a = ((matrec->colour>>24)&0xff) / 255.0,b = ((matrec->colour>>16)&0xff) / 255.0,g= ((matrec->colour>>8)&0xff) / 255.0,r = (matrec->colour&0xff) / 255.0;
+	uint8_t a_i = ((matrec->colour>>24)&0xff), b_i = ((matrec->colour>>16)&0xff),g_i= ((matrec->colour>>8)&0xff),r_i = (matrec->colour&0xff);
 	mat->getDiffuseColour(r,g,b,a);
-
 	char name[64];
 	sprintf(name,"%p",mat);
 	mat->setName(name);
@@ -525,6 +533,15 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat) {
 	mat->setAmbientReflectionCoeff(matrec->ambient);
 	mat->setDiffuseReflectionCoeff(matrec->diffuse);
 	mat->setSpecularReflectionCoeff(matrec->specular);
+
+
+	if(r_i == 60 && g_i == 255 && b_i == 0 && a_i == 255) { //primary colour
+		const char *mat_type = "TYPE_PRIMARY_COLOUR";
+		mat->setIdentifierChecksum(crc32(0, mat_type, strlen(mat_type)));
+	} else if(r_i == 255 && g_i == 0 && b_i == 175 && a_i == 255) { //primary colour
+		const char *mat_type = "TYPE_SECONDARY_COLOUR";
+		mat->setIdentifierChecksum(crc32(0, mat_type, strlen(mat_type)));
+	}
 	while(it != matrec->textures.end()) {
 		TextureRecord *texrec = *it;
 		sprintf(name,"tex/%s.PNG",texrec->texturename);
@@ -613,7 +630,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			MaterialRecord *matrec = g->m_material_records[item->key];
 
 			CMaterial *cmat = new CMaterial();
-			getMaterialFromRecord(matrec, cmat);
+			getMaterialFromRecord(matrec, cmat, g);
 			materials.push_back(cmat);
 			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level);
 

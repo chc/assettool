@@ -37,7 +37,6 @@ namespace Core {
 			if(item == NULL) {
 				AddItemSlots(item_count*2);
 				item = findFirstFreeItem();
-
 			}
 			if(item) {
 				item->initalized = true;

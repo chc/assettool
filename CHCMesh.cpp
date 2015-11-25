@@ -184,6 +184,9 @@ void write_material(CMaterial *material, FILE* fd) {
 	printf("Writing Mat: %08X %s\n", checksum, material->getName());
 	fwrite(&checksum,sizeof(uint32_t),1,fd);
 
+	checksum = material->getIdentifierChecksum();
+	fwrite(&checksum, sizeof(uint32_t), 1, fd);
+
 	float col[4], s;
 
 	material->getSpecColour(col[0],col[1],col[2],col[3]);

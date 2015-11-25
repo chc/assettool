@@ -9,6 +9,7 @@ CMaterial::CMaterial() {
 
 	m_shine = 0.0;
 	m_shine_strength = 0.0;
+	m_identifier_checksum = 0;
 
 	memset(&m_name,0,sizeof(m_name));
 
@@ -136,4 +137,10 @@ EBlendMode CMaterial::getBlendMode(int level) {
 }
 void CMaterial::setBlendMode(EBlendMode mode, int level) {
 	m_texture_blend_modes[level] = mode;
+}
+void CMaterial::setIdentifierChecksum(uint32_t checksum) {
+	m_identifier_checksum = checksum;
+}
+uint32_t CMaterial::getIdentifierChecksum() {
+	return m_identifier_checksum;
 }

@@ -8,7 +8,7 @@ typedef struct _IMGV2Head {
 
 typedef struct _IMGV2File {
 	uint32_t offset;
-	uint16_t streamsize;;
+	uint16_t streamsize;
 	uint16_t size;
 	char name[24];
 } IMGV2File;
