@@ -64,7 +64,7 @@ bool gen_import_cubemap(ImportOptions* opts) {
 	} while (FindNextFile(hndl, &findData));
 
 	FindClose(hndl);
-	tex->setChecksum(crc32(0, opts->outpath, strlen(opts->outpath)));
+	tex->setChecksum(crc32(0, opts->path, strlen(opts->path)));
 	CTextureCollection *tex_col = new CTextureCollection();
 	tex_col->AddTexture(tex);
 	ExportOptions expOpts;

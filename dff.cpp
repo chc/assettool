@@ -604,7 +604,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	
 	int index_buffer_idx = 0, mesh_buffer_idx = 0;
 
-	std::vector<CMaterial *> materials;
+	Core::Vector<CMaterial *> materials;
 
 	Core::Map<int, int> m_mat_instance_counts;
 
@@ -642,7 +642,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 			CMaterial *cmat = new CMaterial();
 			getMaterialFromRecord(matrec, cmat, g);
-			materials.push_back(cmat);
+			materials.add(cmat);
 			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level);
 
 
@@ -715,7 +715,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	memset(&scene,0,sizeof(scene));
 	scene.m_meshes = (CMesh**)output_meshes;
 	CMaterial **output_mats = (CMaterial**)malloc(materials.size() * sizeof(CMaterial*));
-	std::vector<CMaterial *>::iterator matit = materials.begin();
+	Core::Iterator<Core::Vector<CMaterial *>, CMaterial*> matit = materials.begin();
 	int i =0;
 	while(matit != materials.end()) {
 		output_mats[i++] = *matit;

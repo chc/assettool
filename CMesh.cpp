@@ -21,9 +21,6 @@ CMesh::CMesh() {
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
-	default_hierarchical_rotation[0] = 1.0;
-	default_hierarchical_rotation[3] = 1.0;
-	default_hierarchical_rotation[6] = 1.0;
 }
 CMesh::~CMesh() {
 	if(m_vertices)

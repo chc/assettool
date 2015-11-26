@@ -14,6 +14,8 @@ enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_HasCol = (1<<2),
 	ECHCMeshFlag_HasUVs = (1<<3),
 	ECHCMeshFlag_MaterialIndexID = (1<<4),
+	ECHCMeshFlag_HasDefaultHiearchyPos = (1<<5),
+	ECHCMeshFlag_HasDefaultHiearchyRot = (1<<6),
 };
 enum ECHCPrimType { //must corrospond to game
 	ECHCPrimType_TriangleList,
@@ -85,6 +87,22 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	if(mesh->getUseIndexedMaterials()) {
 		flags |= ECHCMeshFlag_MaterialIndexID;
 	}
+	float *default_hiearchy_pos = mesh->getDefaultHierarchialPosition();
+	float *default_hiearchy_rot = mesh->getDefaultHiearchialRotation();
+	
+	if(default_hiearchy_pos) {
+		if(!(default_hiearchy_pos[0] = 0.0 && default_hiearchy_pos[1] == 0.0 && default_hiearchy_pos[2] == 0.0)) {
+			flags |= ECHCMeshFlag_HasDefaultHiearchyPos;
+		}
+	}
+
+	if(default_hiearchy_rot) {
+		for(int i=0;i<9;i++) {
+			if(default_hiearchy_rot[i] != 0.0) {
+				flags |= ECHCMeshFlag_HasDefaultHiearchyRot;
+			}
+		}
+	}
 
 	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
@@ -121,8 +139,12 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t group_checksum = mesh->getGroupId();
 	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
 
-	fwrite(mesh->getDefaultHierarchialPosition(), sizeof(float), 3, fd);
-	fwrite(mesh->getDefaultHiearchialRotation(), sizeof(float), 9, fd);
+	if(flags & ECHCMeshFlag_HasDefaultHiearchyPos) {
+		fwrite(mesh->getDefaultHierarchialPosition(), sizeof(float), 3, fd);
+	}
+	if(flags & ECHCMeshFlag_HasDefaultHiearchyRot)  {
+		fwrite(mesh->getDefaultHiearchialRotation(), sizeof(float), 9, fd);
+	}
 
 	float *uv_sets[MAX_MESH_TEXTURES];
 	memset(&uv_sets,0,sizeof(uv_sets));

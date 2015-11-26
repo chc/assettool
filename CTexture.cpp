@@ -35,12 +35,12 @@ const char *CTexture::getPath() {
 }
 
 void CTexture::setImage(CImage *img,uint8_t type) {
-	if (type != -1) is_cube_map = true;
-	if (type == -1) type = 0;
+	if (type < 0 || type > ECUBEMAPTYPE_COUNT) type = 0;
+	else is_cube_map = true;
 	m_image[type] = img;
 }
 CImage *CTexture::getImage(uint8_t type) {
-	if (type == -1) type = 0;
+	if (type < 0 || type > ECUBEMAPTYPE_COUNT) type = 0;
 	return m_image[type];
 }
 
