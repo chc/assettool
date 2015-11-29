@@ -5,6 +5,7 @@
 #include <string.h>
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
+class CKeyframeSequence;
 class CCollision;
 enum CMeshPrimType {
 	CMeshPrimType_Quads,
@@ -65,6 +66,12 @@ public:
 
 	float *getDefaultHierarchialPosition();
 	float *getDefaultHiearchialRotation();
+
+	void setNumKeyframeSequences(int num_sequences);//call before setting any as the array will be NULL
+	int getNumKeyframeSequences();
+
+	void setKeyframeSequence(int sequence_index, CKeyframeSequence *sequence);
+	CKeyframeSequence getKeyframeSequence(int sequence_index);
 private:
 	char m_name[64];
 	CMaterial *mp_material;

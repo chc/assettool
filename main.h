@@ -32,4 +32,5 @@ typedef struct  {
 	const char *inFmtArgs;
 } assetToolState;
 
+#define MAX_NAME 24
 #endif //_MAIN_H

@@ -2,7 +2,7 @@
 #define _CGTASA_H
 #include "CGame.h"
 
-
+#define GTA_FRAMES_PER_SECOND 60.0
 enum EGTARWVersions {
 	//san andreas versions
 	ERWVersion_3_10 = 0xFFFF0310,
