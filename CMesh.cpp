@@ -128,7 +128,7 @@ void CMesh::setDefaultHierarchicalPosition(float *pos) {
 
 }
 void CMesh::setDefaultHierarchicalRotation(float *pos) {
-	memcpy(default_hierarchical_rotation, pos, sizeof(float)*16);
+	memcpy(default_hierarchical_rotation, pos, sizeof(float)*9);
 }
 
 float *CMesh::getDefaultHierarchialPosition() {
