@@ -1,4 +1,5 @@
 #ifndef _CHCMESH_H
+#define _CHCMESH_H
 #include "main.h"
 #include "CGeneric.h"
 bool chc_engine_import_mesh(ImportOptions* opts);

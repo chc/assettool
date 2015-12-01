@@ -502,19 +502,31 @@ void export_xml_mesh(pugi::xml_document *m_mesh_xml, CMesh *mesh) {
 
 
 	int num_index_levels = mesh->getNumIndexLevels();
-	
-	for(int i=0;i<num_index_levels;i++) {
+	if (num_index_levels > 0) {
+		for (int i = 0; i < num_index_levels; i++) {
 			uint32_t *index = mesh->getIndices(i);
 			pugi::xml_node index_node = xnode.append_child();
 			index_node.set_name("set"); //idk what to call it
 			index_node.append_attribute("layer") = i;
-			for(int j=0;j<mesh->getNumIndicies(i);j++) {
+			for (int j = 0; j < mesh->getNumIndicies(i); j++) {
 				pugi::xml_node param = index_node.append_child();
 				param.set_name("point");
 				param.append_attribute("x") = *index++;
 				param.append_attribute("y") = *index++;
 				param.append_attribute("z") = *index++;
 			}
+		}
+	} else {
+		uint32_t *indices = mesh->getIndices();
+		if (indices) {
+			for (int i = 0; i < mesh->getNumIndicies(); i++) {
+				pugi::xml_node index_node = xnode.append_child();
+				index_node.set_name("point");
+				index_node.append_attribute("x") = *indices++;
+				index_node.append_attribute("y") = *indices++;
+				index_node.append_attribute("z") = *indices++;
+			}
+		}
 	}
 
 	
