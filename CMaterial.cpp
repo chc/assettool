@@ -14,6 +14,7 @@ CMaterial::CMaterial() {
 	memset(&m_name,0,sizeof(m_name));
 
 	memset(&m_textures,0,sizeof(m_textures));
+	memset(&m_texture_checksums, 0, sizeof(m_texture_checksums));
 
 	m_flags = 0;
 }
@@ -90,7 +91,12 @@ void CMaterial::setTexture(CTexture *tex, int level) {
 CTexture* CMaterial::getTexture(int level) {
 	return m_textures[level];
 }
-
+void CMaterial::setTextureChecksum(uint32_t checksum, int level) {
+	m_texture_checksums[level] = checksum;
+}
+uint32_t CMaterial::getTextureChecksum(int level) {
+	return m_texture_checksums[level];
+}
 void CMaterial::setTextureFilterMode(ETextureFilterMode mode, int level) {
 	m_filter_modes[level] = mode;
 	

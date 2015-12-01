@@ -215,21 +215,29 @@ void write_material(CMaterial *material, FILE* fd) {
 	CTexture *tex;
 	bool tile[2];
 	uint8_t c = 0;
-	int i = 0;
+	
 
 	uint32_t tex_count = 0;
-	while(material->getTexture(i++) != NULL) {
+	while(material->getTexture(tex_count) != NULL || material->getTextureChecksum(tex_count) != 0) {
 		tex_count++;
 	}
-	i=0;
+	int i = 0;
 	fwrite(&tex_count,sizeof(uint32_t),1,fd);
-	do {
+	while(tex_count--) {
 		tex = material->getTexture(i);
-		if(tex == NULL) break;
-		checksum = crc32(0,tex->getPath(),strlen(tex->getPath()));
-		fwrite(&checksum,sizeof(uint32_t),1,fd);
-		tex->getOffset(col[0], col[1]);
-		fwrite(&col,sizeof(float),2,fd);
+		if (tex != NULL) {
+			checksum = crc32(0, tex->getPath(), strlen(tex->getPath()));
+			fwrite(&checksum, sizeof(uint32_t), 1, fd);
+			tex->getOffset(col[0], col[1]);
+			fwrite(&col, sizeof(float), 2, fd);
+		}
+		else {
+			checksum = material->getTextureChecksum(i);
+			fwrite(&checksum, sizeof(uint32_t), 1, fd);
+			col[0] = 0.0;
+			col[1] = 0.0;
+			fwrite(&col, sizeof(float), 2, fd);
+		}
 	
 		uint8_t filter_mode = (uint8_t)material->getTextureFilterMode(i);
 		ETextureAddresingMode u_mode, v_mode;
@@ -242,7 +250,7 @@ void write_material(CMaterial *material, FILE* fd) {
 		fwrite(&v, sizeof(uint8_t), 1, fd);
 		i++;
 
-	} while(tex != NULL);
+	}
 }
 
 void write_collision(FILE *fd, CCollision *collision) {
@@ -293,14 +301,16 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		}		
 	}
 
-	ExportOptions texopts;
-	memset(&texopts, 0, sizeof(texopts));
-	texopts.args = opts->args;
-	texopts.dataClass = (void *)texture_collection;
-	sprintf(fname, "%s.tex", opts->path);
-	texopts.path = fname;
-	texopts.srcPath = opts->srcPath;
-	chc_tex_export_img(&texopts);
+	if (texture_collection->getTextures().size() > 0) {
+		ExportOptions texopts;
+		memset(&texopts, 0, sizeof(texopts));
+		texopts.args = opts->args;
+		texopts.dataClass = (void *)texture_collection;
+		sprintf(fname, "%s.tex", opts->path);
+		texopts.path = fname;
+		texopts.srcPath = opts->srcPath;
+		chc_tex_export_img(&texopts);
+	}
 
 
 	if(scenepack->m_collision) {

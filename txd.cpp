@@ -9,6 +9,10 @@
 #include "CImage.h"
 #include "txd.h"
 #include "Utils.h"
+#include "crc32.h"
+#include "CTexture.h"
+
+#include "ctexturecollection.h"
 
 void decompress(Img *img, const char *name)  {
 		int dxt_flags = 0;
@@ -82,12 +86,12 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 	img->num_mipmaps = txdimg->mipmaps - 1;
 
 	int read_size = 0;
-
-	if((txdimg->dxt_cc == ID_DXT1 || txdimg->image_flags & 512 ||txdimg->dxtcompression == 1) && !(txdimg->image_flags & 8192)) {
+	printf("%d %d %d %d\n", txdimg->dxt_cc == ID_DXT1, txdimg->image_flags & 512, txdimg->dxtcompression == 1, !(txdimg->image_flags & 8192));
+	if((txdimg->dxt_cc == ID_DXT1 /*|| txdimg->image_flags & 512 I believe for GTAVC/3, do version check first*/ ||txdimg->dxtcompression == 1) && !(txdimg->image_flags & 8192)) {
 		img->colourType = EColourType_DXT1;
 	} else if(txdimg->dxt_cc == ID_DXT2 && !(txdimg->image_flags & 8192)) {
 		img->colourType = EColourType_DXT2;
-	} else if((txdimg->dxt_cc == ID_DXT3 || txdimg->image_flags & 768 ||txdimg->dxtcompression == 3) && !(txdimg->image_flags & 8192)) {
+	} else if((txdimg->dxt_cc == ID_DXT3 /*|| txdimg->image_flags & 768  I believe for GTAVC/3, do version check first*/ ||txdimg->dxtcompression == 3) && !(txdimg->image_flags & 8192)) {
 		img->colourType = EColourType_DXT3;
 	} else if(txdimg->dxt_cc == ID_DXT5 && !(txdimg->image_flags & 8192)) {
 		img->colourType = EColourType_DXT5;
@@ -111,19 +115,17 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 
 	if(img->num_mipmaps > 0) {
 		img->mipmaps = (void **)malloc(img->num_mipmaps*sizeof(void *));
+		img->mipmap_sizes = (uint32_t *)malloc(img->num_mipmaps*sizeof(uint32_t));
 		for(int i=0;i<img->num_mipmaps;i++) {
-			uint32_t mipmap_len;
-			fread(&mipmap_len,sizeof(uint32_t),1,fd);
-			img->mipmaps[i] = (void *)malloc(mipmap_len);
-			fread(img->mipmaps[i],mipmap_len,1,fd);
+			fread(&img->mipmap_sizes[i],sizeof(uint32_t),1,fd);
+			img->mipmaps[i] = (void *)malloc(img->mipmap_sizes[i]);
+			fread(img->mipmaps[i], img->mipmap_sizes[i],1,fd);
 		}
 	}
 	return img;
 }
 
 bool gta_rw_import_txd(ImportOptions* opts) {
-	char out_path[FILENAME_MAX+1];
-	memset(&out_path,0,sizeof(out_path));
 	FILE *fd = fopen(opts->path, "rb");
 	if(!fd) return false;
 	int len = file_len(fd);
@@ -132,12 +134,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 	TXDRecordInfo record;
 	TXDImgHeader img;
 
-	ExportOptions expOpts;
-	memset(&expOpts,0,sizeof(expOpts));
-	expOpts.type = FileType_Texture;
-	expOpts.path = (const char *)&out_path;
-	CImage *tex = new CImage();
-	expOpts.dataClass = (void *)tex;
+	CTextureCollection *tex_col = new CTextureCollection();
 
 	int tex_count;
 
@@ -147,34 +144,57 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 	tex_count = record.texturecount;
 	if(tex_count > 0) {
 		fread(&img,1,sizeof(img),fd);
-		sprintf(out_path,"%s/%s.png",opts->outpath,img.name);
 		if(img.TXDVersion == 0x00325350) {
 			printf("Skipping PS2 TXD\n");
 			goto end;
 		}
 		Img* aimg = get_img_and_read(&img,fd);
-		decompress(aimg, img.name);
-		tex->setDimensions(aimg->width,aimg->height);
-		tex->setColourData(aimg->colourType,(void *)aimg->rbga_data);
-		tex->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
-		sprintf(out_path,"%s/%s.png",opts->outpath,img.name);
-		opts->exporter(&expOpts);
+		//decompress(aimg, img.name);
+		CImage *imp_img = new CImage();
+		CTexture *tex = new CTexture();
+		imp_img->setDimensions(aimg->width,aimg->height);
+		imp_img->setNumMipMaps(aimg->num_mipmaps);
+		imp_img->setColourData(aimg->colourType,(void *)aimg->rbga_data, img.data_size, 1);
+		for (int m = 0; m < aimg->num_mipmaps; m++) {
+			imp_img->setColourData(aimg->colourType, (void *)aimg->rbga_data, aimg->mipmap_sizes[m], 1, m + 1);
+		}
+		imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
+		tex->setChecksum(crc32(0, img.name, strlen(img.name)));
+		tex->setImage(imp_img);
+		tex_col->AddTexture(tex);
 		free_img(aimg);
 		for(int i=0;i<tex_count-1;i++) {
+			imp_img = new CImage();
+			tex = new CTexture();
 			fread(&record,sizeof(record),1,fd);
 			fread(&img,sizeof(img),1,fd);
-			sprintf(out_path,"%s/%s.png",opts->outpath,img.name);
 			aimg = get_img_and_read(&img,fd);
-			decompress(aimg, img.name);
-			tex->setDimensions(aimg->width,aimg->height);
-			tex->setColourData(aimg->colourType,(void *)aimg->rbga_data);
-			tex->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
-			opts->exporter(&expOpts);
+			//decompress(aimg, img.name);
+			imp_img->setNumMipMaps(aimg->num_mipmaps);
+			imp_img->setDimensions(aimg->width,aimg->height);
+			imp_img->setColourData(aimg->colourType,(void *)aimg->rbga_data, img.data_size, 1);
+			for (int m = 0; m < aimg->num_mipmaps; m++) {
+				imp_img->setColourData(aimg->colourType, (void *)aimg->rbga_data, aimg->mipmap_sizes[m], 1, m+1);
+			}
+			imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
+			tex->setImage(imp_img);
+			tex->setChecksum(crc32(0, img.name, strlen(img.name)));
+			tex_col->AddTexture(tex);
 			free_img(aimg);
 		}
 	}
 	end:
 	fclose(fd);
+
+	ExportOptions expOpts;
+	memset(&expOpts, 0, sizeof(expOpts));
+	expOpts.path = opts->outpath;
+	expOpts.srcPath = opts->path;
+	expOpts.dataClass = (void *)tex_col;
+	expOpts.extra = opts->extra;
+	expOpts.args = opts->expArgs;
+
+	opts->exporter(&expOpts);
 	
 	return true;
 }

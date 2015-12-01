@@ -582,7 +582,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 	return true;
 }
 
-CTexture *load_texture(const char *path, bool tile_u, bool tile_v, float u_offset, float v_offset); //in cchcmaxxml.cpp
 void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecord *geom_rec) {
 	float a = ((matrec->colour>>24)&0xff) / 255.0,b = ((matrec->colour>>16)&0xff) / 255.0,g= ((matrec->colour>>8)&0xff) / 255.0,r = (matrec->colour&0xff) / 255.0;
 	uint8_t a_i = ((matrec->colour>>24)&0xff), b_i = ((matrec->colour>>16)&0xff),g_i= ((matrec->colour>>8)&0xff),r_i = (matrec->colour&0xff);
@@ -606,9 +605,7 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 	}
 	while(it != matrec->textures.end()) {
 		TextureRecord *texrec = *it;
-		sprintf(name,"tex/%s.PNG",texrec->texturename);
-		CTexture *tex = load_texture(name, true, true, 0.0, 0.0);
-		mat->setTexture(tex, level);
+		mat->setTextureChecksum(crc32(0, texrec->texturename, strlen(texrec->texturename)), level);
 		mat->setBlendMode(EBlendMode_Modulate, level);
 		mat->setTextureFilterMode(texrec->mat_filter_mode, level);
 		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);

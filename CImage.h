@@ -23,35 +23,47 @@ public:
 		m_rgba = NULL;
 		m_height = 0;
 		m_width = 0;
+		m_num_mipmaps = -1;
+		m_mipmap_sizes = 0;
 	}
 	~CImage() {
-		if(m_allocated) {
-			if(m_rgba) {
-				free(m_rgba);
+		if(m_rgba) {
+			if (m_allocated) {
+				for (int i = 0; i < m_num_mipmaps + 1; i++) {
+					free(m_rgba[i]);
+				}
 			}
+			free(m_rgba);
 		}
 	}
 	void setDimensions(uint32_t width, uint32_t height) {
 		m_width = width;
 		m_height = height;
 	}
-	void setColourData(EColourType type, void *colour_data, int len = 0, int copy = 0) {
+	void setNumMipMaps(int num_mipmaps) {
+		m_num_mipmaps = num_mipmaps;
+		m_rgba = (void **)malloc(num_mipmaps+1 * sizeof(void *));
+	}
+	void setColourData(EColourType type, void *colour_data, int len = 0, int copy = 0, int level = 0) {
+		if (m_num_mipmaps == -1) {
+			setNumMipMaps(0);
+		}
 		m_colourType = type;
 		if(copy) {
-			m_rgba = malloc(len);
-			memcpy(m_rgba,colour_data,len);
+			m_rgba[level] = malloc(len);
+			memcpy(m_rgba[level],colour_data,len);
 			m_allocated = true;
 		} else {
-			m_rgba = colour_data;
+			m_rgba[level] = colour_data;
 			m_allocated= false;
 		}
 		m_data_size = len;
 	}
-	void *getRGBA() {
-		return m_rgba;
+	void *getRGBA(int level = 0) {
+		return m_rgba[level];
 	}
-	void *getRawData() {
-		return m_rgba;
+	void *getRawData(int level = 0) {
+		return m_rgba[level];
 	}
 	int getDataSize() {
 		return m_data_size;
@@ -121,15 +133,21 @@ public:
 			type = EColourType_DXT5;
 			break;
 		}
+		/*
+		int width = m_width, height = m_height;
+		for (int i = 0; i < m_num_mipmaps + 1; i++) {
+			int alloc_size = squish::GetStorageRequirements(width, height, flags);
+			void *m_out_data = (void *)malloc(alloc_size);
+			squish::CompressImage((squish::u8*)m_rgba[i], width, height, m_out_data, flags);
+			width /= 2;
+			height /= 2;
 
-		int alloc_size = squish::GetStorageRequirements(m_width,m_height,flags);
-		void *m_out_data = (void *)malloc(alloc_size);
-		squish::CompressImage((squish::u8*)m_rgba,m_width,m_height,m_out_data,flags);
+			m_colourType = type;
+			free(m_rgba);
+			m_rgba[i] = m_out_data;
+		}
+		*/
 
-		m_colourType = type;
-		free(m_rgba);
-		m_rgba = m_out_data;
-		m_data_size = alloc_size;
 	}
 
 protected:
@@ -137,8 +155,10 @@ protected:
 	uint32_t m_width;
 	uint32_t m_height;
 	EColourType m_colourType;
-	void *m_rgba;
+	void **m_rgba;
 	int m_data_size; //sizeof m_rgba, useful for dxt
 	void *m_palette;
+	void *m_mipmap_sizes;
+	int m_num_mipmaps;
 };
 #endif //_CIMAGE_H

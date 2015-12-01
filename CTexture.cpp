@@ -51,6 +51,7 @@ uint32_t CTexture::getChecksum() {
 	return m_checksum;
 }
 void CTexture::setChecksum(uint32_t checksum) {
+	printf("Tex checksum: %08X\n", checksum);
 	m_checksum = checksum;
 }
 

@@ -78,6 +78,10 @@ public:
 	void setTexture(CTexture *tex, int level);
 	CTexture* getTexture(int level);
 
+	//used when the textures aren't loaded by converter
+	void setTextureChecksum(uint32_t checksum, int level);
+	uint32_t getTextureChecksum(int level);
+
 	void setAmbientReflectionCoeff(float v);
 	void setSpecularReflectionCoeff(float v);
 	void setDiffuseReflectionCoeff(float v);
@@ -111,6 +115,7 @@ private:
 	ETextureFilterMode m_filter_modes[MAX_MATERIAL_TEXTURES];
 	ETextureAddresingMode m_address_modes[MAX_MATERIAL_TEXTURES][3]; //UVW
 	CTexture* m_textures[MAX_MATERIAL_TEXTURES];
+	uint32_t m_texture_checksums[MAX_MATERIAL_TEXTURES];
 
 	EBlendMode m_texture_blend_modes[MAX_MATERIAL_TEXTURES];
 };

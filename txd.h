@@ -56,6 +56,7 @@ typedef struct {
 	uint32_t *palette;
 	uint32_t num_mipmaps;
 	void **mipmaps;
+	uint32_t *mipmap_sizes;
 } Img;
 
 #define ID_DXT1   0x31545844
