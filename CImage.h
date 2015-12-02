@@ -42,15 +42,18 @@ public:
 	}
 	void setNumMipMaps(int num_mipmaps) {
 		m_num_mipmaps = num_mipmaps;
-		m_rgba = (void **)malloc(num_mipmaps+1 * sizeof(void *));
+		m_rgba = (void **)malloc((num_mipmaps+1) * sizeof(void *));
+		memset(m_rgba, 0, (num_mipmaps + 1) * sizeof(void *));
 	}
 	void setColourData(EColourType type, void *colour_data, int len = 0, int copy = 0, int level = 0) {
+		printf("Data size: %d\n", len);
 		if (m_num_mipmaps == -1) {
 			setNumMipMaps(0);
 		}
 		m_colourType = type;
 		if(copy) {
 			m_rgba[level] = malloc(len);
+			printf("alloc addr: %p\n", m_rgba[level]);
 			memcpy(m_rgba[level],colour_data,len);
 			m_allocated = true;
 		} else {
@@ -63,6 +66,7 @@ public:
 		return m_rgba[level];
 	}
 	void *getRawData(int level = 0) {
+		printf("ret addr: %p\n", m_rgba[level]);
 		return m_rgba[level];
 	}
 	int getDataSize() {

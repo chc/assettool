@@ -14,6 +14,7 @@
 
 #include "ctexturecollection.h"
 
+
 void decompress(Img *img, const char *name)  {
 		int dxt_flags = 0;
 		char has_alpha = 0;
@@ -156,13 +157,14 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 		imp_img->setNumMipMaps(aimg->num_mipmaps);
 		imp_img->setColourData(aimg->colourType,(void *)aimg->rbga_data, img.data_size, 1);
 		for (int m = 0; m < aimg->num_mipmaps; m++) {
-			imp_img->setColourData(aimg->colourType, (void *)aimg->rbga_data, aimg->mipmap_sizes[m], 1, m + 1);
+			imp_img->setColourData(aimg->colourType, (void *)aimg->mipmaps[m], aimg->mipmap_sizes[m], 1, m + 1);
 		}
 		imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
 		tex->setChecksum(crc32(0, img.name, strlen(img.name)));
 		tex->setImage(imp_img);
 		tex_col->AddTexture(tex);
 		free_img(aimg);
+
 		for(int i=0;i<tex_count-1;i++) {
 			imp_img = new CImage();
 			tex = new CTexture();
@@ -174,7 +176,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 			imp_img->setDimensions(aimg->width,aimg->height);
 			imp_img->setColourData(aimg->colourType,(void *)aimg->rbga_data, img.data_size, 1);
 			for (int m = 0; m < aimg->num_mipmaps; m++) {
-				imp_img->setColourData(aimg->colourType, (void *)aimg->rbga_data, aimg->mipmap_sizes[m], 1, m+1);
+				imp_img->setColourData(aimg->colourType, (void *)aimg->mipmaps[m], aimg->mipmap_sizes[m], 1, m+1);
 			}
 			imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
 			tex->setImage(imp_img);

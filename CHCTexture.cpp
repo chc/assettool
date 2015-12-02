@@ -43,13 +43,14 @@ void chc_export_image_collection(FILE *fd, CTexture *tex) {
 	else {
 		//write the raw img
 		img = tex->getImage();
-		img->compress();
+		//img->compress();
 		cube_item.type = img->getColourType();
 		cube_item.data_size = img->getDataSize();
 		cube_item.checksum = tex->getChecksum();
 		img->getDimensions(cube_item.width, cube_item.height);
 		fwrite(&cube_item, sizeof(cube_item), 1, fd);
-		fwrite(img->getRawData(), cube_item.data_size, 1, fd);
+		void *addr = img->getRawData();
+		fwrite(addr, cube_item.data_size, 1, fd);
 	}
 }
 bool chc_tex_export_img(ExportOptions *expOpts) {
