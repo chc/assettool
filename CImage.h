@@ -36,6 +36,28 @@ public:
 			free(m_rgba);
 		}
 	}
+	static uint32_t CImage::guessDataSize(EColourType type, int width, int height) {
+		uint8_t dxt = 0;
+		uint32_t size = 0;
+		switch (type) {
+			case EColourType_DXT5:
+				dxt = dxt == 0 ? squish::kDxt1 : dxt;
+			case EColourType_DXT3:
+				dxt = dxt == 0 ? squish::kDxt3 : dxt;
+			case EColourType_DXT2:
+				dxt = dxt == 0 ? squish::kDxt1 : dxt;
+			case EColourType_DXT1:
+				dxt = dxt == 0 ? squish::kDxt1 : dxt;
+				break;
+			case EColourType_32BPP:
+				size = width * height * sizeof(uint32_t);
+				break;
+		}
+		if (dxt != 0) {
+			return squish::GetStorageRequirements(width, height, dxt);
+		}
+		return size;
+	}
 	void setDimensions(uint32_t width, uint32_t height) {
 		m_width = width;
 		m_height = height;

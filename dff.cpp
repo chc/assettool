@@ -291,7 +291,10 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			break;
 		}
 		case DFFTag_rwEXTENSION: {
-			fseek(fd, chunk->size, SEEK_CUR);
+			
+			if (chunk->size != 0) {
+				fseek(fd, chunk->size, SEEK_CUR);
+			}
 			if(last_tag == (DFFTags)-1) {
 			} else if(last_tag == DFFTag_rwMATERIAL) {
 				
