@@ -41,7 +41,7 @@ public:
 		uint32_t size = 0;
 		switch (type) {
 			case EColourType_DXT5:
-				dxt = dxt == 0 ? squish::kDxt1 : dxt;
+				dxt = dxt == 0 ? squish::kDxt5 : dxt;
 			case EColourType_DXT3:
 				dxt = dxt == 0 ? squish::kDxt3 : dxt;
 			case EColourType_DXT2:

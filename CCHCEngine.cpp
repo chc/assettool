@@ -11,7 +11,7 @@ CCHCEngine::CCHCEngine() {
 	txdFmt.mp_impFunc = chc_engine_import_mesh;
 	txdFmt.mp_expFunc = chc_engine_export_mesh;
 
-	m_fileFmtCount = 3;
+	m_fileFmtCount = 4;
 
 	mp_shortName = "CHC";
 	mp_fullName = "CHC Engine";
@@ -36,4 +36,12 @@ CCHCEngine::CCHCEngine() {
 	txdFmt.mp_expFunc = chc_engine_export_keyframe_collection;
 	mp_fileFormats[2] = (FileFormat *)malloc(sizeof(FileFormat));
 	memcpy(mp_fileFormats[2], &txdFmt, sizeof(FileFormat));
+
+	memset(&txdFmt, 0, sizeof(txdFmt));
+	txdFmt.description = "Collision";
+	txdFmt.name = "col";
+	txdFmt.mp_impFunc = chc_engine_import_keyframe_collection;
+	txdFmt.mp_expFunc = chc_engine_export_keyframe_collection;
+	mp_fileFormats[3] = (FileFormat *)malloc(sizeof(FileFormat));
+	memcpy(mp_fileFormats[3], &txdFmt, sizeof(FileFormat));
 }

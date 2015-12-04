@@ -5,6 +5,7 @@
 #include "imgv2.h"
 #include "dff.h"
 #include "ifp.h"
+#include "col.h"
 CGTASA::CGTASA() {
 	FileFormat txdFmt;
 	memset(&txdFmt,0,sizeof(txdFmt));
@@ -43,5 +44,13 @@ CGTASA::CGTASA() {
 	txdFmt.name = "ifp";
 	txdFmt.mp_impFunc = gta_rw_import_ifp;
 	txdFmt.mp_expFunc = gta_rw_export_ifp;
+	memcpy(mp_fileFormats[3], &txdFmt, sizeof(FileFormat));
+
+	mp_fileFormats[3] = (FileFormat *)malloc(sizeof(FileFormat));
+	memset(&txdFmt, 0, sizeof(txdFmt));
+	txdFmt.description = "GTA: Collision Data";
+	txdFmt.name = "col";
+	txdFmt.mp_impFunc = gta_rw_import_col;
+	txdFmt.mp_expFunc = gta_rw_export_col;
 	memcpy(mp_fileFormats[3], &txdFmt, sizeof(FileFormat));
 }
