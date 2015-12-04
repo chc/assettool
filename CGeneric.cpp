@@ -6,12 +6,14 @@
 #include "plyloader.h"
 #include "TTF.h"
 #include "Cubemap.h"
+#include "Json.h"
 CGeneric::CGeneric() {
 	FileFormat formats[] = {{"png","PNG",png_import_img,png_export_img},
 							{"fs", "File System",gen_import_file, gen_export_file},
 							{"ply","PLY file", ply_import_mesh, ply_export_mesh},
 							{"ttf", "TTF Font", ttf_import_mesh, ttf_export_mesh},
-							{"cube", "CubeMap", gen_import_cubemap, gen_export_cubemap},
+							{ "cube", "CubeMap", gen_import_cubemap, gen_export_cubemap },
+							{ "jsonm", "JSON Mesh", gen_import_json_mesh, gen_export_json_mesh },
 	};
 
 	m_fileFmtCount = sizeof(formats)/sizeof(FileFormat);

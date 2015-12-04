@@ -3,7 +3,7 @@
 #include "CMesh.h"
 #include <glm/glm.hpp>
 
-#include <ScenePack.h>
+#include "ScenePack.h"
 typedef struct {
 	glm::vec3 *verticies;
 	int vert_index;
