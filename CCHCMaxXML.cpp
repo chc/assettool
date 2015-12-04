@@ -11,7 +11,15 @@
 #include "CCollision.h"
 #include <fstream>
 #include "Map.h"
-void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
+CMaterial *find_material_by_name(const char *name, CMaterial **materials, uint32_t num_materials) {
+	for (int i = 0; i < num_materials; i++) {
+		if (!strcmp(materials[i]->getName(), name)) {
+			return materials[i];
+		}
+	}
+	return NULL;
+}
+void load_mesh_data(pugi::xml_node node, CMesh *mesh, CMaterial **materials, uint32_t num_materials) {
 	int size = std::distance(node.children().begin(),node.children().end());
 	float *vert_data = (float *)malloc(size * sizeof(float) * 3);
 	uint32_t *indicies = (uint32_t*)malloc(sizeof(uint32_t) * size * 3);
@@ -48,12 +56,27 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh) {
 		}
 		mesh->setUVWs(vert_data, 0);
 	}else if(strcmp(node.name(),"indices") == 0) {
+		uint32_t material_start_offset = 0, material_end_offset = -1;
+		uint32_t offset = 0;
+		CMaterial *last_material = NULL;
 		for (pugi::xml_node mesh_data = node.first_child(); mesh_data; mesh_data = mesh_data.next_sibling())
 		{
 			for (pugi::xml_attribute attr = mesh_data.first_attribute(); attr; attr = attr.next_attribute())
 			{
-				*i++ = atoi(attr.value());
+				if (!stricmp(attr.name(), "x") || !stricmp(attr.name(), "y") || !stricmp(attr.name(), "z")) {
+					*i++ = atoi(attr.value());
+				}
+				else {
+					CMaterial *mat = find_material_by_name(attr.value(), materials, num_materials);
+					if (last_material == NULL || mat != last_material) {
+						material_end_offset = material_start_offset;
+						material_start_offset = offset;
+						last_material = mat;
+					}
+
+				}				
 			}
+			offset++;
 		}
 		std::cout << "Index count: " << size << std::endl;
 		mesh->setIndices(indicies,size);
@@ -310,7 +333,7 @@ void chc_mesh_do_import(pugi::xml_node *child, CMesh *out_mesh, CMaterial **mate
 	(out_mesh)->setMaterial(mat);
 	out_mesh->setGroupId(group_id);
 	for (pugi::xml_node tool = child->first_child(); tool; tool = tool.next_sibling()) {
-		load_mesh_data(tool,out_mesh);
+		load_mesh_data(tool,out_mesh, materials, num_materials);
 	}
 }
 void chc_max_import_meshes(CMesh **meshes, pugi::xml_document *doc, pugi::xml_node *node, CMaterial **materials, uint32_t num_materials, uint32_t group_id = 0) {
