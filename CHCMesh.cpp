@@ -257,36 +257,96 @@ void write_collision(FILE *fd, CCollision *collision) {
 	uint32_t version = CHCMESH_VERSION;
 	fwrite(&version,sizeof(uint32_t),1,fd);
 
-	std::vector<BBox> boxes = collision->getBBoxes();
+	uint32_t checksum = collision->getChecksum();
+	fwrite(&checksum, sizeof(uint32_t), 1, fd);
+
+	uint32_t num_children = collision->getChildren().size();
+	fwrite(&num_children, sizeof(uint32_t), 1, fd);
+	
+	std::vector<COLBBox> boxes = collision->getBBoxes();
 	uint32_t num_bboxes = boxes.size();
 	fwrite(&num_bboxes, sizeof(uint32_t), 1, fd);
-	std::vector<BBox>::iterator it = boxes.begin();
+	std::vector<COLBBox>::iterator it = boxes.begin();
 	while(it != boxes.end()) {
-		BBox box = *it;
+		COLBBox box = *it;
 		fwrite(&box.checksum, sizeof(uint32_t), 1, fd);
 		fwrite(&box.min, sizeof(float), 3, fd);
 		fwrite(&box.max, sizeof(float), 3, fd);
 		it++;
 	}
+
+	std::vector<COLTriangleMesh> tri_meshes = collision->getTriMeshes();
+	std::vector<COLTriangleMesh>::iterator tri_it = tri_meshes.begin();
+
+	uint32_t num_triangle_meshes = tri_meshes.size();
+	fwrite(&num_triangle_meshes, sizeof(uint32_t), 1, fd);
+	while (tri_it != tri_meshes.end()) {
+		COLTriangleMesh mesh = *tri_it;
+		fwrite(&mesh.num_indices, sizeof(uint32_t), 1, fd);
+		uint32_t *p = mesh.indices;
+		for (int i = 0; i < mesh.num_indices; i++) {
+			uint32_t x, y, z;
+			x = *p++;
+			y = *p++;
+			z = *p++;
+			fwrite(&x, sizeof(uint32_t), 1, fd);
+			fwrite(&y, sizeof(uint32_t), 1, fd);
+			fwrite(&z, sizeof(uint32_t), 1, fd);
+		}
+		fwrite(&mesh.num_verts, sizeof(uint32_t), 1, fd);
+		float *v = mesh.verticies;
+		for (int i = 0; i < mesh.num_verts; i++) {
+			float x, y, z;
+			x = *v++;
+			y = *v++;
+			z = *v++;
+			fwrite(&x, sizeof(float), 1, fd);
+			fwrite(&y, sizeof(float), 1, fd);
+			fwrite(&z, sizeof(float), 1, fd);
+		}
+		tri_it++;
+	}
+
+	std::vector<COLSphere> spheres = collision->getSpheres();
+	uint32_t num_spheres = spheres.size();
+	std::vector<COLSphere>::iterator its = spheres.begin();
+	while (its != spheres.end()) {
+		COLSphere sphere = *its;
+		fwrite(&sphere.center, sizeof(float), 3, fd);
+		fwrite(&sphere.radius, sizeof(float), 1, fd);
+		its++;
+	}
+
+	std::vector<CCollision *> children = collision->getChildren();
+	std::vector<CCollision *>::iterator it2 = children.begin();
+	while (it2 != children.end()) {
+		write_collision(fd, *it2);
+		it2++;
+	}
 }
 bool chc_engine_export_mesh(ExportOptions* opts) {
+	ScenePack *scenepack = (ScenePack *)opts->dataClass;
 	char fname[FILENAME_MAX+1];
 	sprintf(fname,"%s.mesh",opts->path);
-	FILE *fd = fopen(fname, "wb");
-	ScenePack *scenepack = (ScenePack *)opts->dataClass;
 
-	uint32_t version = CHCMESH_VERSION;
-	fwrite(&version,sizeof(uint32_t),1,fd);
-	fwrite(&scenepack->num_meshes,sizeof(uint32_t),1,fd);
-	for(int i=0;i<scenepack->num_meshes;i++) {
-		write_mesh(scenepack->m_meshes[i],fd);
+	if (scenepack->num_meshes > 0 || scenepack->num_materials >0) {
+		FILE *fd = fopen(fname, "wb");
+
+
+		uint32_t version = CHCMESH_VERSION;
+		fwrite(&version, sizeof(uint32_t), 1, fd);
+		fwrite(&scenepack->num_meshes, sizeof(uint32_t), 1, fd);
+		for (int i = 0; i < scenepack->num_meshes; i++) {
+			write_mesh(scenepack->m_meshes[i], fd);
+		}
+		fwrite(&scenepack->num_materials, sizeof(uint32_t), 1, fd);
+		for (int i = 0; i < scenepack->num_materials; i++) {
+			write_material(scenepack->m_materials[i], fd);
+		}
+
+		fclose(fd);
+
 	}
-	fwrite(&scenepack->num_materials,sizeof(uint32_t),1,fd);
-	for(int i=0;i<scenepack->num_materials;i++) {
-		write_material(scenepack->m_materials[i],fd);
-	}
-	
-	fclose(fd);
 
 
 	//run textures through CHC tex exporter

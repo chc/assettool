@@ -341,7 +341,7 @@ void chc_max_import_meshes(CMesh **meshes, pugi::xml_document *doc, pugi::xml_no
 void chc_max_import_collision(CCollision *collision, pugi::xml_document *doc) {
 	for (pugi::xml_node tool = doc->first_child(); tool; tool = tool.next_sibling()) {
 		if(strcmp(tool.attribute("type").as_string(), "bbox") == 0) {
-			BBox box;
+			COLBBox box;
 			memset(&box,0, sizeof(box));
 			box.checksum = crc32(0, tool.attribute("name").as_string(), strlen(tool.attribute("name").as_string()));
 			pugi::xml_node bounds_node = tool.child("bounds");
