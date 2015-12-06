@@ -310,6 +310,7 @@ void write_collision(FILE *fd, CCollision *collision) {
 	std::vector<COLSphere> spheres = collision->getSpheres();
 	uint32_t num_spheres = spheres.size();
 	std::vector<COLSphere>::iterator its = spheres.begin();
+	fwrite(&num_spheres, sizeof(uint32_t), 1, fd);
 	while (its != spheres.end()) {
 		COLSphere sphere = *its;
 		fwrite(&sphere.center, sizeof(float), 3, fd);

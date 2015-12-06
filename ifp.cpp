@@ -31,12 +31,12 @@ typedef struct {
 	uint32_t bone_id;
 } ObjectInfo;
 typedef struct {
-	uint16_t quat[4];
+	int16_t quat[4];
 	uint16_t time; //seconds
-	uint16_t trans[3];
+	int16_t trans[3];
 } AnimRootFrame;
 typedef struct {
-	uint16_t quat[4];
+	int16_t quat[4];
 	uint16_t time; //seconds
 } AnimChildFrame;
 void print_anim_info(AnimHeader *anim) {

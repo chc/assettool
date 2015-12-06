@@ -47,7 +47,7 @@ typedef struct {
 	uint16_t num_mesh_faces;
 	uint8_t num_wheels;
 	uint8_t padding; //or part of wheels..?
-	uint8_t flags;
+	uint32_t flags;
 	uint32_t sphere_offset;
 	uint32_t box_offset;
 	uint32_t suspenison_lines_offset;
@@ -81,7 +81,7 @@ void dump_collision_meshes(FILE *fd, GTACOLHeader *head, int offset, CCollision 
 			largest_index = y;
 		}
 		if (z > largest_index) {
-			largest_index = z;
+			largest_index = z ;
 		}
 		*p++ = x;
 		*p++ = y;
@@ -93,24 +93,33 @@ void dump_collision_meshes(FILE *fd, GTACOLHeader *head, int offset, CCollision 
 		printf("%d %d %d %d %d\n", x, y, z, material, light);
 
 	}
-	largest_index = floor(largest_index / 3.0) * 3;
-	float *verts = (float *)malloc(sizeof(float) * 3 * largest_index);
+	
+	fseek(fd, head->mesh_vertices_offset + offset, SEEK_SET);
+	//largest_index = (floor(largest_index / 3.0));
+	//largest_index -= 2;
+	printf("%d is largest index\n", largest_index);
+
+
+	uint32_t num_verts = head->num_mesh_faces == 0 ? 0 : largest_index + 1;
+	float *verts = (float *)malloc(sizeof(float) * 3 * num_verts);
 	float *v = verts;
-	for (int i = 0; i < largest_index; i++) {
-		uint16_t x, y, z;
-		fread(&x, sizeof(uint16_t), 1, fd);
-		fread(&y, sizeof(uint16_t), 1, fd);
-		fread(&z, sizeof(uint16_t), 1, fd);
-		*v++ = x / 128.0;
-		*v++ = y / 128.0;
-		*v++ = z / 128.0;
+	for (int i = 0; i < num_verts; i++) {
+		int16_t x, y, z;
+		fread(&x, sizeof(int16_t), 1, fd);
+		fread(&y, sizeof(int16_t), 1, fd);
+		fread(&z, sizeof(int16_t), 1, fd);
+		*v++ = (x / 128.0f);
+		*v++ = (y / 128.0f);
+		*v++ = (z / 128.0f);
+
+		printf("%f %f %f\n", (x / 128.0f), (y / 128.0f), (z/128.0f));
 	}
 
 	COLTriangleMesh mesh;
 	mesh.indices = indices;
 	mesh.verticies = verts;
 	mesh.num_indices = head->num_mesh_faces;
-	mesh.num_verts = largest_index;
+	mesh.num_verts = num_verts;
 
 	m_out_collision->addTriMesh(mesh);
 }
@@ -134,15 +143,15 @@ void dump_gta_bboxes(FILE *fd, GTACOLHeader *head, int offset, CCollision *m_out
 	for (int i = 0; i < head->num_boxes; i++) {
 		GTACOLVector begin, end;
 		GTACOLSurface surface;
-		fread(&begin, sizeof(float), 3, fd);
-		fread(&end, sizeof(float), 3, fd);
+		fread(&begin, sizeof(GTACOLVector), 1, fd);
+		fread(&end, sizeof(GTACOLVector), 1, fd);
 		fread(&surface, sizeof(surface), 1, fd);
 		printf("B: %f %f %f\n", begin.x, begin.y, begin.z);
 		printf("E: %f %f %f\n", end.x, end.y, end.z);
 
 		COLBBox box;
-		memcpy(&box.min, &begin, sizeof(float) * 3);
-		memcpy(&box.max, &end, sizeof(float) * 3);
+		memcpy(&box.min, &begin, sizeof(GTACOLVector));
+		memcpy(&box.max, &end, sizeof(GTACOLVector));
 		m_out_collision->addBBOX(box);
 	}
 }
@@ -158,15 +167,17 @@ bool gta_rw_import_col(ImportOptions* opts) {
 			break;
 
 		CCollision *col = new CCollision();
-		printf("%s\n", head.model_name);
+		
 		dump_collision_meshes(fd, &head, head_pos + sizeof(uint32_t), col);
 		dump_gta_bboxes(fd, &head, head_pos + sizeof(uint32_t), col);
 		dump_gta_collision_spheres(fd, &head, head_pos + sizeof(uint32_t), col);
+		printf("%s\n", head.model_name);
 		fseek(fd, head_pos, SEEK_SET);
 		fseek(fd, head.file_size + (sizeof(uint32_t) * 2), SEEK_CUR);
 		col->setChecksum(crc32(0, head.model_name, strlen(head.model_name)));
+		printf("Col checksum: %08X\n", col->getChecksum());
 		m_out_collision->addChild(col);
-	} while (head.magic == GTA_COL3_MAGIC);
+	} while (head.magic == GTA_COL3_MAGIC && !feof(fd));
  	fclose(fd);
 
 
