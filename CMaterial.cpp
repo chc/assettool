@@ -1,5 +1,5 @@
 #include "CMaterial.h"
-
+#include "crc32.h"
 CMaterial::CMaterial() {
 	for(int i=0;i<4;i++) {
 		m_specular_colour[i] = 0.0;
@@ -148,5 +148,8 @@ void CMaterial::setIdentifierChecksum(uint32_t checksum) {
 	m_identifier_checksum = checksum;
 }
 uint32_t CMaterial::getIdentifierChecksum() {
+	if (m_identifier_checksum == 0) {
+		m_identifier_checksum = crc32(0, m_name, strlen(m_name));
+	}
 	return m_identifier_checksum;
 }
