@@ -67,6 +67,7 @@ void dump_collision_meshes(FILE *fd, GTACOLHeader *head, int offset, CCollision 
 	uint16_t largest_index = 0;
 	uint32_t *indices = (uint32_t *)malloc(head->num_mesh_faces * 3 * sizeof(uint32_t));
 	uint32_t *p = indices;
+	if (head->num_mesh_faces == 0) return;
 	for (int i = 0; i < head->num_mesh_faces; i++) {
 		uint16_t x, y, z;
 		uint8_t material, light;
@@ -150,6 +151,7 @@ void dump_gta_bboxes(FILE *fd, GTACOLHeader *head, int offset, CCollision *m_out
 		printf("E: %f %f %f\n", end.x, end.y, end.z);
 
 		COLBBox box;
+		box.checksum = 0;
 		memcpy(&box.min, &begin, sizeof(GTACOLVector));
 		memcpy(&box.max, &end, sizeof(GTACOLVector));
 		m_out_collision->addBBOX(box);
@@ -162,8 +164,8 @@ bool gta_rw_import_col(ImportOptions* opts) {
 	do {
 		
 		int head_pos = ftell(fd);
-		fread(&head, sizeof(head), 1, fd);
-		if (head.magic != GTA_COL3_MAGIC)
+		size_t rlen = fread(&head, sizeof(head), 1, fd);
+		if (head.magic != GTA_COL3_MAGIC || rlen <= 0)
 			break;
 
 		CCollision *col = new CCollision();

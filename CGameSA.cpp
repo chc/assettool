@@ -13,7 +13,7 @@ CGTASA::CGTASA() {
 	txdFmt.name = "txd";
 	txdFmt.mp_impFunc = gta_rw_import_txd;
 	txdFmt.mp_expFunc = gta_rw_export_txd;
-	m_fileFmtCount = 4;
+	m_fileFmtCount = 5;
 
 	mp_shortName = "GTASA";
 	mp_fullName = "Grand Theft Auto: San Andreas";
