@@ -13,6 +13,7 @@ CMesh::CMesh() {
 	mp_material = NULL;
 	mp_collision = NULL;
 	num_index_levels = 0;
+	m_num_uv_layers = 0;
 	m_group_id = 0;
 	m_num_materials = 0;
 	m_indexed_materials = false;
