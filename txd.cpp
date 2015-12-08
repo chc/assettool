@@ -85,10 +85,9 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 	img->height = txdimg->height;
 
 	img->num_mipmaps = txdimg->mipmaps - 1;
-
 	int read_size = 0;
 	printf("%d %d %d %d\n", txdimg->dxt_cc == ID_DXT1, txdimg->image_flags & 512, txdimg->dxtcompression == 1, !(txdimg->image_flags & 8192));
-	if((txdimg->dxt_cc == ID_DXT1 /*|| txdimg->image_flags & 512 I believe for GTAVC/3, do version check first*/ ||txdimg->dxtcompression == 1) && !(txdimg->image_flags & 8192)) {
+	if(((txdimg->dxt_cc == ID_DXT1 /*|| txdimg->image_flags & 512 I believe for GTAVC/3, do version check first||txdimg->dxtcompression == 1*/) && !(txdimg->image_flags & 8192))) {
 		img->colourType = EColourType_DXT1;
 	} else if(txdimg->dxt_cc == ID_DXT2 && !(txdimg->image_flags & 8192)) {
 		img->colourType = EColourType_DXT2;
@@ -161,6 +160,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 		}
 		imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
 		tex->setChecksum(crc32(0, img.name, strlen(img.name)));
+		tex->setPath(img.name);
 		tex->setImage(imp_img);
 		tex_col->AddTexture(tex);
 		free_img(aimg);
@@ -180,6 +180,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 			}
 			imp_img->setPalette(aimg->palette); //will be NULL if not foudn but its all good!
 			tex->setImage(imp_img);
+			tex->setPath(img.name);
 			tex->setChecksum(crc32(0, img.name, strlen(img.name)));
 			tex_col->AddTexture(tex);
 			free_img(aimg);

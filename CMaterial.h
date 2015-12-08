@@ -27,7 +27,11 @@ enum EMaterialFlags {
 	EMaterialFlag_HasAmbientColour = (1<<3),
 	EMaterialFlag_HasDiffuseColour = (1<<4),
 	EMaterialFlag_HasSpecColour = (1<<5),
-	EMaterialFlag_HasShineStrength = (1<<6),
+	EMaterialFlag_HasShineStrength = (1 << 6),
+	EMaterialFlag_NoBackFaceCulling = (1 << 7),
+	EMaterialFlag_NoCulling = (1 << 8),
+	EMaterialFlag_HasTransparency = (1 << 9),
+	EMaterialFlag_Opaque = (1 << 10),
 };
 enum EBlendMode
 {
@@ -92,7 +96,7 @@ public:
 	EBlendMode getBlendMode(int level);
 	void setBlendMode(EBlendMode mode, int level);
 	uint64_t getFlags();
-
+	void setFlag(uint64_t flags);
 	void setIdentifierChecksum(uint32_t checksum); //internal game checksum, type_vehicle_main_body, etc
 	uint32_t getIdentifierChecksum();
 private:

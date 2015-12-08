@@ -2,126 +2,143 @@
 #include <stdlib.h>
 #include <string.h>
 #include <squish.h>
+#include "CTexture.h"
 #include "CImage.h"
 #include "pngExporter.h"
-bool png_export_img(ExportOptions *expOpts) {
-	CImage *img = (CImage *)expOpts->dataClass;
-	FILE *fd = fopen(expOpts->path,"wb");
-	if(!fd) return false;
+#include "ctexturecollection.h"
+bool png_export_img_file(const char *path, CImage *img) {
+	FILE *fd = fopen(path, "wb");
+	if (!fd) return false;
 	uint32_t width, height;
-	img->getDimensions(width,height);
+	img->getDimensions(width, height);
 
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_bytep row;
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-	info_ptr = png_create_info_struct(png_ptr);	
+	info_ptr = png_create_info_struct(png_ptr);
 	png_init_io(png_ptr, fd);
-	png_byte color;
+	png_byte color = PNG_COLOR_TYPE_RGBA;
 	int bit_depth = 0;
 	EColourType colour = img->getColourType();
 	int dxt_flags = 0, has_alpha = 0;
 	void *rbga_data = img->getRGBA();
-	switch(colour) {
-		case EColourType_DXT1:
-			dxt_flags = squish::kDxt1;
-			break;
-		case EColourType_DXT2:
-			dxt_flags = squish::kDxt1;
-			has_alpha = 1;
-			break;
-		case EColourType_DXT3:
-			dxt_flags = squish::kDxt3;
-			has_alpha = 1;
-			break;
-		case EColourType_DXT5:
-			dxt_flags = squish::kDxt5;
-			has_alpha = 1;
-			break;
+	switch (colour) {
+	case EColourType_DXT1:
+		dxt_flags = squish::kDxt1;
+		break;
+	case EColourType_DXT2:
+		dxt_flags = squish::kDxt1;
+		has_alpha = 1;
+		break;
+	case EColourType_DXT3:
+		dxt_flags = squish::kDxt3;
+		has_alpha = 1;
+		break;
+	case EColourType_DXT5:
+		dxt_flags = squish::kDxt5;
+		has_alpha = 1;
+		break;
 
-		case EColourType_32BPP:
-			if(dxt_flags != 0) {
-				char *cols_out = (char *)malloc(height*width*4);
-				squish::DecompressImage((squish::u8*)cols_out,width,height,rbga_data,dxt_flags);
-				colour = EColourType_32BPP;
-				rbga_data = cols_out;
-			}
-			color = PNG_COLOR_TYPE_RGBA;
-			bit_depth = 8;
-			break;
-		case EColourType_16BPP: 
-			color = PNG_COLOR_TYPE_RGBA;
-			bit_depth = 16;
-			break;
-		case EColourType_8BPP_256Palette:
-			bit_depth = 8;
-			color = PNG_COLOR_TYPE_PALETTE;
-			png_color palette[256];
-			png_byte transparency[256];
-			memset(&palette,0,sizeof(palette));
-			memset(&transparency,0,sizeof(transparency));
-			for(int i=0;i<256;i++) {
-				uint8_t *img_palette = (uint8_t*)img->getPalette();
-				uint32_t col = img_palette[i];
-				palette[i].red = (col) & 0xFF;			
-				palette[i].green = (col >> 8) & 0xFF;
-				palette[i].blue = (col >> 16) & 0xFF;
-				transparency[i] = (col >> 24) & 0xFF;
-			}
-			png_set_PLTE(png_ptr,info_ptr,(png_colorp)&palette,256);
-			png_set_tRNS(png_ptr, info_ptr, (png_bytep)&transparency,256, NULL);
-			break;
+	case EColourType_32BPP:
+		color = PNG_COLOR_TYPE_RGBA;
+		bit_depth = 8;
+		break;
+	case EColourType_16BPP:
+		color = PNG_COLOR_TYPE_RGBA;
+		bit_depth = 16;
+		break;
+	case EColourType_8BPP_256Palette:
+		bit_depth = 8;
+		color = PNG_COLOR_TYPE_PALETTE;
+		png_color palette[256];
+		png_byte transparency[256];
+		memset(&palette, 0, sizeof(palette));
+		memset(&transparency, 0, sizeof(transparency));
+		for (int i = 0; i<256; i++) {
+			uint8_t *img_palette = (uint8_t*)img->getPalette();
+			uint32_t col = img_palette[i];
+			palette[i].red = (col)& 0xFF;
+			palette[i].green = (col >> 8) & 0xFF;
+			palette[i].blue = (col >> 16) & 0xFF;
+			transparency[i] = (col >> 24) & 0xFF;
+		}
+		png_set_PLTE(png_ptr, info_ptr, (png_colorp)&palette, 256);
+		png_set_tRNS(png_ptr, info_ptr, (png_bytep)&transparency, 256, NULL);
+		break;
+	}
+	if (dxt_flags != 0) {
+		char *cols_out = (char *)malloc(height*width * 4);
+		squish::DecompressImage((squish::u8*)cols_out, width, height, rbga_data, dxt_flags);
+		colour = EColourType_32BPP;
+		rbga_data = cols_out;
 	}
 
 
 	// Write header (8 bit colour depth)
 	png_set_IHDR(png_ptr, info_ptr, width, height,
-			8, color, PNG_INTERLACE_NONE,
-			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+		8, color, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	png_write_info(png_ptr, info_ptr);
-	row = (png_bytep) malloc(((sizeof(uint32_t) * width) * sizeof(png_byte)) + 4);
+	row = (png_bytep)malloc(((sizeof(uint32_t) * width) * sizeof(png_byte)) + 4);
 
-	if(colour == EColourType_32BPP) {
-		for(uint32_t y1=0;y1<height;y1++) {
-				for(uint32_t x1=0;x1<width;x1++) {
-					uint32_t col = ((uint32_t *)rbga_data)[y1*width + x1];
-					memcpy(&(row[x1 * 4]),&col, sizeof(uint32_t));
-				}
-				png_write_row(png_ptr, row);
-		}
-	} else if(colour == EColourType_16BPP) {
-		//broken atm
-		for(uint32_t y1=0;y1<height;y1++) {
-				for(uint16_t x1=0;x1<width;x1++) {
-					uint16_t col = ((uint16_t *)rbga_data)[y1*width + x1];
-					memcpy(&(row[x1 * 2]),&col, sizeof(uint16_t));
-				}
-				png_write_row(png_ptr, row);
-		}
-	} else if(colour == EColourType_8BPP_256Palette) {
-		for(uint32_t y1=0;y1<height;y1++) {
-				for(uint32_t x1=0;x1<width;x1++) {
-					uint8_t col = ((uint8_t *)rbga_data)[y1*width + x1];
-					memcpy(&(row[x1]),&col, sizeof(uint8_t));
-				}
-				png_write_row(png_ptr, row);
+	if (colour == EColourType_32BPP) {
+		for (uint32_t y1 = 0; y1<height; y1++) {
+			for (uint32_t x1 = 0; x1<width; x1++) {
+				uint32_t col = ((uint32_t *)rbga_data)[y1*width + x1];
+				memcpy(&(row[x1 * 4]), &col, sizeof(uint32_t));
+			}
+			png_write_row(png_ptr, row);
 		}
 	}
-	if(dxt_flags != 0) {
+	else if (colour == EColourType_16BPP) {
+		//broken atm
+		for (uint32_t y1 = 0; y1<height; y1++) {
+			for (uint16_t x1 = 0; x1<width; x1++) {
+				uint16_t col = ((uint16_t *)rbga_data)[y1*width + x1];
+				memcpy(&(row[x1 * 2]), &col, sizeof(uint16_t));
+			}
+			png_write_row(png_ptr, row);
+		}
+	}
+	else if (colour == EColourType_8BPP_256Palette) {
+		for (uint32_t y1 = 0; y1<height; y1++) {
+			for (uint32_t x1 = 0; x1<width; x1++) {
+				uint8_t col = ((uint8_t *)rbga_data)[y1*width + x1];
+				memcpy(&(row[x1]), &col, sizeof(uint8_t));
+			}
+			png_write_row(png_ptr, row);
+		}
+	}
+	if (dxt_flags != 0) {
 		//free the newly allocated colour data
 		free(rbga_data);
 	}
 	// End write
 	png_write_end(png_ptr, info_ptr);
-	
+
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-	
+
 	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-	
-	free(row);	
+
+	free(row);
 	fclose(fd);
+	return false;
+}
+bool png_export_img(ExportOptions *expOpts) {
+	CTextureCollection *col = (CTextureCollection *)expOpts->dataClass;
+	Core::Vector<CTexture *> textures = col->getTextures();
+	Core::Iterator<Core::Vector<CTexture *>, CTexture *> it = textures.begin();
+	while (it != textures.end()) {
+		CTexture *tex = *it;
+		CImage *img = tex->getImage();
+		char path[128];
+		sprintf(path, "%s/%s.png",expOpts->path,tex->getPath());
+		png_export_img_file(path, img);
+		it++;
+	}
 	return true;
 }
 bool png_import_img(ImportOptions *impOpts) {

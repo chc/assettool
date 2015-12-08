@@ -48,8 +48,9 @@ void chc_export_image_collection(FILE *fd, CTexture *tex) {
 		cube_item.data_size = img->getDataSize();
 		cube_item.checksum = tex->getChecksum();
 		img->getDimensions(cube_item.width, cube_item.height);
-		if (cube_item.data_size == 0) {
-			cube_item.data_size =  CImage::guessDataSize(cube_item.type, cube_item.width, cube_item.height);
+		uint32_t guess_size = CImage::guessDataSize(cube_item.type, cube_item.width, cube_item.height);
+		if (guess_size > cube_item.data_size) {
+			cube_item.data_size = guess_size;
 		}
 		fwrite(&cube_item, sizeof(cube_item), 1, fd);
 		void *addr = img->getRawData();

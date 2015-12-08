@@ -606,13 +606,30 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 		const char *mat_type = "TYPE_SECONDARY_COLOUR";
 		mat->setIdentifierChecksum(crc32(0, mat_type, strlen(mat_type)));
 	}
+	bool has_alpha = false;
 	while(it != matrec->textures.end()) {
 		TextureRecord *texrec = *it;
+		if (strlen(texrec->alphaname) > 0) {
+			has_alpha = true;
+		}
 		mat->setTextureChecksum(crc32(0, texrec->texturename, strlen(texrec->texturename)), level);
 		mat->setBlendMode(EBlendMode_Modulate, level);
 		mat->setTextureFilterMode(texrec->mat_filter_mode, level);
 		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);
 		it++;
+	}
+	if (has_alpha) {
+		mat->setFlag(EMaterialFlag_HasTransparency);
+		uint32_t flags = (uint32_t)mat->getFlags();
+		if (flags & EMaterialFlag_HasTransparency) {
+			printf("AA\n");
+		}
+		else {
+			printf("BB\n");
+		}
+	}
+	else {
+		mat->setFlag(EMaterialFlag_Opaque);
 	}
 }
 bool gta_rw_import_dff(ImportOptions* impOpts) {

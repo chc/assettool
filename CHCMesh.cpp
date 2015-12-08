@@ -196,6 +196,9 @@ void write_material(CMaterial *material, FILE* fd) {
 	checksum = material->getIdentifierChecksum();
 	fwrite(&checksum, sizeof(uint32_t), 1, fd);
 
+	uint32_t flags = (uint32_t)material->getFlags();
+	fwrite(&flags, sizeof(uint32_t), 1, fd);
+
 	float col[4], s;
 
 	material->getSpecColour(col[0],col[1],col[2],col[3]);

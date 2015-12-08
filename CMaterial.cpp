@@ -153,3 +153,6 @@ uint32_t CMaterial::getIdentifierChecksum() {
 	}
 	return m_identifier_checksum;
 }
+void CMaterial::setFlag(uint64_t flags) {
+	m_flags |= flags;
+}
