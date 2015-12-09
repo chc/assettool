@@ -4,6 +4,7 @@
 #include "ScenePack.h"
 #include "CCollision.h"
 #include "crc32.h"
+#include "Utils.h"
 #include <glm/glm.hpp>
 #define GTA_COL3_MAGIC 0x334c4f43
 bool gta_rw_export_col(ExportOptions *expOpts) {
@@ -176,7 +177,9 @@ bool gta_rw_import_col(ImportOptions* opts) {
 		printf("%s\n", head.model_name);
 		fseek(fd, head_pos, SEEK_SET);
 		fseek(fd, head.file_size + (sizeof(uint32_t) * 2), SEEK_CUR);
-		col->setChecksum(crc32(0, head.model_name, strlen(head.model_name)));
+		std::string modelname = head.model_name;
+		modelname = tolower(modelname);
+		col->setChecksum(crc32(0, modelname.c_str(), modelname.size()));
 		printf("Col checksum: %08X\n", col->getChecksum());
 		m_out_collision->addChild(col);
 	} while (head.magic == GTA_COL3_MAGIC && !feof(fd));

@@ -1,7 +1,7 @@
 #include "Utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string>
 int file_len(FILE *fd) {
 	int pos = ftell(fd);
 	fseek(fd,0,SEEK_END);
@@ -9,7 +9,13 @@ int file_len(FILE *fd) {
 	fseek(fd,pos,SEEK_SET);
 	return len;
 }
-
+std::string tolower(std::string s) {
+	std::string ret = "";
+	for (int i = 0; i < s.length(); i++) {
+		ret += tolower(s[i]);
+	}
+	return ret;
+}
 FILE* slice_file(const char *name, const char *outname, int offset, int slice_len) {
 	char tmpname[FILENAME_MAX+1];
 	char *writebuf = NULL;
