@@ -129,8 +129,8 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 					AnimRootFrame fake_root;
 					fread(&frame, sizeof(AnimChildFrame), 1, fd);
 
-					memcpy(&fake_root.quat, &frame.quat, sizeof(uint16_t) * 4);
-					memset(&fake_root.trans, 0, sizeof(uint16_t) * 3);
+					memcpy(&fake_root.quat, &frame.quat, sizeof(int16_t) * 4);
+					memset(&fake_root.trans, 0, sizeof(int16_t) * 3);
 					fake_root.time = frame.time;
 					CKeyframeSequence *seq = new CKeyframeSequence();
 					get_sequence_from_frame(seq, &fake_root);

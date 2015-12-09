@@ -620,13 +620,6 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 	}
 	if (has_alpha) {
 		mat->setFlag(EMaterialFlag_HasTransparency);
-		uint32_t flags = (uint32_t)mat->getFlags();
-		if (flags & EMaterialFlag_HasTransparency) {
-			printf("AA\n");
-		}
-		else {
-			printf("BB\n");
-		}
 	}
 	else {
 		mat->setFlag(EMaterialFlag_Opaque);
