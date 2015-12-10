@@ -694,7 +694,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			m_mat_instance_counts[matid]++;
 		}
 
-		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalPosition(glm::value_ptr(g->default_hierarchical_position));
+		//output_meshes[mesh_buffer_idx]->setDefaultHierarchicalPosition(glm::value_ptr(g->default_hierarchical_position));
 		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalRotation(glm::value_ptr(g->default_hierarchical_rotation));
 
 

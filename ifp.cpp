@@ -67,7 +67,7 @@ void print_anim_root_frame(AnimRootFrame *frame) {
 }
 void print_anim_child_frame(AnimChildFrame *frame) {
 	float div = 4096.0;
-	glm::quat quat = glm::quat((frame->quat[0] / div), (frame->quat[1] / div), (frame->quat[2] / div), (frame->quat[3] / div));
+	glm::quat quat = glm::quat((frame->quat[3] / div), (frame->quat[0] / div), (frame->quat[1] / div), (frame->quat[2] / div));
 	printf("Frame Info: \n");
 	printf("Quat: %f %f %f %f\n", quat.x, quat.y, quat.z, quat.w);
 	printf("Time: %d\n", frame->time);
@@ -88,7 +88,7 @@ bool gta_rw_export_ifp(ExportOptions *expOpts) {
 
 void get_sequence_from_frame(CKeyframeSequence *keyframe, AnimRootFrame *frame) {
 	float div = 4096.0;
-	glm::quat quat = glm::quat((frame->quat[0] / div), (frame->quat[1] / div), (frame->quat[2] / div), (frame->quat[3] / div));
+	glm::quat quat = glm::quat((frame->quat[3] / div), (frame->quat[0] / div), (frame->quat[1] / div), (frame->quat[2] / div));
 	glm::vec3 trans = glm::vec3((frame->trans[0] / 1024.0), (frame->trans[1] / 1024.0), (frame->trans[2] / 1024.0));
 	keyframe->setRotation(quat);
 	keyframe->setPosition(trans);
