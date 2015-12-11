@@ -45,8 +45,7 @@ bool chc_engine_export_keyframe_collection(ExportOptions* opts) {
 			float begin_frame = seq->getBeginFrame();
 			glm::vec3 pos = seq->getPosition();
 			glm::quat quat = seq->getRotation();
-			uint32_t begin = (uint32_t)begin_frame;
-			fwrite(&begin, sizeof(uint32_t), 1, fd);
+			fwrite(&begin_frame, sizeof(float), 1, fd);
 			fwrite(glm::value_ptr(pos), sizeof(float), 3, fd);
 			fwrite(glm::value_ptr(quat), sizeof(float), 4, fd);
 
