@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include "CCollision.h"
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
 class CKeyframeSequence;
@@ -72,7 +73,15 @@ public:
 
 	void setKeyframeSequence(int sequence_index, CKeyframeSequence *sequence);
 	CKeyframeSequence getKeyframeSequence(int sequence_index);
+
+	void setParent(CMesh *mesh);
+	CMesh *getParent();
+
+	bool hasSubIndices();
+
+	COLBBox getBBox();
 private:
+	void generate_bbox();
 	char m_name[64];
 	CMaterial *mp_material;
 	CCollision *mp_collision;
@@ -94,5 +103,11 @@ private:
 
 	float default_hierarchical_position[3];
 	float default_hierarchical_rotation[9];
+
+	CMesh *mp_parent;
+
+	bool has_sub_indices;
+
+	COLBBox m_bbox;
 };
 #endif //_CMESH_H

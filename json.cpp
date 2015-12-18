@@ -33,17 +33,19 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 	jarr1 = json_array();
 	//normals
 	p = mesh->getNormals();
-	for (int i = 0; i < num_verts; i++) {
-		json_t* v_array = json_array();
-		for (int j = 0; j < 3; j++) {
-			double v = (*p);
-			json_t* jval = json_real(v);
-			json_array_append_new(v_array, jval);
-			p++;
+	if (p) {
+		for (int i = 0; i < num_verts; i++) {
+			json_t* v_array = json_array();
+			for (int j = 0; j < 3; j++) {
+				double v = (*p);
+				json_t* jval = json_real(v);
+				json_array_append_new(v_array, jval);
+				p++;
+			}
+			json_array_append_new(jarr1, v_array);
 		}
-		json_array_append_new(jarr1, v_array);
+		json_object_set_new(jobj, "normals", jarr1);
 	}
-	json_object_set_new(jobj, "normals", jarr1);
 
 	jarr1 = json_array();
 	//uvs
@@ -72,10 +74,11 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 	if (mesh->getIndices() != NULL)
 	{
 		json_t *indices_array2 = json_array();
+		bool sub_indices = mesh->hasSubIndices();
 		for (int i = 0; i < num_index_sets || i == 0; i++) {
 			int level = i;
 			uint32_t *indices = mesh->getIndices(level);
-			if (indices == NULL && i == 0) {
+			if (!sub_indices) {
 				level = -1;
 				indices = mesh->getIndices(level);
 			}
@@ -91,6 +94,9 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 			}
 			json_array_append_new(indices_array2, indices_array);
 		}
+		if (sub_indices) {
+			json_object_set_new(jobj, "submesh_materials", json_integer(1));
+		}
 		json_object_set_new(jobj, "indices", indices_array2);
 	}	
 } 
@@ -101,6 +107,8 @@ void add_material_to_json(json_t *jobj, CMaterial *mat) {
 	json_t *name = json_string(mat->getName());
 	json_object_set_new(mat_obj, "checksum", checksum);
 	json_object_set_new(mat_obj, "name", name);
+	bool wrote_materials = false;
+	json_t *textures = json_array();
 	for (int i = 0; (tex = mat->getTexture(i)) != NULL; i++) {
 		json_t *tex_obj = json_object();
 		const char *file_name = strrchr(tex->getPath(), '\\');
@@ -111,7 +119,20 @@ void add_material_to_json(json_t *jobj, CMaterial *mat) {
 			json_t *str = json_string(file_name);
 			json_object_set_new(tex_obj, "path", str);
 		}
-		json_object_set_new(mat_obj, "texture", tex_obj);
+		json_array_append_new(textures, tex_obj);;
+		//json_object_set_new(mat_obj, "texture", tex_obj);
+		wrote_materials = true;
+	}
+	if (!wrote_materials) {
+		for (int i = 0; i < MAX_MATERIAL_TEXTURES; i++) {
+			json_t *tex_obj = json_object();
+			uint32_t checksum = mat->getTextureChecksum(i);
+			if (checksum == 0) break;
+			json_t *level = json_integer(checksum);
+			json_object_set_new(tex_obj, "checksum", level);
+			json_array_append_new(textures, tex_obj);
+		}
+		json_object_set_new(mat_obj, "textures", textures);
 	}
 	json_array_append_new(jobj, mat_obj);
 }

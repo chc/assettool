@@ -136,7 +136,9 @@ typedef struct {
 
 	glm::vec3 default_hierarchical_position;
 	glm::mat3x3 default_hierarchical_rotation;
+	FrameInfo *parent_frame;
 
+	uint32_t output_mesh_id; //where is it in the outputmeshes buffer 
 } GeometryRecord;
 
 typedef struct {
@@ -277,6 +279,16 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float) * 3);
 			memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_rotation, glm::value_ptr(dff_out->m_frames[frame_index]->rotation_matrix), sizeof(float) * 9);
 			dff_out->m_geom_records[geometry_index]->keyframes.add(dff_out->m_frames[frame_index]);
+			
+
+			if (dff_out->m_frames[frame_index]->parent_frame != -1) {
+				FrameInfo *parent = dff_out->m_frames[dff_out->m_frames[frame_index]->parent_frame];
+				dff_out->m_geom_records[geometry_index]->parent_frame = parent;
+			}
+			else {
+				dff_out->m_geom_records[geometry_index]->parent_frame = NULL;
+			}
+
 			printf("Atomic name: %d %s\n", frame_index, dff_out->m_frames[frame_index]->name);
 			break;
 	  }
@@ -625,6 +637,15 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 		mat->setFlag(EMaterialFlag_Opaque);
 	}
 }
+//CMesh **output_meshes = (CMesh**)malloc(info.m_geom_records.size() * sizeof(CMesh *));
+CMesh *find_mesh_by_name_from_array(CMesh **meshes, int size, const char *name, DFFInfo *info) {
+	for (int i = 0; i < size; i++) {
+		if (strcmp(meshes[i]->getName(), name) == 0) {
+			return meshes[i];
+		}
+	}
+	return NULL;
+}
 bool gta_rw_import_dff(ImportOptions* impOpts) {
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
@@ -675,16 +696,19 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 	it = info.m_geom_records.begin();
 	while(it != info.m_geom_records.end()) {
-		if(strstr((*it)->name, "dummy")  || strstr((*it)->name, "_vlo"))  {
+		GeometryRecord *g = *it;
+		if(strstr(g->name, "dummy") || strstr(g->name, "_vlo") || strstr(g->name, "moving"))  {
 			it++;
 			continue;
 		}
 		output_meshes[mesh_buffer_idx] = new CMesh();
 		
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
-		GeometryRecord *g = *it;
+		
 		output_meshes[mesh_buffer_idx]->setName(g->name);
 		output_meshes[mesh_buffer_idx]->setGroupId(crc32(0, g->name, strlen(g->name)));
+
+		g->output_mesh_id = mesh_buffer_idx;
 
 		float *temp_verts = (float *)malloc(g->vertex_count * sizeof(float) * 3);
 		float *temp_verts_p = temp_verts;
@@ -696,7 +720,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalPosition(glm::value_ptr(g->default_hierarchical_position));
 		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalRotation(glm::value_ptr(g->default_hierarchical_rotation));
-
 
 		output_meshes[mesh_buffer_idx]->setIndexLevels(g->m_index_buffers.size());
 		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3>>, Core::MapItem< int, Core::Vector<glm::ivec3>>*> it2 = g->m_index_buffers.begin();
@@ -776,6 +799,22 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		mesh_buffer_idx++;
 		it++;
 	}
+
+
+	it = info.m_geom_records.begin();
+	while (it != info.m_geom_records.end()) {
+		GeometryRecord *g = *it;
+		if (g->parent_frame != NULL) {
+			CMesh *parent = find_mesh_by_name_from_array(output_meshes, mesh_buffer_idx, g->parent_frame->name, &info);
+			if (parent) {
+				printf("Setting parent of %s to: %08X(%s)\n", output_meshes[g->output_mesh_id]->getName(), parent->getGroupId(),parent->getName());
+				output_meshes[g->output_mesh_id]->setParent(parent);
+			}
+		}
+		it++;
+	}
+
+
 	
 
 	//run exporter

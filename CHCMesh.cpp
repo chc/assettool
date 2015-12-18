@@ -7,7 +7,8 @@
 #include <algorithm>
 #include "CHCTexture.h"
 #include "ctexturecollection.h"
-#define CHCMESH_VERSION 3
+#include "CCollision.h"
+#define CHCMESH_VERSION 4
 enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_ColAsInt = (1<<0),
 	ECHCMeshFlag_HasNormals = (1<<1),
@@ -15,7 +16,8 @@ enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_HasUVs = (1<<3),
 	ECHCMeshFlag_MaterialIndexID = (1<<4),
 	ECHCMeshFlag_HasDefaultHiearchyPos = (1<<5),
-	ECHCMeshFlag_HasDefaultHiearchyRot = (1<<6),
+	ECHCMeshFlag_HasDefaultHiearchyRot = (1 << 6),
+	ECHCMeshFlag_HasBBOX = (1 << 7),
 };
 enum ECHCPrimType { //must corrospond to game
 	ECHCPrimType_TriangleList,
@@ -96,6 +98,11 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		}
 	}
 
+	COLBBox bbox = mesh->getBBox();
+	if (bbox.checksum != 0) {
+		flags |= ECHCMeshFlag_HasBBOX;
+	}
+
 	if(default_hiearchy_rot) {
 		for(int i=0;i<9;i++) {
 			if(default_hiearchy_rot[i] != 0.0) {
@@ -127,11 +134,11 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			uint32_t k = 0;
 			if(mat == NULL) {
 				fwrite(&k, sizeof(uint32_t), 1, fd);
-			} else {
-				k = crc32(0,mat->getName(),strlen(mat->getName()));
-				fwrite(&k,sizeof(uint32_t),1,fd);
 			}
-			
+			else {
+				k = crc32(0, mat->getName(), strlen(mat->getName()));
+				fwrite(&k, sizeof(uint32_t), 1, fd);
+			}			
 		}
 	}
 	
@@ -139,11 +146,22 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t group_checksum = mesh->getGroupId();
 	fwrite(&group_checksum, sizeof(uint32_t), 1, fd);
 
+	uint32_t parent_checksum = 0;
+	if (mesh->getParent() != NULL) {
+		parent_checksum = mesh->getParent()->getGroupId();
+	}
+	fwrite(&parent_checksum, sizeof(uint32_t), 1, fd);
+
 	if(flags & ECHCMeshFlag_HasDefaultHiearchyPos) {
 		fwrite(mesh->getDefaultHierarchialPosition(), sizeof(float), 3, fd);
 	}
 	if(flags & ECHCMeshFlag_HasDefaultHiearchyRot)  {
 		fwrite(mesh->getDefaultHiearchialRotation(), sizeof(float), 9, fd);
+	}
+
+	if (flags & ECHCMeshFlag_HasBBOX) {
+		fwrite(&bbox.min, sizeof(float), 3, fd);
+		fwrite(&bbox.max, sizeof(float), 3, fd);
 	}
 
 	float *uv_sets[MAX_MESH_TEXTURES];
@@ -340,6 +358,11 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		uint32_t version = CHCMESH_VERSION;
 		fwrite(&version, sizeof(uint32_t), 1, fd);
 		fwrite(&scenepack->num_meshes, sizeof(uint32_t), 1, fd);
+
+		COLBBox box = get_scenepack_bbox(scenepack);
+		fwrite(&box.min, sizeof(float), 3, fd);
+		fwrite(&box.max, sizeof(float), 3, fd);
+
 		for (int i = 0; i < scenepack->num_meshes; i++) {
 			write_mesh(scenepack->m_meshes[i], fd);
 		}

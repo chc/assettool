@@ -6,6 +6,7 @@
 #include "CImage.h"
 #include "pngExporter.h"
 #include "ctexturecollection.h"
+#include "crc32.h"
 bool png_export_img_file(const char *path, CImage *img) {
 	FILE *fd = fopen(path, "wb");
 	if (!fd) return false;
@@ -131,11 +132,27 @@ bool png_export_img(ExportOptions *expOpts) {
 	CTextureCollection *col = (CTextureCollection *)expOpts->dataClass;
 	Core::Vector<CTexture *> textures = col->getTextures();
 	Core::Iterator<Core::Vector<CTexture *>, CTexture *> it = textures.begin();
+
+
+	//really shit, we need an args parser!
+	bool checksum_names = false;
+	if (expOpts->args != NULL) {
+		if (strcmp(expOpts->args, "crc32_names") == 0) {
+			checksum_names = true;
+		}
+	}
 	while (it != textures.end()) {
 		CTexture *tex = *it;
 		CImage *img = tex->getImage();
 		char path[128];
-		sprintf(path, "%s/%s.png",expOpts->path,tex->getPath());
+		char out_name[128];
+		if (checksum_names) {
+			sprintf(out_name, "%08X", crc32(0, tex->getPath(), strlen(tex->getPath())));
+		}
+		else {
+			sprintf(out_name, "%s", tex->getPath());
+		}
+		sprintf(path, "%s/%s.png",expOpts->path,out_name);
 		png_export_img_file(path, img);
 		it++;
 	}

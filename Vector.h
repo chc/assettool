@@ -83,7 +83,6 @@ namespace Core {
 		}
 		void initalize(int count) {
 			items = (VectorItem<T> *)malloc(sizeof(VectorItem<T>) * count);
-			printf("Init items: %p\n",items);
 			memset(items,0,sizeof(VectorItem<T>) * count);
 			item_count = count;
 		}
@@ -100,10 +99,8 @@ namespace Core {
 			item_count += count;
 			VectorItem<T> *new_items = (VectorItem<T> *)malloc(sizeof(VectorItem<T>) * item_count);
 			memset(new_items,0,sizeof(VectorItem<T>) * item_count);
-			printf("additemslots this %p\n",this);
 			if(items) {
 				memcpy(new_items,items,sizeof(VectorItem<T>) * (item_count-count));
-				printf("Freeing in slots: %p\n",items);
 				free(items);
 			}
 			items = new_items;

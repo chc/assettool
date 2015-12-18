@@ -14,4 +14,6 @@ typedef struct {
 	CCollision *m_collision;
 } ScenePack;
 
+COLBBox get_scenepack_bbox(ScenePack *pack);
+
 #endif //_SCEHEPACK_H

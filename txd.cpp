@@ -14,6 +14,8 @@
 
 #include "ctexturecollection.h"
 
+#include <libthps/misc.h>
+
 
 void decompress(Img *img, const char *name)  {
 		int dxt_flags = 0;
@@ -112,6 +114,10 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 
 	img->rbga_data = (void *)malloc(read_size);
 	fread(img->rbga_data,read_size,1,fd);
+
+	if (img->colourType == EColourType_32BPP) {
+		LibTHPS::bgra_32bit_to_rgba((uint32_t*)img->rbga_data, img->width, img->height);
+	}
 
 	if(img->num_mipmaps > 0) {
 		img->mipmaps = (void **)malloc(img->num_mipmaps*sizeof(void *));

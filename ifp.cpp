@@ -3,6 +3,7 @@
 #include "CGame.h"
 #include "ifp.h"
 #include "CKeyframeSequence.h"
+#include "CKeyframeSeqCollection.h"
 #include "CKeyframeCollection.h"
 #include "crc32.h"
 
@@ -22,7 +23,7 @@ typedef struct {
 	char name[24];
 	uint32_t object_count;
 	uint32_t frame_size;
-	uint32_t flags;
+	uint32_t unknown;
 } AnimHeader;
 typedef struct {
 	char name[24];
@@ -41,10 +42,10 @@ typedef struct {
 } AnimChildFrame;
 void print_anim_info(AnimHeader *anim) {
 	printf("Anim Info: \n");
-	printf("Name: %s\n", anim->name);
+	printf("Name: %s (%08X)\n", anim->name,crc32(0, anim->name, strlen(anim->name)));
 	printf("Objects: %d\n", anim->object_count);
 	printf("Frame size: %d\n", anim->frame_size);
-	printf("Frame flags: %d\n", anim->flags);
+	//printf("Unknown: %d\n", anim->unknown);
 	printf("\n\n\n");
 }
 void print_ifp_header(IFPHeader *head) {
@@ -100,7 +101,7 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 	AnimHeader anim;
 
 	Core::Vector<CKeyframeCollection *> collections;
-	CKeyframeCollection *collection = NULL;
+	CKeyframeSeqCollection *collection = NULL;
 	fread(&head, sizeof(IFPHeader), 1, fd);
 	if(head.magic != ANIM_V2_FOURCC) 
 		return false;
@@ -108,13 +109,17 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 	for (int i = 0; i < head.anim_count; i++) {
 		fread(&anim, sizeof(AnimHeader), 1, fd);
 		print_anim_info(&anim);
-
+		CKeyframeCollection *key_col = new CKeyframeCollection();
+		key_col->setCollectionIdentifier(crc32(0, anim.name, strlen(anim.name)));
+		printf("key checksum: %s 0x%08X\n", anim.name, key_col->getCollectionIdentifier());
 		for (int j = 0; j < anim.object_count; j++) {
 			ObjectInfo obj;
 			fread(&obj, sizeof(ObjectInfo), 1, fd);
 			print_object_info(&obj);
-			collection = new CKeyframeCollection();
-			collection->setCollectionIdentifier(crc32(0, obj.name, strlen(obj.name)));
+			collection = new CKeyframeSeqCollection();
+			uint32_t checksum = crc32(0, obj.name, strlen(obj.name));
+			printf("Obj checksum: %s 0x%08X\n", obj.name, checksum);
+			collection->setCollectionIdentifier(checksum);
 			for (int k = 0; k < obj.num_frames; k++) {
 				if (obj.type == 4) {
 					AnimRootFrame frame;
@@ -138,9 +143,9 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 					print_anim_child_frame(&frame);
 				}
 			}
-			collections.add(collection);
+			key_col->add(collection);
 		}
-		
+		collections.add(key_col);
 	}
 
 	ExportOptions opts;

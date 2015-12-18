@@ -53,15 +53,15 @@ void flip_8bit_buffer(uint8_t *colours, int width, int height) {
 	free(tmp);
 }
 void flip_32bit_buffer(uint32_t *colours, int width, int height, bool colour_fix) {
-	uint32_t *tmp = (uint32_t*) malloc((width*height)*sizeof(uint32_t));
-	uint32_t *row =(uint32_t*) malloc((width)*sizeof(uint32_t));
+	uint32_t *tmp = (uint32_t*)malloc((width*height)*sizeof(uint32_t));
+	uint32_t *row = (uint32_t*)malloc((width)*sizeof(uint32_t));
 	uint32_t *row_pixel = row;
 	uint32_t *p = tmp;
-	for(uint32_t y=height;y>0;y--) {
-		for(uint32_t x=width;x>0;x--) {
+	for (uint32_t y = height; y>0; y--) {
+		for (uint32_t x = width; x>0; x--) {
 			uint32_t b = ((colours[(y*width + x)]));
-			uint32_t c = (b&(0xff<<24) | ((b&(0xff))<<16)) | ((b&(0xff<<16)))>>16 | (b&0x0000ff00);
-			if(!colour_fix) c = b;
+			uint32_t c = (b&(0xff << 24) | ((b&(0xff)) << 16)) | ((b&(0xff << 16))) >> 16 | (b & 0x0000ff00);
+			if (!colour_fix) c = b;
 			*(row_pixel++) = c;
 		}
 		row_pixel = row;
@@ -71,6 +71,16 @@ void flip_32bit_buffer(uint32_t *colours, int width, int height, bool colour_fix
 	}
 	memcpy(colours, tmp, width*height*sizeof(uint32_t));
 	free(tmp);
+}
+
+void bgra_32bit_to_rgba(uint32_t *colours, int width, int height) {
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			uint32_t b = ((colours[(y*width + x)]));
+			uint32_t c = (b&(0xff << 24) | ((b&(0xff)) << 16)) | ((b&(0xff << 16))) >> 16 | (b & 0x0000ff00);
+			colours[(y*width + x)] = c;
+		}
+	}
 }
 
 }

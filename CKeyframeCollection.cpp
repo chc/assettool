@@ -7,10 +7,10 @@ CKeyframeCollection::~CKeyframeCollection() {
 
 }
 
-void CKeyframeCollection::add(CKeyframeSequence *frame) {
+void CKeyframeCollection::add(CKeyframeSeqCollection *frame) {
 	frames.add(frame);
 }
-Core::Vector<CKeyframeSequence *> CKeyframeCollection::getCollection() {
+Core::Vector<CKeyframeSeqCollection *> CKeyframeCollection::getCollection() {
 	return this->frames;
 }
 

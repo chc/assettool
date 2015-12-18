@@ -1,6 +1,7 @@
 #ifndef _CCOLLISION_H
 #define _CCOLLISION_H
 #include <stdint.h>
+#include <vector>
 typedef struct {
 	float min[3];
 	float max[3];

@@ -29,9 +29,9 @@ glm::vec3 CKeyframeSequence::getPosition() {
 glm::mat3x3 CKeyframeSequence::getUVMatrix(int level) {
 	return uv_matrices[level];
 }
-void CKeyframeSequence::setBeginFrame(int frame) {
+void CKeyframeSequence::setBeginFrame(float frame) {
 	start_frame = frame;
 }
-int CKeyframeSequence::getBeginFrame() {
+float CKeyframeSequence::getBeginFrame() {
 	return start_frame;
 }

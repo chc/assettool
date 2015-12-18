@@ -12,13 +12,17 @@ CMesh::CMesh() {
 	m_vertices = NULL;
 	mp_material = NULL;
 	mp_collision = NULL;
+	mp_parent = NULL;
 	num_index_levels = 0;
 	m_num_uv_layers = 0;
 	m_group_id = 0;
 	m_num_materials = 0;
+	has_sub_indices = false;
 	m_indexed_materials = false;
 	m_prim_type = CMeshPrimType_TriangleList;
 	memset(&m_uvws, 0, sizeof(m_uvws));
+	memset(&m_bbox, 0, sizeof(m_bbox));
+
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
@@ -91,6 +95,7 @@ void CMesh::setIndices(uint32_t *indices, int num_indices, int level) {
 		m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t) * 3);
 		memcpy(m_indices,indices,num_indices * sizeof(uint32_t) * 3);
 	} else {
+		has_sub_indices = true;
 		m_num_indexed_levels[level] = num_indices;
 		((uint32_t**)m_indices)[level] = (uint32_t*) malloc(num_indices * sizeof(uint32_t) * 3);
 		memcpy(((uint32_t**)m_indices)[level],indices,num_indices * sizeof(uint32_t) * 3);
@@ -137,4 +142,51 @@ float *CMesh::getDefaultHierarchialPosition() {
 }
 float *CMesh::getDefaultHiearchialRotation() {
 	return (float *)&default_hierarchical_rotation;
+}
+void CMesh::setParent(CMesh *mesh) {
+	mp_parent = mesh;
+}
+CMesh *CMesh::getParent() {
+	return mp_parent;
+}
+
+bool CMesh::hasSubIndices() {
+	return has_sub_indices;
+}
+COLBBox CMesh::getBBox() {
+	if (m_bbox.checksum == 0)
+		generate_bbox();
+	return m_bbox;
+}
+
+void CMesh::generate_bbox() {
+	COLBBox bbox;
+	bbox.checksum = 1;
+	float min[3];
+	float max[3];
+	
+	for (int i = 0; i < 3; i++) {
+		min[i] = 999999999.0;
+		max[i] = -999999999.0;
+	}
+
+	float *verts = getVerticies();
+	float *p = verts;
+	for (int i = 0; i < m_num_vertices; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (p[j] < min[j]) {
+				min[j] = p[j];
+			}
+			if (p[j] > max[j]) {
+				max[j] = p[j];
+			}
+		}
+		p += 3;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		bbox.min[i] = min[i];
+		bbox.max[i] = max[i];
+	}
+	m_bbox = bbox;
 }
