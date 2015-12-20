@@ -1,12 +1,15 @@
 #include "main.h"
 #include "CGameTHPS.h"
 #include "CImage.h"
+#include "CTexture.h"
+#include "ctexturecollection.h"
+
 #include "txd.h"
 
 #include <libthps/LibTHPS.h>
 #include <libthps/Image.h>
 #include <libthps/texturetable.h>
-
+#include <libthps/misc.h>
 #include "CTHPSImg.h"
 using namespace LibTHPS;
 CGameTHPS::CGameTHPS() {
@@ -74,28 +77,65 @@ bool thps_xbx_export_img(ExportOptions *expOpts) {
 bool thps_xbx_export_textable(ExportOptions *expOpts) {
 	return false;
 }
-
+EColourType get_colour_type_from_depth(LibTHPS::ColourDepth depth, uint32_t dxt) {
+	if (dxt != 0) {
+		switch (dxt) {
+		case 1:
+			return EColourType_DXT1;
+		case 2:
+			return EColourType_DXT2;
+		case 3:
+			return EColourType_DXT3;
+		case 5:
+			return EColourType_DXT5;
+		}
+	}
+	switch (depth) {
+	case 32:
+		return EColourType_32BPP;
+	case 16:
+		return EColourType_16BPP;
+	case 8: //for now assume its got a palette
+		return EColourType_8BPP_256Palette;
+	}
+}
 bool thps_xbx_import_textable(ImportOptions* opts) {
 	char out_path[FILENAME_MAX+1];
+	CTextureCollection *tex_col = new CTextureCollection();
 	LibTHPS::TextureTable *textbl = new LibTHPS::TextureTable(opts->path, LibTHPS::Platform_Xbox);
+
 	int count = 0;
 	LibTHPS::Texture **texes = textbl->getTextures(count);
 
-	CImage *tex = new CImage();
+	
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
 	expOpts.type = FileType_Texture;
-	expOpts.path = (const char *)&out_path;
-	expOpts.dataClass = (void *)tex;
+	expOpts.dataClass = (void *)tex_col;
+
+	expOpts.path = opts->outpath;
+	expOpts.srcPath = opts->path;
+	expOpts.extra = opts->extra;
+	expOpts.args = opts->expArgs;
 
 	uint32_t width,height;
 	EColourType colourType = EColourType_32BPP;
 	for(int i=0;i<count;i++) {
 		texes[i]->getDimensions(width,height);
-		tex->setDimensions(width,height);
-		tex->setColourData(colourType,((void **)texes[i]->getRawImgData())[0]);
-		sprintf(out_path,"%s/%08X.png",opts->outpath,texes[i]->getChecksum());
-		opts->exporter(&expOpts);
+
+		CTexture *tex = new CTexture();
+		CImage *img = new CImage();
+		img->setDimensions(width, height);
+		void *data = (void *)(((void **)texes[i]->getRawImgData())[0]);
+		LibTHPS::ColourDepth depth = texes[i]->getColourDepth();
+		EColourType coltype = get_colour_type_from_depth(depth, texes[i]->getDXT());
+		img->setColourData(coltype, data);
+		tex->setImage(img);
+		tex->setChecksum(texes[i]->getChecksum());
+
+		tex_col->AddTexture(tex);
 	}
+
+	opts->exporter(&expOpts);
 	return false;
 }

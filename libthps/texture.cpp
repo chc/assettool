@@ -42,7 +42,7 @@ Texture::Texture(FILE *fd, EPlatform platform) : Image(platform) {
 
 		fread(colours[i], texel_size, 1, fd);
 	}
-
+	/*
 	if(dxt != 0) {
 		int dxt_flags = 0;
 		char has_alpha = 0;
@@ -78,7 +78,7 @@ Texture::Texture(FILE *fd, EPlatform platform) : Image(platform) {
 		free(colours);
 		colours = decompressed_colours;
 	}
-	
+	*/
 
 
 	m_colour_data = (void*)colours;
