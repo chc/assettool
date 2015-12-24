@@ -1,7 +1,7 @@
 #include <main.h>
 #include <Generic/CGame.h>
-#include "CFile.h"
-#include "imgv2.h"
+#include <Generic/CFile.h>
+#include <GTASA/imgv2.h>
 bool gta_rw_import_imgv2(ImportOptions* opts) {
 	IMGV2Head head;
 	IMGV2File *file_entries = NULL;

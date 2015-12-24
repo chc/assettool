@@ -1,10 +1,10 @@
 #include <main.h>
 #include <GTASA/CGTASA.h>
 #include <Generic/CGame.h>
-#include "ifp.h"
-#include "CKeyframeSequence.h"
-#include "CKeyframeSeqCollection.h"
-#include "CKeyframeCollection.h"
+#include <GTASA/ifp.h>
+#include <Generic/CKeyframeSequence.h>
+#include <Generic/CKeyframeSeqCollection.h>
+#include <Generic/CKeyframeCollection.h>
 #include <crc32.h>
 
 #include <glm/glm.hpp>

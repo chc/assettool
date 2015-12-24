@@ -1,9 +1,9 @@
-#include "Vector.h"
-#include "Iterator.h"
-#include "CCHCKeyframe.h"
-#include "CKeyframeSequence.h"
-#include "CKeyframeCollection.h"
-#include "CKeyframeSeqCollection.h"
+#include <Vector.h>
+#include <Iterator.h>
+#include <CHCEngine/CCHCKeyframe.h>
+#include <Generic/CKeyframeSequence.h>
+#include <Generic/CKeyframeCollection.h>
+#include <Generic/CKeyframeSeqCollection.h>
 #define CHC_KEYFRAME_VERSION 1
 typedef struct {
 	uint32_t version;

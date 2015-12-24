@@ -4,7 +4,7 @@
 #include <Generic/CTexture.h>
 #include <Generic/CTextureCollection.h>
 
-#include "txd.h"
+#include <GTASA/txd.h>
 
 #include <libthps/LibTHPS.h>
 #include <libthps/Image.h>
