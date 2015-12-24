@@ -1,10 +1,10 @@
-#include "main.h"
-#include "CGTASA.h"
-#include "CGameTHPS.h"
-#include "CCHCEngine.h"
-#include "CGeneric.h"
-#include "CCHCMax.h"
-#include "CAssImp.h"
+#include <main.h>
+#include <GTASA/CGTASA.h>
+#include <THPS/CGameTHPS.h>
+#include <CHCEngine/CCHCEngine.h>
+#include <Generic/CGeneric.h>
+#include <XML/CCHCMax.h>
+#include <Assimp/CAssImp.h>
 #include <vector>
 std::vector<IGame*> loaded_game_interfaces;
 extern assetToolState g_toolState;

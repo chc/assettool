@@ -1,6 +1,6 @@
 #ifndef _ARGS_HANDLER_H
 #define _ARGS_HANDLER_H
-#include "main.h"
+#include <main.h>
 
 typedef struct {
 	const char *argument;

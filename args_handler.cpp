@@ -1,6 +1,6 @@
 #include <vector>
-#include "CGame.h"
-#include "args_handler.h"
+#include <Generic/CGame.h>
+#include <args_handler.h>
 /*
 
 //extracting all txds in GTA

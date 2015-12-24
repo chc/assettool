@@ -18,7 +18,7 @@ assettool -ingame GTASA -infmt imgv2 -append newtxd.txd -outpath gta3_new.img
 
 #ifndef _MAIN_H
 #define _MAIN_H
-#include "CGame.h"
+#include <Generic/CGame.h>
 typedef struct  {
 	IGame *gameIn;
 	IGame *gameOut;

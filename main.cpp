@@ -1,14 +1,14 @@
 #include <stdio.h>
-#include "main.h"
-#include "CGame.h"
-#include "CGTASA.h"
-#include "CGeneric.h"
+#include <main.h>
+#include <Generic/CGame.h>
+#include <GTASA/CGTASA.h>
+#include <Generic/CGeneric.h>
 #include <vector>
 
 #include "modules.h"
-#include "args_handler.h"
+#include <args_handler.h>
 
-#include "Utils.h"
+#include <Utils.h>
 
 //#include <vld.h>
 
