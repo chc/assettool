@@ -29,9 +29,10 @@ source_group("XML" FILES ${XML_SOURCES})
 #OpenGL specific stuff
 IF(WIN32)
 
-add_executable (assettool WIN32 ${ALL_SRCS})
-#target_compile_definitions(assettool)
-#target_link_libraries(assettool)
+add_executable (assettool ${ALL_SRCS})
+target_link_libraries(assettool )
+target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped jansson_d assimpd)
+target_link_libraries(assettool general libpng zlib libsquish pugixml freetype jansson assimp)
 
 ELSE() #unix
 
