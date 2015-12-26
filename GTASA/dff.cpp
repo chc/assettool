@@ -702,6 +702,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			continue;
 		}
 		output_meshes[mesh_buffer_idx] = new CMesh();
+		output_meshes[mesh_buffer_idx]->setHandedness(ECoordinateHandedness_Left);
 		
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
 		
@@ -807,15 +808,12 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		if (g->parent_frame != NULL) {
 			CMesh *parent = find_mesh_by_name_from_array(output_meshes, mesh_buffer_idx, g->parent_frame->name, &info);
 			if (parent) {
-				printf("Setting parent of %s to: %08X(%s)\n", output_meshes[g->output_mesh_id]->getName(), parent->getGroupId(),parent->getName());
+				printf("Setting parent of %s(%08X) to: %08X(%s)\n", output_meshes[g->output_mesh_id]->getName(), output_meshes[g->output_mesh_id]->getGroupId(), parent->getGroupId(),parent->getName());
 				output_meshes[g->output_mesh_id]->setParent(parent);
 			}
 		}
 		it++;
-	}
-
-
-	
+	}	
 
 	//run exporter
 	ScenePack scene;

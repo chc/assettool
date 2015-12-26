@@ -120,6 +120,7 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 			uint32_t checksum = crc32(0, obj.name, strlen(obj.name));
 			printf("Obj checksum: %s 0x%08X\n", obj.name, checksum);
 			collection->setCollectionIdentifier(checksum);
+			collection->setBoneID(obj.bone_id);
 			for (int k = 0; k < obj.num_frames; k++) {
 				if (obj.type == 4) {
 					AnimRootFrame frame;

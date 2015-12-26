@@ -3,11 +3,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <Generic/CGeneric.h>
 #include <Generic/CCollision.h>
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
 class CKeyframeSequence;
 class CCollision;
+enum CMeshWeightTypeFlags {
+	CMeshWeightTypeFlags_HasInverseBoneMatrices = (1<<0),
+	CMeshWeightTypeFlags_HasBoneIndices = (1<<1),
+};
 enum CMeshPrimType {
 	CMeshPrimType_Quads,
 	CMeshPrimType_TriangleList,
@@ -80,6 +85,33 @@ public:
 	bool hasSubIndices();
 
 	COLBBox getBBox();
+		
+	void setHandedness(ECoordinateHandedness handedness) { m_handedness = handedness; }
+	ECoordinateHandedness getHandedness(ECoordinateHandedness handedness) { return m_handedness; }
+	void convertToHandedness(ECoordinateHandedness handedness);
+
+	void setWeightFlags(uint32_t type);
+	uint32_t getWeightFlags();
+	void setNumWeightSets(uint32_t num_sets);
+	void setWeights(float *weights, uint32_t set, uint32_t num_weights);
+	float *getWeights(uint32_t set, uint32_t &num_weights);
+	uint32_t getNumWeightSets();
+
+	/*
+		All inverse bone matrices are mat4 atm
+	*/
+	void setNumInverseBoneMatrices(uint32_t num_matrices);
+	void setInverseBoneMatrices(float* matrices, uint32_t index);
+	float* getInverseBoneMatrices(uint32_t set);
+
+	/*
+		All bone indices are 4 uint32_ts atm
+	*/
+	void setNumBoneIndexSets(uint32_t num_sets);
+	void setBoneIndices(uint32_t set, uint32_t *indices, uint32_t num_indices);
+
+	uint32_t getNumBoneIndexSets();
+	uint32_t *getBoneIndices(uint32_t set, uint32_t &num_indices);
 private:
 	void generate_bbox();
 	char m_name[64];
@@ -109,5 +141,19 @@ private:
 	bool has_sub_indices;
 
 	COLBBox m_bbox;
+
+	ECoordinateHandedness m_handedness;
+
+	uint32_t m_weight_flags;
+	uint32_t m_num_weightsets;
+	uint32_t *m_num_weights;
+	float **m_weights;
+
+	uint32_t m_num_inverse_bone_matrices;
+	float **m_inverse_bone_matrices; //flat array of multiple matrices
+
+	uint32_t m_num_bone_index_sets;
+	uint32_t *m_num_bone_indices;
+	uint32_t **m_bone_indices;
 };
 #endif //_CMESH_H

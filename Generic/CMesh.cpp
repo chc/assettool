@@ -23,6 +23,11 @@ CMesh::CMesh() {
 	memset(&m_uvws, 0, sizeof(m_uvws));
 	memset(&m_bbox, 0, sizeof(m_bbox));
 
+	m_weight_flags = 0;
+	m_num_weightsets = 0;
+	m_num_weights = 0;
+	m_weights = NULL;
+
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
@@ -189,4 +194,62 @@ void CMesh::generate_bbox() {
 		bbox.max[i] = max[i];
 	}
 	m_bbox = bbox;
+}
+
+void CMesh::convertToHandedness(ECoordinateHandedness handedness) {
+	if(m_handedness == handedness) return;
+}
+void CMesh::setNumWeightSets(uint32_t num_sets) {
+	m_num_weightsets = num_sets;
+	m_weights = (float **)malloc(sizeof(float *) * num_sets);
+	m_num_weights = (uint32_t *)malloc(num_sets * sizeof(uint32_t));
+}
+void CMesh::setWeights(float *weights, uint32_t set, uint32_t num_weights) {
+	m_weights[set] = (float *)malloc(sizeof(float) * 4 * num_weights);
+	m_num_weights[set] = num_weights;
+	memcpy(m_weights[set], weights, num_weights * sizeof(float) * 4);
+}
+float *CMesh::getWeights(uint32_t set, uint32_t &num_weights) {
+	num_weights = m_num_weights[set];
+	return m_weights[set];
+}
+uint32_t CMesh::getNumWeightSets() {
+	return m_num_weightsets;
+}
+
+void CMesh::setWeightFlags(uint32_t type) {
+	m_weight_flags = type;
+}
+uint32_t CMesh::getWeightFlags() {
+	return m_weight_flags;
+}
+
+void CMesh::setNumInverseBoneMatrices(uint32_t num_matrices) {
+	m_num_inverse_bone_matrices = num_matrices;
+	m_inverse_bone_matrices = (float **)malloc(num_matrices * sizeof(float *));
+}
+void CMesh::setInverseBoneMatrices(float* matrices, uint32_t index) {
+	m_inverse_bone_matrices[index] = (float *)malloc(sizeof(float) * (4*4));
+	memcpy(m_inverse_bone_matrices[index], matrices, sizeof(float) * (4*4));
+}
+float* CMesh::getInverseBoneMatrices(uint32_t set) {
+	return m_inverse_bone_matrices[set];
+}
+
+void CMesh::setNumBoneIndexSets(uint32_t num_sets) {
+	m_num_bone_index_sets = num_sets;
+	m_num_bone_indices = (uint32_t*) malloc(sizeof(uint32_t) * num_sets);
+	m_bone_indices = (uint32_t **)malloc(sizeof(uint32_t *) * num_sets);
+}
+void CMesh::setBoneIndices(uint32_t set, uint32_t *indices, uint32_t num_indices) {
+	m_num_bone_indices[set] = num_indices;
+	m_bone_indices[set] = (uint32_t*)malloc(sizeof(uint32_t) * num_indices * 4);
+	memcpy(m_bone_indices[set], indices, sizeof(uint32_t) * num_indices * 4);
+}
+uint32_t CMesh::getNumBoneIndexSets() {
+	return m_num_bone_index_sets;
+}
+uint32_t *CMesh::getBoneIndices(uint32_t set, uint32_t &num_indices) {
+	num_indices = m_num_bone_indices[set];
+	return m_bone_indices[set];
 }

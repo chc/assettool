@@ -2,6 +2,10 @@
 #define _CGENERIC_H
 #include <Generic/CGame.h>
 
+enum ECoordinateHandedness {
+	ECoordinateHandedness_Left,
+	ECoordinateHandedness_Right,
+};
 
 class CGeneric : public IGame {
 public:
