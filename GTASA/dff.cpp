@@ -139,6 +139,15 @@ typedef struct {
 	FrameInfo *parent_frame;
 
 	uint32_t output_mesh_id; //where is it in the outputmeshes buffer 
+
+	//relies on vert count
+	float *weights;
+	uint8_t *bone_indices;
+
+	//relies on bone count
+	uint32_t bone_count;
+	float **bone_matrices;
+	uint8_t *bone_used;
 } GeometryRecord;
 
 typedef struct {
@@ -175,6 +184,9 @@ enum DFFTags {
 	DFFTag_rwFRAME = 0x253F2FE,
 	DFFTag_nvCOLOURS = 0x253F2F9,
 	DFFTag_HAnimPLG = 286,
+	DFFTag_SkinPLG = 0x116,
+	DFFTag_BreakablePLG = 0x253f2FD,
+	DFFTag_BinMeshPLG = 0x50E,
 };
 
 void dump_vec3(glm::vec3 vec) {
@@ -303,20 +315,53 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			break;
 		}
 		case DFFTag_rwEXTENSION: {
-			
-			if (chunk->size != 0) {
+			uint32_t read_size = 0;
+			DFFChunkInfo subchunk;
+			if(last_tag == DFFTag_rwGEOMETRYLIST) {
+				while(read_size < chunk->size) {
+					read_size += fread(&subchunk, sizeof(DFFChunkInfo), 1, fd);
+					read_size += subchunk.size;
+					parse_chunk(dff_out, &subchunk, fd, (DFFTags)last_tag);
+				}
+			} else if(chunk->size != 0) {
 				fseek(fd, chunk->size, SEEK_CUR);
 			}
-			if(last_tag == (DFFTags)-1) {
-			} else if(last_tag == DFFTag_rwMATERIAL) {
-				
-				/*
-				glm::vec4 unknown_vec;
-				uint32_t unknown_ints[2];
-				fread(glm::value_ptr(unknown_vec), sizeof(float),4, fd);
-				fread(&unknown_ints, sizeof(uint32_t), 2, fd);
-				*/
+			break;
+		 }
+		case DFFTag_BreakablePLG:
+		case DFFTag_BinMeshPLG: {
+			fseek(fd, chunk->size, SEEK_CUR);			
+			break;
+		}
+		case DFFTag_SkinPLG: {
+			uint8_t num_bones, num_used_bones, max_weights_per_vertex, padding;
+			fread(&num_bones, sizeof(uint8_t), 1, fd);
+			fread(&num_used_bones, sizeof(uint8_t), 1, fd);
+			fread(&max_weights_per_vertex, sizeof(uint8_t), 1, fd);
+			fread(&padding, sizeof(uint8_t), 1, fd);
+
+			uint8_t *bones_used = (uint8_t *)malloc(num_used_bones * sizeof(uint8_t));
+			fread(bones_used, num_used_bones, sizeof(uint8_t), fd);
+
+			uint8_t *vertex_bone_indices = (uint8_t *)malloc(sizeof(uint8_t) * 4 * dff_out->last_geometry->vertex_count);
+			float *weights = (float *)malloc(sizeof(float) * dff_out->last_geometry->vertex_count * 4);
+			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
+
+			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
+
+			float **matrices = (float **)malloc(sizeof(float *) * num_bones);
+			for(int i=0;i<num_bones;i++) {
+				matrices[i] = (float *)malloc(sizeof(float) * 4*4);
+				fread(matrices[i], sizeof(float), 4*4, fd);
 			}
+
+			dff_out->last_geometry->weights = weights;
+			dff_out->last_geometry->bone_indices = vertex_bone_indices;
+			dff_out->last_geometry->bone_matrices = matrices;
+			dff_out->last_geometry->bone_count = num_bones;
+			dff_out->last_geometry->bone_used = bones_used;
+			
+			
 			break;
 		 }
 		case DFFTag_rwMATERIAL: {
@@ -477,7 +522,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 
 						//read geom extensions
 						fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd);
-						parse_chunk(dff_out,&clumpHead, fd,(DFFTags)chunk->tag);
+						parse_chunk(dff_out,&clumpHead, fd,(DFFTags)last_tag);
 					}
 					break;
 				}
@@ -637,7 +682,6 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 		mat->setFlag(EMaterialFlag_Opaque);
 	}
 }
-//CMesh **output_meshes = (CMesh**)malloc(info.m_geom_records.size() * sizeof(CMesh *));
 CMesh *find_mesh_by_name_from_array(CMesh **meshes, int size, const char *name, DFFInfo *info) {
 	for (int i = 0; i < size; i++) {
 		if (strcmp(meshes[i]->getName(), name) == 0) {
@@ -708,6 +752,62 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		
 		output_meshes[mesh_buffer_idx]->setName(g->name);
 		output_meshes[mesh_buffer_idx]->setGroupId(crc32(0, g->name, strlen(g->name)));
+
+
+		if(g->weights) {
+			/*
+uint8_t num_bones, num_used_bones, max_weights_per_vertex, padding;
+			fread(&num_bones, sizeof(uint8_t), 1, fd);
+			fread(&num_used_bones, sizeof(uint8_t), 1, fd);
+			fread(&max_weights_per_vertex, sizeof(uint8_t), 1, fd);
+			fread(&padding, sizeof(uint8_t), 1, fd);
+
+			uint8_t *bones_used = (uint8_t *)malloc(num_used_bones * sizeof(uint8_t));
+			fread(bones_used, num_used_bones, sizeof(uint8_t), fd);
+
+			uint8_t *vertex_bone_indices = (uint8_t *)malloc(sizeof(uint8_t) * 4 * dff_out->last_geometry->vertex_count);
+			float *weights = (float *)malloc(sizeof(float) * dff_out->last_geometry->vertex_count * 4);
+			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
+
+			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
+
+			float **matrices = (float **)malloc(sizeof(float *) * num_bones);
+			for(int i=0;i<num_bones;i++) {
+				matrices[i] = (float *)malloc(sizeof(float) * 4*4);
+				fread(matrices[i], sizeof(float), 4*4, fd);
+			}
+
+			dff_out->last_geometry->weights = weights;
+			dff_out->last_geometry->bone_indices = vertex_bone_indices;
+			dff_out->last_geometry->bone_matrices = matrices;
+			dff_out->last_geometry->bone_count = num_bones;
+			dff_out->last_geometry->bone_used = bones_used;
+			*/
+			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
+			output_meshes[mesh_buffer_idx]->setWeights(g->weights, 0, g->vertex_count);
+			output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
+			output_meshes[mesh_buffer_idx]->setNumInverseBoneMatrices(g->bone_count);
+
+			for(int i=0;i<g->bone_count;i++) {
+				output_meshes[mesh_buffer_idx]->setInverseBoneMatrices(g->bone_matrices[i], i);
+				
+			}
+			uint32_t *indices = (uint32_t *)malloc(sizeof(uint32_t) * g->vertex_count * 4);
+			uint32_t *p = indices;
+			uint8_t *x = g->bone_indices;
+			for(int i=0;i<g->vertex_count;i++) {
+				*p++ = *x++; //x
+				*p++ = *x++; //y
+				*p++ = *x++; //z
+				*p++ = *x++;  //w
+			}
+			output_meshes[mesh_buffer_idx]->setBoneIndices(0, indices, g->vertex_count);
+			free(indices);
+			output_meshes[mesh_buffer_idx]->setWeightFlags(CMeshWeightTypeFlags_HasInverseBoneMatrices|CMeshWeightTypeFlags_HasBoneIndices);
+			
+			
+		}
+		
 
 		g->output_mesh_id = mesh_buffer_idx;
 

@@ -20,3 +20,10 @@ void CKeyframeSeqCollection::setCollectionIdentifier(uint32_t checksum) {
 uint32_t CKeyframeSeqCollection::getCollectionIdentifier() {
 	return checksum;
 }
+
+void CKeyframeSeqCollection::setBoneID(uint32_t bone_id) {
+	this->bone_id = bone_id;
+}
+uint32_t CKeyframeSeqCollection::getBoneID(uint32_t bone_id) {
+	return bone_id;
+}
