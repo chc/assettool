@@ -79,7 +79,7 @@ void load_mesh_data(pugi::xml_node node, CMesh *mesh, CMaterial **materials, uin
 			offset++;
 		}
 		std::cout << "Index count: " << size << std::endl;
-		mesh->setIndices(indicies,size);
+		mesh->setIndices(indicies,size * 3);
 	}
 	free(indicies);
 	free(vert_data);

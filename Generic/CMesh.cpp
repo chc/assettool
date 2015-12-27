@@ -73,8 +73,8 @@ void CMesh::setColours(uint32_t *colours) {
 }
 void CMesh::setIndexLevels(int levels) {
 	num_index_levels = levels;
-	m_indices = (uint32_t *)malloc(num_index_levels * sizeof(uint32_t* ) * 3);
-	memset(m_indices,0,num_index_levels * sizeof(uint32_t* ) * 3);
+	m_indices = (uint32_t *)malloc(num_index_levels * sizeof(uint32_t* ));
+	memset(m_indices,0,num_index_levels * sizeof(uint32_t* ));
 	m_num_indexed_levels = (int*)malloc(sizeof(int) * levels);
 
 	//allocate materials
@@ -98,13 +98,13 @@ uint32_t *CMesh::getIndices(int level) {
 }
 void CMesh::setIndices(uint32_t *indices, int num_indices, int level) {
 	if(level < 0) {
-		m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t) * 3);
-		memcpy(m_indices,indices,num_indices * sizeof(uint32_t) * 3);
+		m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t));
+		memcpy(m_indices,indices,num_indices * sizeof(uint32_t));
 	} else {
 		has_sub_indices = true;
 		m_num_indexed_levels[level] = num_indices;
-		((uint32_t**)m_indices)[level] = (uint32_t*) malloc(num_indices * sizeof(uint32_t) * 3);
-		memcpy(((uint32_t**)m_indices)[level],indices,num_indices * sizeof(uint32_t) * 3);
+		((uint32_t**)m_indices)[level] = (uint32_t*) malloc(num_indices * sizeof(uint32_t));
+		memcpy(((uint32_t**)m_indices)[level],indices,num_indices * sizeof(uint32_t));
 	}
 	m_num_indices = num_indices;
 }

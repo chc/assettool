@@ -71,7 +71,7 @@ void import_assimp_mesh(aiMesh *mesh, CMesh *out) {
 	char name[128];
 	sprintf(name, "%p", mesh);
 	out->setName(name);
-	out->setIndices(indices, mesh->mNumFaces);
+	out->setIndices(indices, mesh->mNumFaces * 3);
 	free(indices);
 }
 bool assimp_import_model(ImportOptions* impOpts) {

@@ -85,12 +85,10 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 			json_t *indices_array = json_array();
 			uint32_t num_indices = mesh->getNumIndicies(level);
 			for (int k = 0; k < num_indices; k++) {
-				for (int j = 0; j < 3; j++) {
-					int index = *indices;
-					json_t* jval = json_integer(index);
-					json_array_append_new(indices_array, jval);
-					indices++;
-				}
+				int index = *indices;
+				json_t* jval = json_integer(index);
+				json_array_append_new(indices_array, jval);
+				indices++;
 			}
 			json_array_append_new(indices_array2, indices_array);
 		}

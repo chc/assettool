@@ -78,14 +78,12 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 			
 			uint32_t num_indices = mesh->getCombinedIndices(&indices);
 			x = indices;
-			uint32_t *out_indices = (uint32_t *)malloc(num_indices * 3 * sizeof(uint32_t));
+			uint32_t *out_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t));
 			uint32_t *p = out_indices;
-			for(int c=0;c<num_indices;c+=3) {
-				*p++ = *x++;
-				*p++ = *x++;
+			for(int c=0;c<num_indices;c++) {
 				*p++ = *x++;
 			}
-			out_meshes[i]->setIndices(out_indices, num_indices/3, j++);
+			out_meshes[i]->setIndices(out_indices, num_indices, j++);
 			free(out_indices);
 			free(indices);
 			it2++;

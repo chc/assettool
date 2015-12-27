@@ -138,7 +138,7 @@ bool ply_import_mesh(ImportOptions* opts) {
 		faces[o + 2] = cb_info.indicies[i].z;
 	}
 
-	mesh->setIndices(faces,nfaces);
+	mesh->setIndices(faces,nfaces * 3);
 
 	free(verts);
 	free(faces);

@@ -849,7 +849,7 @@ uint8_t num_bones, num_used_bones, max_weights_per_vertex, padding;
 				*p++ = cur_indices.z;
 				it3++;
 			}
-			output_meshes[mesh_buffer_idx]->setIndices(indices, item->value.size(), level);
+			output_meshes[mesh_buffer_idx]->setIndices(indices, item->value.size() * 3, level);
 			free(indices);
 
 			level++;
