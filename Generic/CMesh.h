@@ -86,9 +86,9 @@ public:
 
 	COLBBox getBBox();
 		
-	void setHandedness(ECoordinateHandedness handedness) { m_handedness = handedness; }
-	ECoordinateHandedness getHandedness(ECoordinateHandedness handedness) { return m_handedness; }
-	void convertToHandedness(ECoordinateHandedness handedness);
+	void setCoordinateSystem(ECoordinateSystem system) { m_coordinate_system = system; }
+	ECoordinateSystem getCoordinateSystem(ECoordinateSystem handedness) { return m_coordinate_system; }
+	void convertToCoordinateSystem(ECoordinateSystem system);
 
 	void setWeightFlags(uint32_t type);
 	uint32_t getWeightFlags();
@@ -142,7 +142,7 @@ private:
 
 	COLBBox m_bbox;
 
-	ECoordinateHandedness m_handedness;
+	ECoordinateSystem m_coordinate_system;
 
 	uint32_t m_weight_flags;
 	uint32_t m_num_weightsets;

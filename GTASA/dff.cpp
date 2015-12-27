@@ -746,7 +746,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			continue;
 		}
 		output_meshes[mesh_buffer_idx] = new CMesh();
-		output_meshes[mesh_buffer_idx]->setHandedness(ECoordinateHandedness_Left);
+		output_meshes[mesh_buffer_idx]->setCoordinateSystem(ECoordinateSystem_Right);
 		
 		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
 		

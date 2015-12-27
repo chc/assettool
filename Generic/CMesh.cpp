@@ -1,6 +1,7 @@
 #include <Generic/CMesh.h>
 #include <Generic/CMaterial.h>
 #include <Generic/CCollision.h>
+#include <Generic/coordinate_normalizer.h>
 #include <stdlib.h>
 #include <string.h>
 CMesh::CMesh() {
@@ -196,9 +197,6 @@ void CMesh::generate_bbox() {
 	m_bbox = bbox;
 }
 
-void CMesh::convertToHandedness(ECoordinateHandedness handedness) {
-	if(m_handedness == handedness) return;
-}
 void CMesh::setNumWeightSets(uint32_t num_sets) {
 	m_num_weightsets = num_sets;
 	m_weights = (float **)malloc(sizeof(float *) * num_sets);
@@ -252,4 +250,13 @@ uint32_t CMesh::getNumBoneIndexSets() {
 uint32_t *CMesh::getBoneIndices(uint32_t set, uint32_t &num_indices) {
 	num_indices = m_num_bone_indices[set];
 	return m_bone_indices[set];
+}
+
+
+void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
+	if(m_vertices)
+		convert_xyz_from_to(m_coordinate_system, system, m_vertices, m_num_vertices);
+
+	if(m_normals)
+		convert_xyz_from_to(m_coordinate_system, system, m_normals, m_num_vertices);
 }

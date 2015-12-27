@@ -28,7 +28,7 @@ bool chc_engine_import_mesh(ImportOptions* opts) {
 }
 
 void write_mesh(CMesh *mesh, FILE* fd) {
-	mesh->convertToHandedness(ECoordinateHandedness_Right);
+	mesh->convertToCoordinateSystem(ECoordinateSystem_Right);
 	uint32_t num_verts = mesh->getNumVertices();
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);

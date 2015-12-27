@@ -12,7 +12,18 @@ int get_mesh_count(std::vector<LibTHPS::Sector *> secs) {
 	}
 	return c;
 }
-
+void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
+	out->setIdentifierChecksum(mat->getChecksum());
+	int i = 0;
+	while(i < 4) {
+		LibTHPS::materialTexInfo matinfo = mat->getTexture(i);
+		if(matinfo.m_texture_checksum == 0) break;
+		out->setTextureChecksum(matinfo.m_texture_checksum, i);
+		out->setBlendMode(EBlendMode_Modulate, i);
+		i++;
+	}
+	
+}
 bool thps_xbx_import_scn(ImportOptions* opts) {
 	LibTHPS::Scene *scn = new LibTHPS::Scene(opts->path, LibTHPS::Platform_Xbox);
 
@@ -59,6 +70,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 
 		out_meshes[i]->setIndexLevels(meshes.size());
 		out_meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
+		out_meshes[i]->setCoordinateSystem(ECoordinateSystem_Left_XZY);
 		uint32_t j = 0;
 		while(it2 != meshes.end()) {
 			LibTHPS::Mesh *mesh = *it2;
@@ -83,12 +95,27 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 		it++;
 	}
 
+
+	std::vector<LibTHPS::Material *> mats = scn->getMaterialList();
+	std::vector<LibTHPS::Material *>::iterator it2 = mats.begin();
+	CMaterial **out_mats = (CMaterial **)malloc(mats.size() * sizeof(CMaterial **));
+	i = 0;
+	while(it2 != mats.end()) {
+		LibTHPS::Material *mat = *it2;
+		out_mats[i] = new CMaterial();
+		thps_material_to_cmaterial(mat, out_mats[i]);
+		i++;
+		it2++;
+	}
+
 	delete scn;
 
 	ScenePack pack;
 	memset(&pack, 0, sizeof(pack));
 	pack.m_meshes = out_meshes;
 	pack.num_meshes = secs.size();
+	pack.m_materials = out_mats;
+	pack.num_materials = mats.size();
 
 	ExportOptions expopts;
 	memset(&expopts,0,sizeof(expopts));
