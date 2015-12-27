@@ -156,3 +156,11 @@ uint32_t CMaterial::getIdentifierChecksum() {
 void CMaterial::setFlag(uint64_t flags) {
 	m_flags |= flags;
 }
+CMaterial *CMaterial::findMaterialByChecksum(CMaterial** mats, int num_mats, uint32_t checksum) {
+	for(int i=0;i<num_mats;i++) {
+		if(mats[i]->getIdentifierChecksum() == checksum) {
+			return mats[i];
+		}
+	}
+	return NULL;
+}

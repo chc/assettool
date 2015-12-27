@@ -27,6 +27,19 @@ void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 bool thps_xbx_import_scn(ImportOptions* opts) {
 	LibTHPS::Scene *scn = new LibTHPS::Scene(opts->path, LibTHPS::Platform_Xbox);
 
+	//load materials
+	std::vector<LibTHPS::Material *> mats = scn->getMaterialList();
+	std::vector<LibTHPS::Material *>::iterator it2 = mats.begin();
+	CMaterial **out_mats = (CMaterial **)malloc(mats.size() * sizeof(CMaterial **));
+	int i = 0;
+	while(it2 != mats.end()) {
+		LibTHPS::Material *mat = *it2;
+		out_mats[i] = new CMaterial();
+		thps_material_to_cmaterial(mat, out_mats[i]);
+		i++;
+		it2++;
+	}
+
 	std::vector<LibTHPS::Sector *> secs = scn->getSectorList();
 
 	int mesh_count = get_mesh_count(secs);
@@ -35,7 +48,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 	
 	std::vector<LibTHPS::Sector *>::iterator it = secs.begin();
 
-	int i = 0;
+	i = 0;
 
 	//load sector stuff
 	while(it != secs.end()) {
@@ -83,6 +96,9 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 			for(int c=0;c<num_indices;c++) {
 				*p++ = *x++;
 			}
+
+			CMaterial *mat = CMaterial::findMaterialByChecksum(out_mats,mats.size() , mesh->getMaterialChecksum());
+			out_meshes[i]->setIndexMaterial(mat, j);
 			out_meshes[i]->setIndices(out_indices, num_indices, j++);
 			free(out_indices);
 			free(indices);
@@ -91,19 +107,6 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 
 		i++;
 		it++;
-	}
-
-
-	std::vector<LibTHPS::Material *> mats = scn->getMaterialList();
-	std::vector<LibTHPS::Material *>::iterator it2 = mats.begin();
-	CMaterial **out_mats = (CMaterial **)malloc(mats.size() * sizeof(CMaterial **));
-	i = 0;
-	while(it2 != mats.end()) {
-		LibTHPS::Material *mat = *it2;
-		out_mats[i] = new CMaterial();
-		thps_material_to_cmaterial(mat, out_mats[i]);
-		i++;
-		it2++;
 	}
 
 	delete scn;

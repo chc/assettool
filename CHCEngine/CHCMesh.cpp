@@ -60,12 +60,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 	uint32_t flags = 0;
 
-	uint32_t material_checksum = 0;
-
-	CMaterial *mat = mesh->getMaterial();
-	if(mat != NULL) {
-		material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
-	}
+	CMaterial *mat;
 
 	uint32_t num_uv_sets = mesh->getUVLayers();
 
@@ -115,20 +110,21 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	fwrite(&stride,sizeof(uint32_t),1,fd);
 	fwrite(&num_uv_sets, sizeof(uint32_t), 1, fd);
 	uint32_t num_materials = mesh->getNumMaterials();
-	if(num_materials == -1 || !mesh->getUseIndexedMaterials()) {
+	if((num_materials == -1 || !mesh->getUseIndexedMaterials()) && !mesh->hasMaterialArray()) {
 		num_materials = 1;
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
+		uint32_t material_checksum = 0;
+
 		CMaterial *mat = mesh->getMaterial();
-		if(mat) {
+		if(mat->getIdentifierChecksum() == 0) {
 			material_checksum = crc32(0,mat->getName(),strlen(mat->getName()));
 		} else {
-			material_checksum = 0;
+			material_checksum = mat->getIdentifierChecksum();
 		}
 
 		fwrite(&material_checksum,sizeof(uint32_t),1,fd);
 	} else {
 		fwrite(&num_materials, sizeof(uint32_t), 1, fd);
-		
 		for(int i=0;i<num_materials;i++) {
 			mat = mesh->getIndexMaterial(i);
 			uint32_t k = 0;
@@ -136,7 +132,12 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 				fwrite(&k, sizeof(uint32_t), 1, fd);
 			}
 			else {
-				k = crc32(0, mat->getName(), strlen(mat->getName()));
+				if(mat->getIdentifierChecksum() == 0) {
+					k = crc32(0, mat->getName(), strlen(mat->getName()));
+				} else {
+					k = mat->getIdentifierChecksum();
+				}
+				
 				fwrite(&k, sizeof(uint32_t), 1, fd);
 			}			
 		}

@@ -99,6 +99,8 @@ public:
 	void setFlag(uint64_t flags);
 	void setIdentifierChecksum(uint32_t checksum); //internal game checksum, type_vehicle_main_body, etc
 	uint32_t getIdentifierChecksum();
+
+	static CMaterial *findMaterialByChecksum(CMaterial** mats, int num_mats, uint32_t checksum);
 private:
 	uint32_t m_identifier_checksum;
 	uint64_t m_flags;

@@ -29,6 +29,8 @@ CMesh::CMesh() {
 	m_num_weights = 0;
 	m_weights = NULL;
 
+	m_has_material_array = false;
+
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
@@ -79,7 +81,7 @@ void CMesh::setIndexLevels(int levels) {
 
 	//allocate materials
 	mp_material = (CMaterial *)malloc(num_index_levels * sizeof(CMaterial *));
-
+	m_has_material_array = true;
 	m_num_materials = num_index_levels;
 }
 int CMesh::getNumIndicies(int layer) { 
@@ -259,4 +261,8 @@ void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
 
 	if(m_normals)
 		convert_xyz_from_to(m_coordinate_system, system, m_normals, m_num_vertices);
+}
+
+bool CMesh::hasMaterialArray() {
+	return m_has_material_array;
 }
