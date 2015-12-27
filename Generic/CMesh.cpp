@@ -56,17 +56,17 @@ float *CMesh::getUVWs(int layer) {
 	return m_uvws[layer];
 }
 void CMesh::setVerticies(float *verts) {
-	if(m_vertices || m_num_vertices == 0) return;
+	if(m_vertices || m_num_vertices == 0 || !verts) return;
 	m_vertices = (float *)malloc(m_num_vertices * sizeof(float) * 3);
 	memcpy(m_vertices,verts,sizeof(float) * m_num_vertices * 3);
 }
 void CMesh::setNormals(float *normals) {
-	if(m_normals || m_num_vertices == 0) return;
+	if(m_normals || m_num_vertices == 0 || !normals) return;
 	m_normals = (float *)malloc(m_num_vertices * sizeof(float) * 3);
 	memcpy(m_normals,normals,sizeof(float) * m_num_vertices * 3);
 }
 void CMesh::setColours(uint32_t *colours) { 
-	if(m_vert_cols || m_num_vertices == 0) return;
+	if(m_vert_cols || m_num_vertices == 0 || !colours) return;
 	m_vert_cols = (uint32_t *)malloc(m_num_vertices * sizeof(uint32_t));
 	memcpy(m_vert_cols,colours,m_num_vertices * sizeof(uint32_t));
 }

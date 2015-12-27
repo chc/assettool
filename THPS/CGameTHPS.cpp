@@ -11,6 +11,7 @@
 #include <libthps/texturetable.h>
 #include <libthps/misc.h>
 #include "CTHPSImg.h"
+#include "CTHPSScene.h"
 using namespace LibTHPS;
 CGameTHPS::CGameTHPS() {
 	mp_shortName = "THPS";
@@ -22,7 +23,7 @@ CGameTHPS::CGameTHPS() {
 	fmt.name = "img";
 	fmt.mp_impFunc = thps_xbx_import_img;
 	fmt.mp_expFunc = thps_xbx_export_img;
-	m_fileFmtCount = 2;
+	m_fileFmtCount = 3;
 
 
 	mp_fileFormats = (FileFormat **)malloc(sizeof(FileFormat *) * m_fileFmtCount);
@@ -35,6 +36,13 @@ CGameTHPS::CGameTHPS() {
 	fmt.mp_expFunc = thps_xbx_export_textable;
 	mp_fileFormats[1] = (FileFormat *)malloc(sizeof(FileFormat));
 	memcpy(mp_fileFormats[1],&fmt,sizeof(FileFormat));
+
+	fmt.description = "THPS Scene File";
+	fmt.name = "scn";
+	fmt.mp_impFunc = thps_xbx_import_scn;
+	fmt.mp_expFunc = thps_xbx_export_scn;
+	mp_fileFormats[2] = (FileFormat *)malloc(sizeof(FileFormat));
+	memcpy(mp_fileFormats[2],&fmt,sizeof(FileFormat));
 }
 
 bool thps_xbx_import_img(ImportOptions* opts) {
