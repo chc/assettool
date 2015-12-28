@@ -144,12 +144,12 @@ bool Image::loadFromFile(const char *path) {
 
 	switch(m_colour_depth) {
 		case v32_BIT:
-			flip_32bit_buffer((uint32_t *)m_colour_data, m_width, m_height, true);
+			//flip_32bit_buffer((uint32_t *)m_colour_data, m_width, m_height, true);
 			break;
 		case v16_BIT:
 			break;
 		case v8_BIT:
-			flip_8bit_buffer((uint8_t *)m_colour_data, m_width, m_height);
+			//flip_8bit_buffer((uint8_t *)m_colour_data, m_width, m_height);
 		break;
 	}
 

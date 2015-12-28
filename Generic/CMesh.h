@@ -50,7 +50,6 @@ public:
 	//don't call these if you use index materials
 	void setMaterial(CMaterial *material);
 	CMaterial *getMaterial();
-	bool hasMaterialArray();
 
 	void setIndexMaterial(CMaterial *material, int level);
 	CMaterial *getIndexMaterial(int level);
@@ -156,7 +155,5 @@ private:
 	uint32_t m_num_bone_index_sets;
 	uint32_t *m_num_bone_indices;
 	uint32_t **m_bone_indices;
-
-	bool m_has_material_array;
 };
 #endif //_CMESH_H

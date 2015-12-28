@@ -12,6 +12,17 @@ int get_mesh_count(std::vector<LibTHPS::Sector *> secs) {
 	}
 	return c;
 }
+ETextureAddresingMode tex_address_mode_from_thps_uvaddress(uint32_t filter) {
+	switch(filter) {
+		default:
+		case 0:
+			return ETextureAddressMode_Wrap;
+		case 1:
+			return ETextureAddressMode_Clamp;
+		case 2:
+			return ETextureAddressMode_Border;
+	}
+}
 void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 	out->setIdentifierChecksum(mat->getChecksum());
 	int i = 0;
@@ -20,6 +31,7 @@ void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 		if(matinfo.m_texture_checksum == 0) break;
 		out->setTextureChecksum(matinfo.m_texture_checksum, i);
 		out->setBlendMode(EBlendMode_Modulate, i);
+		out->setTextureAddressMode(tex_address_mode_from_thps_uvaddress(matinfo.m_u_address), tex_address_mode_from_thps_uvaddress(matinfo.m_v_address), i);
 		i++;
 	}
 	
@@ -64,17 +76,28 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 
 		float *uvws = (float *)malloc(sizeof(float) * 3 * sec->getNumVerticies());
 		float *_uvs = sec->getTexCoords();
-		for(int k=0;k<sec->getNumTexChannels();k++) {
-			float *p = uvws;
-			
-			for(int j=0;j<sec->getNumVerticies();j++) {
-				memcpy(p, _uvs, sizeof(float) * 2);
-				p += 2;
-				_uvs += 2;
-				*p++ = 0.0;
-			}
-			out_meshes[i]->setUVWs(uvws, k);
+		float **uv_buffers = (float **)malloc(sizeof(float *) * sec->getNumTexChannels());
+		float **uv_buffers_cursor = (float **)malloc(sizeof(float *) * sec->getNumTexChannels());
+		float *p = _uvs;
+		for(int j=0;j<sec->getNumTexChannels();j++) {
+			uv_buffers[j] = (float *)malloc(sizeof(float)*3*sec->getNumVerticies());
+			uv_buffers_cursor[j] = uv_buffers[j];
 		}
+		for(int j=0;j<sec->getNumVerticies();j++) {
+			for(int k=0;k<sec->getNumTexChannels();k++) {
+				memcpy(uv_buffers_cursor[k], p, sizeof(float)*2);
+				uv_buffers_cursor[k][2] = 0.0;
+				uv_buffers_cursor[k] += 3;
+				p += 2;
+			}
+		}
+	
+		for(int k=0;k<sec->getNumTexChannels();k++) {
+			out_meshes[i]->setUVWs(uv_buffers[k], k);
+			free(uv_buffers[k]);
+		}
+		free(uv_buffers_cursor);
+		free(uv_buffers);
 		free(uvws);
 
 		//load sector indices stuff
@@ -99,6 +122,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 
 			CMaterial *mat = CMaterial::findMaterialByChecksum(out_mats,mats.size() , mesh->getMaterialChecksum());
 			out_meshes[i]->setIndexMaterial(mat, j);
+			out_meshes[i]->setUseIndexedMaterials(true);
 			out_meshes[i]->setIndices(out_indices, num_indices, j++);
 			free(out_indices);
 			free(indices);

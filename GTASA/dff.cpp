@@ -755,34 +755,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 
 		if(g->weights) {
-			/*
-uint8_t num_bones, num_used_bones, max_weights_per_vertex, padding;
-			fread(&num_bones, sizeof(uint8_t), 1, fd);
-			fread(&num_used_bones, sizeof(uint8_t), 1, fd);
-			fread(&max_weights_per_vertex, sizeof(uint8_t), 1, fd);
-			fread(&padding, sizeof(uint8_t), 1, fd);
-
-			uint8_t *bones_used = (uint8_t *)malloc(num_used_bones * sizeof(uint8_t));
-			fread(bones_used, num_used_bones, sizeof(uint8_t), fd);
-
-			uint8_t *vertex_bone_indices = (uint8_t *)malloc(sizeof(uint8_t) * 4 * dff_out->last_geometry->vertex_count);
-			float *weights = (float *)malloc(sizeof(float) * dff_out->last_geometry->vertex_count * 4);
-			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
-
-			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
-
-			float **matrices = (float **)malloc(sizeof(float *) * num_bones);
-			for(int i=0;i<num_bones;i++) {
-				matrices[i] = (float *)malloc(sizeof(float) * 4*4);
-				fread(matrices[i], sizeof(float), 4*4, fd);
-			}
-
-			dff_out->last_geometry->weights = weights;
-			dff_out->last_geometry->bone_indices = vertex_bone_indices;
-			dff_out->last_geometry->bone_matrices = matrices;
-			dff_out->last_geometry->bone_count = num_bones;
-			dff_out->last_geometry->bone_used = bones_used;
-			*/
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
 			output_meshes[mesh_buffer_idx]->setWeights(g->weights, 0, g->vertex_count);
 			output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
