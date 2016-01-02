@@ -119,7 +119,7 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 		LibTHPS::bgra_32bit_to_rgba((uint32_t*)img->rbga_data, img->width, img->height);
 	}
 
-	if(img->num_mipmaps > 0) {
+	if(img->num_mipmaps > 0 && img->num_mipmaps != 0xffffffff) {
 		img->mipmaps = (void **)malloc(img->num_mipmaps*sizeof(void *));
 		img->mipmap_sizes = (uint32_t *)malloc(img->num_mipmaps*sizeof(uint32_t));
 		for(int i=0;i<img->num_mipmaps;i++) {
@@ -127,6 +127,8 @@ Img* get_img_and_read(TXDImgHeader *txdimg, FILE *fd)
 			img->mipmaps[i] = (void *)malloc(img->mipmap_sizes[i]);
 			fread(img->mipmaps[i], img->mipmap_sizes[i],1,fd);
 		}
+	} else {
+		img->num_mipmaps = 0;
 	}
 	return img;
 }

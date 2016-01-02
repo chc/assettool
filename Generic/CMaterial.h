@@ -32,12 +32,32 @@ enum EMaterialFlags {
 	EMaterialFlag_NoCulling = (1 << 8),
 	EMaterialFlag_HasTransparency = (1 << 9),
 	EMaterialFlag_Opaque = (1 << 10),
+	EMaterialFlag_HasShaderCode = (1 << 11),
 };
+enum EAlphaCombineMode {
+	EAlphaCombineMode_Modulate_TexAlpha_VertAlpha_ConstMult, //(tex.a*vert.a)*c, set to 1 if not used
+	EAlphaCombineMode_Modulate_TexAlpha_ConstAlpha_ConstMult, //(tex.a*vert.a)*c, set to 1 if not used
+};
+typedef struct {
+	EAlphaCombineMode mode;
+	float constant;
+} MatAlphaCombineInfoStage;
+enum EColourPreInitMode {
+	EMatColourPreInitMode_Src0RGB_Modulate_MatRGB,
+	EMatColourPreInitMode_Src0RGB_Modulate_VertRGB,
+};
+typedef struct {
+	EColourPreInitMode mode;
+	/*
+		The textures to perform the operations on, for now its just 2 and we'll stack em up instead of multiple variables
+	*/
+	int texsources[2]; //-1 if no tex, 0 if tex0, etc, used for blend modes as Src
+} MatColourPreInitInfoStage;
 enum EBlendMode
 {
 	EBlendMode_Diffuse,								// ( 0 - 0 ) * 0 + Src
 	EBlendMode_Add,									// ( Src - 0 ) * Src + Dst
-	EBlendMode_Fixed,								// ( Src - 0 ) * Fixed + Dst
+	EBlendMode_Add_Fixed,								// ( Src - 0 ) * Fixed + Dst
 	EBlendMode_Subtract,								// ( 0 - Src ) * Src + Dst
 	EBlendMode_Subtract_Fixed,								// ( 0 - Src ) * Fixed + Dst
 	EBlendMode_Blend,									// ( Src * Dst ) * Src + Dst	
@@ -47,13 +67,16 @@ enum EBlendMode
 	EBlendMode_Brighten,								// ( Dst - 0 ) * Src + Dst
 	EBlendMode_Brighten_Fixed,							// ( Dst - 0 ) * Fixed + Dst	
 	EBlendMode_GlossMap,								// Specular = Specular * Src	- special mode for gloss mapping
-	EBlendMode_Previous_Mask,					// ( Src - Dst ) * Dst + Dst
-	EBlendMode_Inverse_Previous_Mask,			// ( Dst - Src ) * Dst + Src
+	EBlendMode_Blend_Previous_Mask,					// ( Src - Dst ) * Dst + Dst
+	EBlendMode_Blend_Inverse_Previous_Mask,			// ( Dst - Src ) * Dst + Src
 	EBlendMode_Modulate_Colour,	// ( Dst - 0 ) * Src(col) + 0	- special mode for the shadow.
 	EBlendMode_OneInv_SrcAlpha,	//								- special mode for imposter rendering.
 
 	vNUM_BLEND_MODES
 }; 
+typedef struct {
+	EBlendMode texture_blend_modes[MAX_MATERIAL_TEXTURES];
+} ShaderFinalCombineStage;
 class CMaterial { 
 public:
 	CMaterial();
@@ -101,6 +124,9 @@ public:
 	uint32_t getIdentifierChecksum();
 
 	static CMaterial *findMaterialByChecksum(CMaterial** mats, int num_mats, uint32_t checksum);
+
+	void setShaderCode(uint8_t *code, uint32_t len);
+	uint8_t *getShaderCode(uint32_t *len);
 private:
 	uint32_t m_identifier_checksum;
 	uint64_t m_flags;
@@ -124,5 +150,8 @@ private:
 	uint32_t m_texture_checksums[MAX_MATERIAL_TEXTURES];
 
 	EBlendMode m_texture_blend_modes[MAX_MATERIAL_TEXTURES];
+
+	uint8_t *m_code;
+	uint32_t m_code_len;
 };
 #endif //_CMESH_H

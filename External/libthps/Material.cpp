@@ -52,7 +52,12 @@ void Material::loadFromFile(FILE *fd) {
 
 		fread(&m_texture_info[pass].m_colour, sizeof(float), 3, fd);
 
-		fread(&m_texture_info[pass].m_reg_alpha, sizeof(uint64_t), 1, fd);
+		uint64_t reg_alpha;
+		fread(&reg_alpha, sizeof(uint64_t), 1, fd);
+		uint32_t blend_mode		= (uint32_t)( reg_alpha & 0xFFFFFFUL );
+		uint32_t fixed_alpha		= (uint32_t)( reg_alpha >> 32 );
+		m_texture_info[pass].m_reg_alpha = blend_mode | ( fixed_alpha << 24 );
+
 
 		fread(&m_texture_info[pass].m_u_address, sizeof(uint32_t), 1, fd);
 		fread(&m_texture_info[pass].m_v_address, sizeof(uint32_t), 1, fd);
@@ -131,6 +136,23 @@ std::vector<Material *> Material::loadMaterialsFromScene(FILE *fd, EPlatform pla
 
 materialTexInfo Material::getTexture(int pass) {
 	return m_texture_info[pass];
+}
+uint32_t Material::GetIgnoreVertexAlphaPasses() {
+{
+	// Return a bitfield with a bit set for any pass that is flagged to ignore vertex alpha.
+	uint32_t bf = 0;
+
+	for( uint32_t p = 0; p < m_passes; ++p )
+	{
+		if( m_texture_info[p].m_flags & MATFLAG_PASS_IGNORE_VERTEX_ALPHA )
+		{
+			bf |= ( 1 << p );
+		}
+	}
+	
+	return bf;
+}
+
 }
 
 }

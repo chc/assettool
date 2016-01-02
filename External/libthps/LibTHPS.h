@@ -16,5 +16,10 @@ enum EPlatform {
 	Platform_Win32,
 };
 
+enum EGame {
+	Game_THPS3,
+	Game_THUG,
+};
+
 }
 #endif // _MAIN_LIBTHPS

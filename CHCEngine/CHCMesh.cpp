@@ -274,7 +274,12 @@ void write_material(CMaterial *material, FILE* fd) {
 		fwrite(&u, sizeof(uint8_t), 1, fd);
 		fwrite(&v, sizeof(uint8_t), 1, fd);
 		i++;
-
+	}
+	if(flags & EMaterialFlag_HasShaderCode) {
+		uint32_t code_len = 0;
+		uint8_t *buffer = material->getShaderCode(&code_len);
+		fwrite(&code_len, sizeof(uint32_t), 1, fd);
+		fwrite(buffer,code_len,1,fd);
 	}
 }
 

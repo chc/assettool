@@ -74,7 +74,7 @@ typedef struct {
 	uint32_t m_flags;
 	bool m_has_colour;
 	float m_colour[4];
-	uint64_t m_reg_alpha;
+	uint32_t m_reg_alpha;
 
 	uint32_t m_u_address;
 	uint32_t m_v_address;
@@ -96,6 +96,7 @@ typedef struct {
 
 
 class Material {
+	
 public:
 	Material(FILE *fd, EPlatform platform);
 	~Material();
@@ -105,7 +106,10 @@ public:
 	float *getSpecularColour();
 
 	materialTexInfo getTexture(int pass);
-private:
+	uint32_t GetIgnoreVertexAlphaPasses();
+
+	static const uint32_t BLEND_MODE_MASK	= 0x00FFFFFFUL;
+//private:
 	void loadFromFile(FILE *fd);
 	uint32_t m_checksum;
 	uint32_t m_name_checksum;

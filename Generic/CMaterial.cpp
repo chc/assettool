@@ -17,6 +17,9 @@ CMaterial::CMaterial() {
 	memset(&m_texture_checksums, 0, sizeof(m_texture_checksums));
 
 	m_flags = 0;
+
+	m_code = NULL;
+	m_code_len = 0;
 }
 CMaterial::~CMaterial() {
 }
@@ -163,4 +166,14 @@ CMaterial *CMaterial::findMaterialByChecksum(CMaterial** mats, int num_mats, uin
 		}
 	}
 	return NULL;
+}
+void CMaterial::setShaderCode(uint8_t *code, uint32_t len) {
+	if(len == 0) return;
+	m_code = (uint8_t *)malloc(len);
+	m_code_len = len;
+	m_flags |= EMaterialFlag_HasShaderCode;
+}
+uint8_t *CMaterial::getShaderCode(uint32_t *len) {
+	*len = m_code_len;
+	return m_code;
 }
