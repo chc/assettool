@@ -171,6 +171,7 @@ void CMaterial::setShaderCode(uint8_t *code, uint32_t len) {
 	if(len == 0) return;
 	m_code = (uint8_t *)malloc(len);
 	m_code_len = len;
+	memcpy(m_code, code, len);
 	m_flags |= EMaterialFlag_HasShaderCode;
 }
 uint8_t *CMaterial::getShaderCode(uint32_t *len) {

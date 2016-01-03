@@ -72,8 +72,8 @@ void setup_material_shader(LibTHPS::Material *mat, CMaterial *out) {
 			vec 3-4 = temp colours
 			vec5 = misc temp stuff
 			*/
-			strcat(shader_buffer,"stex vec0 tex0 uv0\n");
-			strcat(shader_buffer,"stex vec1 tex1 uv1\n");
+			strcat(shader_buffer,"stex vec0 tex0 uv0.xy\n");
+			strcat(shader_buffer,"stex vec1 tex1 uv1.xy\n");
 
 			if(mcm) {
 				// Modulate texture0 and texture 1 color with pass 0 and pass 1 material color, and place into t0.rgb and t1.rgb.
