@@ -117,14 +117,15 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 	for(int i=0;i<head.m_num_objects;i++) {
 		for(int j=0;j<objs[i].num_verts;j++) {
 			if(objs[i].fixed_verts) {
-				
+				/*
 				uint16_t pos[3];
 				fread(&pos, sizeof(uint16_t), 3, fd);
 
 				*objs[i].vert_cursor++ = (pos[0] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[0];
 				*objs[i].vert_cursor++ = (pos[1] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[1];
 				*objs[i].vert_cursor++ = (pos[2] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[2];
-				//printf("Fixed Vert: %f %f %f\n", objs[i].vert_cursor[-3], objs[i].vert_cursor[-2], objs[i].vert_cursor[-1]);
+				printf("Fixed Vert: %f %f %f\n", objs[i].vert_cursor[-3], objs[i].vert_cursor[-2], objs[i].vert_cursor[-1]);
+				*/
 				/*
 				uint8_t intensity, pad;
 				fread(&pad, sizeof(uint8_t), 1, fd);
@@ -143,20 +144,20 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 		}
 	}
 	
-	/*
+	
 	for(int i=0;i<head.m_num_objects;i++) {
 		for(int j=0;j<objs[i].num_verts;j++) {
 			if(objs[i].fixed_verts) {
 				uint16_t pos[3];
 				fread(&pos, sizeof(uint16_t), 3, fd);
 
-				*objs[i].vert_cursor++ = pos[0] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION + objs[i].min[0];
-				*objs[i].vert_cursor++ = pos[1] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION + objs[i].min[1];
-				*objs[i].vert_cursor++ = pos[2] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION + objs[i].min[2];
+				*objs[i].vert_cursor++ = (pos[0] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[0];
+				*objs[i].vert_cursor++ = (pos[1] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[1];
+				*objs[i].vert_cursor++ = (pos[2] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[2];
 			}
 			printf("Vert2: %f %f %f\n", objs[i].vert_cursor[-3], objs[i].vert_cursor[-2], objs[i].vert_cursor[-1]);
 		}
-	}*/
+	}
 	
 	//read vert cols/intensity
 	for(int i=0;i<head.m_num_objects;i++) {
@@ -176,6 +177,7 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 	}
 	//read faces
 	for(int i=0;i<head.m_num_objects;i++) {
+		if(objs[i].num_verts == 0 || objs[i].num_faces == 0) continue;
 		for(int j=0;j<objs[i].num_faces;j++) {
 			uint16_t flags;
 			uint16_t terrain;
@@ -217,7 +219,6 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 	
 	for(int i=0;i<head.m_num_objects;i++) {
 		if(objs[i].num_faces == 0 || objs[i].num_verts == 0) continue;
-
 		COLTriangleMesh mesh;
 		memset(&mesh,0,sizeof(mesh));
 		mesh.num_indices = objs[i].num_faces;
