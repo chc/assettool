@@ -263,6 +263,11 @@ void write_material(CMaterial *material, FILE* fd) {
 			col[1] = 0.0;
 			fwrite(&col, sizeof(float), 2, fd);
 		}
+
+		if(material->getFlags() & EMaterialFlag_HasDiffuseColour) {
+			material->getDiffuseColour(col[0], col[1], col[2], col[3], i);
+			fwrite(&col,sizeof(float),4,fd);
+		}
 	
 		uint8_t filter_mode = (uint8_t)material->getTextureFilterMode(i);
 		ETextureAddresingMode u_mode, v_mode;
@@ -287,6 +292,8 @@ void write_collision(FILE *fd, CCollision *collision) {
 	uint32_t version = CHCMESH_VERSION;
 	fwrite(&version,sizeof(uint32_t),1,fd);
 
+	collision->convertToCoordinateSystem(ECoordinateSystem_Right);
+
 	uint32_t checksum = collision->getChecksum();
 	fwrite(&checksum, sizeof(uint32_t), 1, fd);
 
@@ -310,6 +317,7 @@ void write_collision(FILE *fd, CCollision *collision) {
 
 	uint32_t num_triangle_meshes = tri_meshes.size();
 	fwrite(&num_triangle_meshes, sizeof(uint32_t), 1, fd);
+
 	while (tri_it != tri_meshes.end()) {
 		COLTriangleMesh mesh = *tri_it;
 		fwrite(&mesh.num_indices, sizeof(uint32_t), 1, fd);

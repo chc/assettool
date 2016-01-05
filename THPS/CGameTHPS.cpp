@@ -12,6 +12,7 @@
 #include <libthps/misc.h>
 #include "CTHPSImg.h"
 #include "CTHPSScene.h"
+#include "CTHPSCol.h"
 using namespace LibTHPS;
 CGameTHPS::CGameTHPS() {
 	mp_shortName = "THPS";
@@ -23,7 +24,7 @@ CGameTHPS::CGameTHPS() {
 	fmt.name = "img";
 	fmt.mp_impFunc = thps_xbx_import_img;
 	fmt.mp_expFunc = thps_xbx_export_img;
-	m_fileFmtCount = 3;
+	m_fileFmtCount = 4;
 
 
 	mp_fileFormats = (FileFormat **)malloc(sizeof(FileFormat *) * m_fileFmtCount);
@@ -43,6 +44,13 @@ CGameTHPS::CGameTHPS() {
 	fmt.mp_expFunc = thps_xbx_export_scn;
 	mp_fileFormats[2] = (FileFormat *)malloc(sizeof(FileFormat));
 	memcpy(mp_fileFormats[2],&fmt,sizeof(FileFormat));
+
+	fmt.description = "THPS Collision File";
+	fmt.name = "col";
+	fmt.mp_impFunc = thps_xbx_import_col;
+	fmt.mp_expFunc = thps_xbx_export_col;
+	mp_fileFormats[3] = (FileFormat *)malloc(sizeof(FileFormat));
+	memcpy(mp_fileFormats[3],&fmt,sizeof(FileFormat));
 }
 
 bool thps_xbx_import_img(ImportOptions* opts) {

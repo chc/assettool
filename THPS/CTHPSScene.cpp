@@ -189,13 +189,15 @@ void setup_material_shader(LibTHPS::Material *mat, CMaterial *out) {
 void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 	out->setIdentifierChecksum(mat->getChecksum());
 
-	setup_material_shader(mat, out);
+	if(mat->m_passes > 1)
+		setup_material_shader(mat, out);
 
 	for(int i=0;i<mat->m_passes;i++) {
 		LibTHPS::materialTexInfo matinfo = mat->getTexture(i);
 		if(matinfo.m_texture_checksum == 0) break;
 		out->setTextureChecksum(matinfo.m_texture_checksum, i);
-		out->setBlendMode(EBlendMode_Modulate, i);
+		out->setDiffuseColour(matinfo.m_colour[0],matinfo.m_colour[1],matinfo.m_colour[2],matinfo.m_colour[3],i);
+		//out->setBlendMode(EBlendMode_Modulate, i);
 		out->setTextureAddressMode(tex_address_mode_from_thps_uvaddress(matinfo.m_u_address), tex_address_mode_from_thps_uvaddress(matinfo.m_v_address), i);
 	}	
 }

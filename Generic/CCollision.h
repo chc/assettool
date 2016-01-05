@@ -2,6 +2,7 @@
 #define _CCOLLISION_H
 #include <stdint.h>
 #include <vector>
+#include <Generic/CGeneric.h>
 typedef struct {
 	float min[3];
 	float max[3];
@@ -13,6 +14,7 @@ typedef struct {
 	float *verticies;
 	uint32_t num_indices;
 	uint32_t num_verts;
+	uint32_t checksum;
 } COLTriangleMesh;
 
 typedef struct {
@@ -42,7 +44,12 @@ public:
 
 	void addChild(CCollision *child);
 	std::vector<CCollision *> getChildren();
+
+	void setCoordinateSystem(ECoordinateSystem system) { m_coordinate_system = system; }
+	ECoordinateSystem getCoordinateSystem(ECoordinateSystem handedness) { return m_coordinate_system; }
+	void convertToCoordinateSystem(ECoordinateSystem system);
 private:
+	ECoordinateSystem m_coordinate_system;
 	uint32_t m_checksum;
 	COLBBox m_bbox;
 	std::vector<COLSphere> m_spheres;

@@ -40,8 +40,8 @@ CCHCEngine::CCHCEngine() {
 	memset(&txdFmt, 0, sizeof(txdFmt));
 	txdFmt.description = "Collision";
 	txdFmt.name = "col";
-	txdFmt.mp_impFunc = chc_engine_import_keyframe_collection;
-	txdFmt.mp_expFunc = chc_engine_export_keyframe_collection;
+	txdFmt.mp_impFunc = chc_engine_import_mesh;
+	txdFmt.mp_expFunc = chc_engine_export_mesh;
 	mp_fileFormats[3] = (FileFormat *)malloc(sizeof(FileFormat));
 	memcpy(mp_fileFormats[3], &txdFmt, sizeof(FileFormat));
 }

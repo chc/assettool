@@ -1,6 +1,6 @@
 #include <vector>
 #include <Generic/CCollision.h>
-
+#include <Generic/coordinate_normalizer.h>
 CCollision::CCollision() {
 	m_checksum = 0;
 	memset(&m_bbox, 0, sizeof(m_bbox));
@@ -44,4 +44,14 @@ void CCollision::addChild(CCollision *child) {
 }
 std::vector<CCollision *> CCollision::getChildren() {
 	return m_children;
+}
+
+void CCollision::convertToCoordinateSystem(ECoordinateSystem system) {
+	std::vector<COLTriangleMesh>::iterator tri_iterator = m_triangle_meshes.begin();
+	while(tri_iterator != m_triangle_meshes.end()) {
+		COLTriangleMesh mesh = *tri_iterator;
+		convert_xyz_from_to(m_coordinate_system, system, mesh.verticies, mesh.num_verts);
+		tri_iterator++;
+	}
+	m_coordinate_system = system;
 }

@@ -105,11 +105,11 @@ struct materialOutput {
 	};
 
 } materialOutputs[] = {
-	{"specular_colour", NULL, EOSig_HSL, &CMaterial::setSpecColour},
-	{"ambient_colour", NULL,EOSig_HSL, (void (CMaterial::*)(float, float, float, float))&CMaterial::setAmbientColour},
+	//{"specular_colour", NULL, EOSig_HSL, &CMaterial::setSpecColour},
+	//{"ambient_colour", NULL,EOSig_HSL, (void (CMaterial::*)(float, float, float, float, int))&CMaterial::setAmbientColour},
 	//{"diffuse_colour", NULL,EOSig_HSL, NULL},
-	{"shine", "shine",EOSig_Float, (void (CMaterial::*)(float, float, float, float))&CMaterial::setShine},
-	{"shine", "shine_strength",EOSig_Float, (void (CMaterial::*)(float, float, float, float))&CMaterial::setShineStrength},
+	//{"shine", "shine",EOSig_Float, (void (CMaterial::*)(float, float, float, float, int))&CMaterial::setShine},
+	//{"shine", "shine_strength",EOSig_Float, (void (CMaterial::*)(float, float, float, float, int))&CMaterial::setShineStrength},
 	//{"transparency", "transparency",EOSig_Bool, NULL},
 	//{"twosided", "value",EOSig_Bool, NULL},
 	//{"wireframe", "value",EOSig_Bool, NULL},

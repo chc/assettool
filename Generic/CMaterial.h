@@ -82,18 +82,18 @@ public:
 	CMaterial();
 	~CMaterial();
 	void setName(const char *name);
-	void setSpecColour(float r, float g, float b, float a);
-	void setAmbientColour(float r, float g, float b, float a);
-	void setDiffuseColour(float r, float g, float b, float a);
+	void setSpecColour(float r, float g, float b, float a, int layer = -1);
+	void setAmbientColour(float r, float g, float b, float a, int layer = -1);
+	void setDiffuseColour(float r, float g, float b, float a, int layer = -1);
 	void setShine(float s);
 	void setShineStrength(float s);
 
 
 	float getShine();
 	float getShineStrength();
-	void getSpecColour(float &r, float &g, float &b, float &a);
-	void getAmbientColour(float &r, float &g, float &b, float &a);
-	void getDiffuseColour(float &r, float &g, float &b, float &a);
+	void getSpecColour(float &r, float &g, float &b, float &a, int layer = -1);
+	void getAmbientColour(float &r, float &g, float &b, float &a, int layer = -1);
+	void getDiffuseColour(float &r, float &g, float &b, float &a, int layer = -1);
 	const char *getName();
 	
 	void setTextureFilterMode(ETextureFilterMode mode, int level);
@@ -131,9 +131,9 @@ private:
 	uint32_t m_identifier_checksum;
 	uint64_t m_flags;
 
-	float m_specular_colour[4];
-	float m_ambient_colour[4];
-	float m_diffuse_colour[4];
+	float m_specular_colour[MAX_MATERIAL_TEXTURES][4];
+	float m_ambient_colour[MAX_MATERIAL_TEXTURES][4];
+	float m_diffuse_colour[MAX_MATERIAL_TEXTURES][4];
 
 	float m_specular_intensity;
 	float m_ambient_intensity;
