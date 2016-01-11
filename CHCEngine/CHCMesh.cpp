@@ -8,6 +8,8 @@
 #include <CHCEngine/CHCTexture.h>
 #include <Generic/CTextureCollection.h>
 #include <Generic/CCollision.h>
+#include <Generic/BSP/BSP.h>
+#include <Generic/BSP/BSPGen.h>
 #define CHCMESH_VERSION 4
 enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_ColAsInt = (1<<0),
@@ -323,13 +325,9 @@ void write_collision(FILE *fd, CCollision *collision) {
 		fwrite(&mesh.num_indices, sizeof(uint32_t), 1, fd);
 		uint32_t *p = mesh.indices;
 		for (int i = 0; i < mesh.num_indices; i++) {
-			uint32_t x, y, z;
+			uint32_t x;
 			x = *p++;
-			y = *p++;
-			z = *p++;
 			fwrite(&x, sizeof(uint32_t), 1, fd);
-			fwrite(&y, sizeof(uint32_t), 1, fd);
-			fwrite(&z, sizeof(uint32_t), 1, fd);
 		}
 		fwrite(&mesh.num_verts, sizeof(uint32_t), 1, fd);
 		float *v = mesh.verticies;

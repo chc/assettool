@@ -24,8 +24,43 @@ std::vector<COLTriangleMesh> CCollision::getTriMeshes() {
 std::vector<COLSphere> CCollision::getSpheres() {
 	return m_spheres;
 }
+void CCollision::getMinMax(CCollision *col, float *min, float *max) {
+	std::vector<COLTriangleMesh> trimeshes = col->getTriMeshes();
+	std::vector<COLTriangleMesh>::iterator it = trimeshes.begin();
+	while(it != trimeshes.end()) {
+		COLTriangleMesh mesh = *it;
+		float *v = mesh.verticies;
+		for(int i=0;i<mesh.num_verts;i++) {
+			for(int x=0;x<3;x++) {
+				if(v[x] < min[x]) {
+					min[x] = v[x];
+				}
+				if(v[x] > max[x]) {
+					max[x] = v[x];
+				}
+			}
+			v+= 3;
+		}
+		it++;
+	}
+	std::vector<CCollision *> children = col->getChildren();
+	std::vector<CCollision *>::iterator it2 = children.begin();
+	while(it2 != children.end()) {
+		getMinMax(*it2, min, max);
+		it2++;
+	}
+}
+void CCollision::calculateBBOX() {
+	float min[3],max[3];
+	for(int i=0;i<3;i++) {
+		max[i] = -9999999.0;
+		min[i] = 9999999.0;
+	}
+	getMinMax(this, (float *)&min, (float *)&max);
+	memcpy((float *)&m_bbox.min,(float *)&min,sizeof(float)*3);
+	memcpy((float *)&m_bbox.max,(float *)&max,sizeof(float)*3);
 
-
+}
 void CCollision::setChecksum(uint32_t checksum) {
 	m_checksum = checksum;
 }

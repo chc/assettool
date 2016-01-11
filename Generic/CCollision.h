@@ -48,7 +48,9 @@ public:
 	void setCoordinateSystem(ECoordinateSystem system) { m_coordinate_system = system; }
 	ECoordinateSystem getCoordinateSystem(ECoordinateSystem handedness) { return m_coordinate_system; }
 	void convertToCoordinateSystem(ECoordinateSystem system);
+	void calculateBBOX();
 private:
+	void getMinMax(CCollision *col, float *min, float *max);
 	ECoordinateSystem m_coordinate_system;
 	uint32_t m_checksum;
 	COLBBox m_bbox;

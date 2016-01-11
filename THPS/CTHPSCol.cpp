@@ -155,7 +155,7 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 				*objs[i].vert_cursor++ = (pos[1] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[1];
 				*objs[i].vert_cursor++ = (pos[2] * COLLISION_RECIPROCAL_SUB_INCH_PRECISION) + objs[i].min[2];
 			}
-			printf("Vert2: %f %f %f\n", objs[i].vert_cursor[-3], objs[i].vert_cursor[-2], objs[i].vert_cursor[-1]);
+			//printf("Vert2: %f %f %f\n", objs[i].vert_cursor[-3], objs[i].vert_cursor[-2], objs[i].vert_cursor[-1]);
 		}
 	}
 	
@@ -206,6 +206,11 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 			}
 		}
 	}
+
+	if(head.m_total_num_faces_large % 2) {
+		uint16_t spad;
+		fread(&spad, sizeof(uint16_t), 1, fd);
+	}
 	
 	fclose(fd);
 
@@ -221,7 +226,7 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 		if(objs[i].num_faces == 0 || objs[i].num_verts == 0) continue;
 		COLTriangleMesh mesh;
 		memset(&mesh,0,sizeof(mesh));
-		mesh.num_indices = objs[i].num_faces;
+		mesh.num_indices = objs[i].num_faces  * 3;
 		mesh.num_verts = objs[i].num_verts;
 		mesh.indices = objs[i].out_faces;
 		mesh.verticies = objs[i].out_verts;
@@ -232,6 +237,9 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 
 	mp_collision->setCoordinateSystem(ECoordinateSystem_Left_XZY);
 	mp_collision->setChecksum(crc32(0, "SC2", 3));
+
+	mp_collision->calculateBBOX();
+
 	scene.m_collision = mp_collision;
 	exportopts.dataClass = &scene;
 	exportopts.path = opts->outpath;
