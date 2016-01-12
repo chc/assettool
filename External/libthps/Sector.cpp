@@ -2,7 +2,7 @@
 #include "Sector.h"
 #include <vector>
 
-#include <Windows.h>
+#include <memory.h>
 
 namespace LibTHPS {
 

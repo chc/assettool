@@ -1,6 +1,8 @@
 #ifndef _CMATERIAL_H
 #define _CMATERIAL_H
 #include <stdint.h>
+#include <stdio.h>
+
 #include <vector>
 #define MAX_MATERIAL_TEXTURES 4
 class CTexture;
@@ -60,12 +62,12 @@ enum EBlendMode
 	EBlendMode_Add_Fixed,								// ( Src - 0 ) * Fixed + Dst
 	EBlendMode_Subtract,								// ( 0 - Src ) * Src + Dst
 	EBlendMode_Subtract_Fixed,								// ( 0 - Src ) * Fixed + Dst
-	EBlendMode_Blend,									// ( Src * Dst ) * Src + Dst	
-	EBlendMode_Blend_Fixed,							// ( Src * Dst ) * Fixed + Dst	
+	EBlendMode_Blend,									// ( Src * Dst ) * Src + Dst
+	EBlendMode_Blend_Fixed,							// ( Src * Dst ) * Fixed + Dst
 	EBlendMode_Modulate,								// ( Dst - 0 ) * Src + 0
-	EBlendMode_Modulate_Fixed,							// ( Dst - 0 ) * Fixed + 0	
+	EBlendMode_Modulate_Fixed,							// ( Dst - 0 ) * Fixed + 0
 	EBlendMode_Brighten,								// ( Dst - 0 ) * Src + Dst
-	EBlendMode_Brighten_Fixed,							// ( Dst - 0 ) * Fixed + Dst	
+	EBlendMode_Brighten_Fixed,							// ( Dst - 0 ) * Fixed + Dst
 	EBlendMode_GlossMap,								// Specular = Specular * Src	- special mode for gloss mapping
 	EBlendMode_Blend_Previous_Mask,					// ( Src - Dst ) * Dst + Dst
 	EBlendMode_Blend_Inverse_Previous_Mask,			// ( Dst - Src ) * Dst + Src
@@ -73,11 +75,11 @@ enum EBlendMode
 	EBlendMode_OneInv_SrcAlpha,	//								- special mode for imposter rendering.
 
 	vNUM_BLEND_MODES
-}; 
+};
 typedef struct {
 	EBlendMode texture_blend_modes[MAX_MATERIAL_TEXTURES];
 } ShaderFinalCombineStage;
-class CMaterial { 
+class CMaterial {
 public:
 	CMaterial();
 	~CMaterial();
@@ -95,7 +97,7 @@ public:
 	void getAmbientColour(float &r, float &g, float &b, float &a, int layer = -1);
 	void getDiffuseColour(float &r, float &g, float &b, float &a, int layer = -1);
 	const char *getName();
-	
+
 	void setTextureFilterMode(ETextureFilterMode mode, int level);
 	void setTextureAddressMode(ETextureAddresingMode u, ETextureAddresingMode v, int level);
 

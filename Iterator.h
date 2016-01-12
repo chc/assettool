@@ -5,15 +5,12 @@ namespace Core {
 		class Iterator
 	{
 	public:
-		Iterator() {
-			pos = 0
-		}
-		Iterator(T* vec, int index) {
+		Iterator(T vec, int index) {
 			pos = index;
 			this->vec = vec;
 		}
 		RT operator*() {
-			return vec->get(pos);
+			return vec.get(pos);
 		}
 		bool operator==(Iterator<T, RT> vec) {
 			return vec.pos == pos;
@@ -27,7 +24,7 @@ namespace Core {
 		}
 	private:
 		int pos;
-		T* vec;
+		T vec;
 	};
 }
 #endif

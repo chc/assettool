@@ -1,3 +1,4 @@
+#include <main.h>
 #include <XML/CCHCMaxXML.h>
 #include <Generic/CMaterial.h>
 #include <Generic/CMesh.h>

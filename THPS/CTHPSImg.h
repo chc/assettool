@@ -1,4 +1,4 @@
-#include <libthps\Image.h>
+#include <libthps/Image.h>
 #include <Generic/CImage.h>
 class CTHPSImg : public LibTHPS::Image {
 public:

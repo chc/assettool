@@ -128,7 +128,7 @@ typedef struct {
 
 	Core::Vector<MaterialRecord *> m_material_records;
 
-	Core::Map<int, Core::Vector<glm::ivec3>> m_index_buffers;
+	Core::Map<int, Core::Vector<glm::ivec3> > m_index_buffers;
 
 	char name[64];
 
@@ -710,7 +710,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	std::vector<GeometryRecord *>::iterator it = info.m_geom_records.begin();
 	int num_materials = 0, num_verts = 0;
 
-	Core::Map<int, Core::Vector<glm::ivec3>> m_index_buffers;
+	Core::Map<int, Core::Vector<glm::ivec3> > m_index_buffers;
 	while(it != info.m_geom_records.end()) {
 		GeometryRecord *rec = *it;
 
@@ -795,11 +795,11 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		output_meshes[mesh_buffer_idx]->setDefaultHierarchicalRotation(glm::value_ptr(g->default_hierarchical_rotation));
 
 		output_meshes[mesh_buffer_idx]->setIndexLevels(g->m_index_buffers.size());
-		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3>>, Core::MapItem< int, Core::Vector<glm::ivec3>>*> it2 = g->m_index_buffers.begin();
+		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3> >, Core::MapItem< int, Core::Vector<glm::ivec3> >* > it2 = g->m_index_buffers.begin();
 		int level = 0;
 		
 		while(it2 != g->m_index_buffers.end()) {
-			Core::MapItem< int, Core::Vector<glm::ivec3>>* item = *it2;
+			Core::MapItem< int, Core::Vector<glm::ivec3> >* item = *it2;
 
 			MaterialRecord *matrec = g->m_material_records[item->key];
 

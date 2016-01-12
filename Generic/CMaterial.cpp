@@ -1,3 +1,4 @@
+#include <main.h>
 #include <Generic/CMaterial.h>
 #include <crc32.h>
 CMaterial::CMaterial() {

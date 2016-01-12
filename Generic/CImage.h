@@ -36,7 +36,7 @@ public:
 			free(m_rgba);
 		}
 	}
-	static uint32_t CImage::guessDataSize(EColourType type, int width, int height) {
+	static uint32_t guessDataSize(EColourType type, int width, int height) {
 		uint8_t dxt = 0;
 		uint32_t size = 0;
 		switch (type) {

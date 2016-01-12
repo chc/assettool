@@ -1,5 +1,5 @@
 #include "Material.h"
-#include <Windows.h>
+
 
 namespace LibTHPS {
 

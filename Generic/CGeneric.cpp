@@ -6,7 +6,7 @@
 #include "plyloader.h"
 #include "TTF.h"
 #include "Cubemap.h"
-#include "Json.h"
+#include "json.h"
 CGeneric::CGeneric() {
 	FileFormat formats[] = {{"png","PNG",png_import_img,png_export_img},
 							{"fs", "File System",gen_import_file, gen_export_file},

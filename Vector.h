@@ -14,18 +14,15 @@ namespace Core {
 	class Vector {
 	public:
 		Iterator<Vector<T>, T> begin() {
-			return Iterator<Vector<T>, T>(this, 0);
+			return Iterator<Vector<T>, T>(*this, 0);
 		}
 		Iterator<Vector<T>, T> end() {
-			return Iterator<Vector<T>, T>(this, size());
+			return Iterator<Vector<T>, T>(*this, size());
 		}
 		Vector(const Vector<T> &v) {
 			item_count = v.item_count;
 			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * v.item_count);
 			memcpy(items, v.items, sizeof(VectorItem<T>) * v.item_count);
-		}
-		Vector(int num_elements) {
-			initalize(num_elements);
 		}
 		Vector() {
 			initalize(10);

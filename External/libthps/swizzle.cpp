@@ -1,6 +1,7 @@
 #include "swizzle.h"
-#include <Windows.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
 static unsigned int	swizzle_table[4096];
 static bool			swizzle_table_generated = false;
 

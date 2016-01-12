@@ -1,14 +1,16 @@
+#include <crc32.h>
+#include <FileSearcher.h>
 #include <Generic/CGeneric.h>
 #include "Cubemap.h"
 #include <Generic/CTexture.h>
 #include "pngExporter.h"
 #include <Generic/CTextureCollection.h>
-#include <Windows.h>
-#include <crc32.h>
+
 struct CubemapParams {
 	CTexture *tex;
 	uint8_t current_cube_type;
 };
+
 
 uint8_t findTypeByNamePrefix(const char *name) {
 	struct CubemapTypeMap {
@@ -33,10 +35,15 @@ bool gen_import_cubemap_process_image(ExportOptions *opts) {
 	CImage *img = (CImage *)opts->dataClass;
 	CubemapParams *params = (CubemapParams *)opts->extra;
 	params->tex->setImage(img, params->current_cube_type);
-	
+
 	return true;
 
 }
+void cubemap_on_found_file(FileInfo *file,void *params) {
+    ImportOptions *pngOpts = (ImportOptions *)params;
+    png_import_img(pngOpts);
+}
+
 bool gen_import_cubemap(ImportOptions* opts) {
 	CTexture *tex = new CTexture();
 	ImportOptions pngOpts;
@@ -52,18 +59,13 @@ bool gen_import_cubemap(ImportOptions* opts) {
 	CubemapParams params;
 	params.tex = tex;
 	pngOpts.extra = (void *)&params;
-	WIN32_FIND_DATA findData;
-	HANDLE hndl = FindFirstFileA(search_path, &findData);
-	do {
-		if (~findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			sprintf(search_path, "%s/%s",opts->path, findData.cFileName);
-			params.current_cube_type = findTypeByNamePrefix(findData.cFileName);
-			pngOpts.path = search_path;
-			png_import_img(&pngOpts);
-		}
-	} while (FindNextFile(hndl, &findData));
 
-	FindClose(hndl);
+
+
+	FileSearcher *searcher = new FileSearcher(opts->path, cubemap_on_found_file, &pngOpts);
+	searcher->run();
+	delete searcher;
+
 	tex->setChecksum(crc32(0, opts->path, strlen(opts->path)));
 	CTextureCollection *tex_col = new CTextureCollection();
 	tex_col->AddTexture(tex);

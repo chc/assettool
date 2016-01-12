@@ -15,7 +15,7 @@ file (GLOB XML_SOURCES "XML/*.cpp" "XML/*.h")
 
 set (ALL_SRCS ${MAIN_SOURCES} ${GENERIC_SOURCES} ${EXTERNAL_SOURCES} ${THPS_SOURCES} ${GTASA_SOURCES} ${ASSIMP_SOURCES} ${CHCENGINE_SOURCES} ${XML_SOURCES})
 
-include_directories (. External)
+include_directories (${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/External)
 
 source_group("" FILES ${MAIN_SOURCES})
 source_group("Generic" FILES ${GENERIC_SOURCES})
@@ -35,5 +35,7 @@ target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped 
 target_link_libraries(assettool general libpng zlib libsquish pugixml freetype jansson assimp)
 
 ELSE() #unix
-
+add_executable (assettool ${ALL_SRCS})
+target_compile_options(assettool PUBLIC -fpermissive)
+target_link_libraries(assettool libpng zlib libsquish pugixml freetype jansson assimp)
 ENDIF()

@@ -33,4 +33,9 @@ typedef struct  {
 } assetToolState;
 
 #define MAX_NAME 24
+#ifndef _WIN32
+	#define stricmp strcasecmp
+	#define strnicmp strncasecmp
+	#define sprintf_s snprintf
+#endif
 #endif //_MAIN_H

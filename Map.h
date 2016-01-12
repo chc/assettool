@@ -17,10 +17,10 @@ namespace Core {
 	class Map {
 	public:
 		Iterator<Map<T, T2>, MapItem<T, T2> *> begin() {
-			return Iterator<Map<T, T2>, MapItem<T, T2> *>(this, 0);
+			return Iterator<Map<T, T2>, MapItem<T, T2> *>(*this, 0);
 		}
 		Iterator<Map<T, T2>, MapItem<T, T2> *> end() {
-			return Iterator<Map<T, T2>, MapItem<T, T2> *>(this, size());
+			return Iterator<Map<T, T2>, MapItem<T, T2> *>(*this, size());
 		}
 		Map(const Map& m) {
 			num_elements = m.num_elements;
@@ -50,12 +50,12 @@ namespace Core {
 				item->initalized = true;
 				return item->value;
 			}
-			add(idx, NULL);
-			item = findItemByKey(idx);
+			item = findFirstFreeItem();
+			memset(item, 0, sizeof(MapItem<T, T2>));
 			item->initalized = true;
 			return item->value;
 		}
-		void add(T key, T2 *val) {
+		void add(T key, T2 val) {
 			MapItem<T, T2> *item = findItemByKey(key);
 			if(!item) {
 				item = findFirstFreeItem();
@@ -66,7 +66,7 @@ namespace Core {
 			}
 			if(item) {
 				item->key = key;
-				item->value = val ? *val : NULL;
+				item->value = val;
 				item->initalized = true;
 			}
 		}
