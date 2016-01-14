@@ -51,6 +51,7 @@ namespace Core {
 				return item->value;
 			}
 			item = findFirstFreeItem();
+			
 			memset(item, 0, sizeof(MapItem<T, T2>));
 			item->initalized = true;
 			return item->value;

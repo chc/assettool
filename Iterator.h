@@ -22,9 +22,13 @@ namespace Core {
 			pos++;
 			return *this;
 		}
+		const Iterator<T, RT>& operator--(int) {
+			pos--;
+			return *this;
+		}
 	private:
 		int pos;
 		T vec;
 	};
-}
+};
 #endif

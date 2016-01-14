@@ -24,6 +24,9 @@ namespace Core {
 			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * v.item_count);
 			memcpy(items, v.items, sizeof(VectorItem<T>) * v.item_count);
 		}
+		Vector(int num_elements) {
+			initalize(num_elements);
+		}
 		Vector() {
 			initalize(10);
 		}
@@ -49,13 +52,20 @@ namespace Core {
 			return (T)NULL;
 		}
 		Vector<T>& operator=(Vector& other) {
-			other.item_count = item_count;
-			other.items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * item_count);
-			memcpy(other.items,items, sizeof(VectorItem<T>) * item_count);
+			item_count = other.item_count;
+			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * item_count);
+			memcpy(items,other.items, sizeof(VectorItem<T>) * item_count);
 			return *this;
 		}
 		T get(int pos) {
 			return operator[](pos);
+		}
+		void clear() {
+			for(int i=0;i<item_count;i++) {
+				if(items[i].initalized) {
+					items[i].initalized = false;
+				}
+			}
 		}
 		int size() {
 			int count = 0;
@@ -94,8 +104,10 @@ namespace Core {
 		void AddItemSlots(int count) {
 			if(count == 0) count = 10;
 			item_count += count;
+
 			VectorItem<T> *new_items = (VectorItem<T> *)malloc(sizeof(VectorItem<T>) * item_count);
 			memset(new_items,0,sizeof(VectorItem<T>) * item_count);
+			printf("Increasing items: %d %p\n",item_count,items);
 			if(items) {
 				memcpy(new_items,items,sizeof(VectorItem<T>) * (item_count-count));
 				free(items);
@@ -105,9 +117,9 @@ namespace Core {
 		void DeleteItem(VectorItem<T> *item) {
 			item->initalized = false;
 		}
-		
+
 		VectorItem<T> *items;
 		int item_count;
 	};
 };
-#endif //_CORE_VECTOR_H
+#endif //_CORE_COLLECTION_H
