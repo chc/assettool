@@ -22,7 +22,7 @@ struct THPSColHeader
 
 typedef struct {
 	uint32_t checksum;
-	uint16_t flag_pad;
+	uint16_t flags;
 	uint32_t num_verts;
 	uint32_t num_faces;
 	uint8_t fixed_verts;
@@ -112,6 +112,7 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 
 		objs[i].verts_offset = verts_offset;
 		objs[i].faces_offset = face_offset;
+		objs[i].flags = flags;
 	}
 
 	for(int i=0;i<head.m_num_objects;i++) {
@@ -225,6 +226,7 @@ bool thps_xbx_import_col(ImportOptions* opts) {
 	for(int i=0;i<head.m_num_objects;i++) {
 		if(objs[i].num_faces == 0 || objs[i].num_verts == 0) continue;
 		COLTriangleMesh mesh;
+
 		memset(&mesh,0,sizeof(mesh));
 		mesh.num_indices = objs[i].num_faces  * 3;
 		mesh.num_verts = objs[i].num_verts;

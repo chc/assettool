@@ -10,8 +10,8 @@ void convert_xyz_from_to(ECoordinateSystem from, ECoordinateSystem to, float *bu
 				Normalize to right handed
 			*/
 			case ECoordinateSystem_Left_XZY:
-				x = -p[0];
-				y = -p[2];
+				x = p[0];
+				y = p[2];
 				z = p[1];
 				break;
 			case ECoordinateSystem_Left:
