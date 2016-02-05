@@ -13,7 +13,7 @@ typedef struct {
 	uint32_t checksum;
 	uint32_t width;
 	uint32_t height;
-	EColourType type;
+	uint8_t type;
 	uint32_t data_size;
 } CHCTexItem;
 bool chc_tex_import_img(ImportOptions *impOpts) {
@@ -27,6 +27,7 @@ void chc_export_image_collection(FILE *fd, CTexture *tex) {
 	if (tex->isCubeMap()) {
 		cube_item.type = EColourType_CubeMap;
 		cube_item.checksum = tex->getChecksum();
+		printf("Item checksum: %08X\n", cube_item.checksum);
 		fwrite(&cube_item, sizeof(cube_item), 1, fd);
 		for (int i = 0; i < ECUBEMAPTYPE_COUNT; i++) {
 			memset(&cube_item, 0, sizeof(cube_item));

@@ -8,11 +8,13 @@ FileSearcher::FileSearcher(const char *path, FileSearcherCB callback, void *para
 void FileSearcher::run() {
 	DIR *dir = opendir(m_path);
 	struct dirent *dent;
+	char filebuf[FILENAME_MAX+1];
 	FileInfo file_info;
 	if(dir != NULL) {
 		while((dent=readdir(dir)) != NULL) {
-			file_info.name = dent->d_name;
-			if(mp_cb_onfound) {
+			sprintf(filebuf, "%s/%s",m_path,dent->d_name);
+			file_info.name = (char *)&filebuf;
+			if(mp_cb_onfound && dent->d_type != DT_DIR) {
 				mp_cb_onfound(&file_info, mp_params);
 			}
 		}

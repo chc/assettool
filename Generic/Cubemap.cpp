@@ -25,7 +25,7 @@ uint8_t findTypeByNamePrefix(const char *name) {
 		{ "pz", ECUBEMAPTYPE_POSZ },
 	};
 	for (int i = 0; i < sizeof(cubemap_types) / sizeof(CubemapTypeMap); i++) {
-		if (strncmp(name, cubemap_types[i].prefix, 2) == 0) {
+		if (strstr(name, cubemap_types[i].prefix) != NULL) {
 			return cubemap_types[i].type;
 		}
 	}
@@ -41,7 +41,12 @@ bool gen_import_cubemap_process_image(ExportOptions *opts) {
 }
 void cubemap_on_found_file(FileInfo *file,void *params) {
     ImportOptions *pngOpts = (ImportOptions *)params;
+    printf("Searching: %s\n", file->name);
+    pngOpts->path = file->name;
+    CubemapParams *cparams = (CubemapParams *)pngOpts->extra;
+	cparams->current_cube_type = findTypeByNamePrefix(file->name);
     png_import_img(pngOpts);
+
 }
 
 bool gen_import_cubemap(ImportOptions* opts) {
@@ -55,7 +60,9 @@ bool gen_import_cubemap(ImportOptions* opts) {
 	char search_path[FILENAME_MAX];
 	memset(&search_path, 0, sizeof(search_path));
 	strcpy(search_path, opts->path);
-	strcat(search_path, "//*");
+	if(opts->path[strlen(opts->path)] != '/')
+		strcat(search_path, "//");
+
 	CubemapParams params;
 	params.tex = tex;
 	pngOpts.extra = (void *)&params;
@@ -66,7 +73,9 @@ bool gen_import_cubemap(ImportOptions* opts) {
 	searcher->run();
 	delete searcher;
 
-	tex->setChecksum(crc32(0, opts->path, strlen(opts->path)));
+	uint32_t checksum = crc32(0, opts->path, strlen(opts->path));
+	printf("%08X path\n", checksum);
+	tex->setChecksum(checksum);
 	CTextureCollection *tex_col = new CTextureCollection();
 	tex_col->AddTexture(tex);
 	ExportOptions expOpts;
