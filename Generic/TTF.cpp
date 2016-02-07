@@ -1,6 +1,6 @@
 #include "TTF.h"
-#include <freetype2/ft2build.h>
-#include <freetype2/freetype/freetype.h>
+#include <freetype/ft2build.h>
+#include <freetype/freetype.h>
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
