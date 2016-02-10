@@ -159,6 +159,10 @@ typedef struct {
 
 	uint32_t last_frame_index;
 
+	DataMapEntry *frame_map;
+
+	DFFFrameBoneHierarchy *last_bone_hiearchy;
+
 } DFFInfo;
 typedef struct {
 	uint32_t material_count;
@@ -215,7 +219,7 @@ void dump_header(DFFChunkInfo *head) {
 	printf("version: %08X\n", head->version);
 }
 bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_tag = (DFFTags)-1) {
-	dump_header(chunk);
+	//dump_header(chunk);
 	DFFChunkInfo clumpHead;
 	switch(chunk->tag) {
 		case DFFTag_rwLIGHT: {
@@ -250,7 +254,8 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				fread(&bone_info.bone_type, sizeof(uint32_t), 1, fd);
 				bone->child_bones.add(bone_info);
 			}
-			dff_out->m_frames[dff_out->last_frame_index]->bone_hiearchy = bone;
+			//dff_out->m_frames[dff_out->last_frame_index]->bone_hiearchy = bone;
+			dff_out->last_bone_hiearchy = bone;
 			break;
 		}
 		case DFFTag_rwCLUMP: {
@@ -281,7 +286,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				dff_out->m_geom_records[geometry_index]->frame = dff_out->m_frames[frame_index];
 				printf("pos: ");
 				dump_vec3(dff_out->m_frames[frame_index]->position);
-				memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float)*3);
+				memcpy(&dff_out->m_geom_records[geometry_dump_vecindex]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float)*3);
 				memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_rotation, glm::value_ptr(dff_out->m_frames[frame_index]->rotation_matrix), sizeof(float)*9);
 				strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
 			}
@@ -353,6 +358,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			for(int i=0;i<num_bones;i++) {
 				matrices[i] = (float *)malloc(sizeof(float) * 4*4);
 				fread(matrices[i], sizeof(float), 4*4, fd);
+				matrices[i][15] = 1.0;
 			}
 
 			dff_out->last_geometry->weights = weights;
@@ -423,7 +429,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				for(int j=0;j<rec->vertex_count;j++) {
 					fread(glm::value_ptr(rec->uv_data[i][j]), sizeof(float),2,fd);
 					rec->uv_data[i][j].z = 0.0;
-					printf("%f %f\n",rec->uv_data[i][j].x,rec->uv_data[i][j].y);
+					//printf("%f %f\n",rec->uv_data[i][j].x,rec->uv_data[i][j].y);
 				}
 			}
 			if(rec->face_count > 0) {
@@ -436,7 +442,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					fread(&rec->indicies[i].w, sizeof(uint16_t), 1, fd); //materialid
 					fread(&rec->indicies[i].z, sizeof(uint16_t),1,fd); //index z
 					
-					printf("%d %d %d %d\n",rec->indicies[i].x,rec->indicies[i].y,rec->indicies[i].z, rec->indicies[i].w);
+					//printf("%d %d %d %d\n",rec->indicies[i].x,rec->indicies[i].y,rec->indicies[i].z, rec->indicies[i].w);
 				}
 			}
 			int pos = ftell(fd);
@@ -450,14 +456,14 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				rec->vertex_data = new glm::vec3[rec->vertex_count];
 				for(int i=0;i<rec->vertex_count;i++) {
 					fread(glm::value_ptr(rec->vertex_data[i]),sizeof(float),3,fd);
-					printf("%f %f %f\n",rec->vertex_data[i].x,rec->vertex_data[i].y,rec->vertex_data[i].z);
+					//printf("%f %f %f\n",rec->vertex_data[i].x,rec->vertex_data[i].y,rec->vertex_data[i].z);
 				}
 			}
 			if(rec->flags & EDFFVertFlag_HasNormal) {
 				rec->normal_data = new glm::vec3[rec->vertex_count];
 				for(int i=0;i<rec->vertex_count;i++) {
 					fread(glm::value_ptr(rec->normal_data[i]),sizeof(float),3,fd);
-					printf("%f %f %f\n",rec->normal_data[i].x,rec->normal_data[i].y,rec->normal_data[i].z);
+					//printf("%f %f %f\n",rec->normal_data[i].x,rec->normal_data[i].y,rec->normal_data[i].z);
 				}
 			}
 			dff_out->m_geom_records.push_back(rec);
@@ -486,8 +492,12 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 						dump_frame_info(frame);
 						dff_out->m_frames.add(frame);
 					}
+					DataMapEntry *m_entries = (DataMapEntry *)malloc(sizeof(DataMapEntry) * num_frames);
+					memset(m_entries, 0, sizeof(DataMapEntry) * num_frames);
+
+					dff_out->frame_map = m_entries;
 					//read frame names
-					for(int i=0;i<num_frames;i++) {
+					for(int i=0, x = 0;i<num_frames;i++) {
 						dff_out->last_frame_index = i;
 						fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //data header
 
@@ -498,8 +508,17 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 								fread(&clumpHead, sizeof(DFFChunkInfo), 1, fd); //read string
 							}
 							if (clumpHead.tag == DFFTag_rwFRAME) {
+								if(dff_out->last_bone_hiearchy != NULL) {
+									dff_out->m_frames[i]->bone_hiearchy = dff_out->last_bone_hiearchy;
+									dff_out->last_bone_hiearchy = NULL;
+								}
 								fread(&dff_out->m_frames[i]->name, clumpHead.size, 1, fd);
 								printf("read frame name: %s\n", dff_out->m_frames[i]->name);
+								if(dff_out->m_frames[i]->bone_hiearchy) {
+									m_entries[x].value = dff_out->m_frames[i]->name;
+									m_entries[x].identifier = x++;
+								}
+
 							}
 						}
 
@@ -690,6 +709,24 @@ CMesh *find_mesh_by_name_from_array(CMesh **meshes, int size, const char *name, 
 	}
 	return NULL;
 }
+void sync_bone_parents_from_frames(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
+
+	//meshes[0]->
+
+	//void setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs);
+
+	uint32_t *indexes = (uint32_t *)malloc(info->m_frames.size() * sizeof(uint32_t));
+	printf("begin syncs\n");
+	//only works on first mesh atm
+	for(int i=0;i<info->m_frames.size();i++) {
+		if(info->m_frames[i]->parent_frame != -1 && info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy != NULL)
+			indexes[i] = info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy->bone_id;
+		else indexes[i] = -1;
+		printf("Parent frame id: %d\n",indexes[i]);
+	}
+
+	meshes[0]->setBoneParentIDs(indexes, info->m_frames.size());
+}
 bool gta_rw_import_dff(ImportOptions* impOpts) {
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
@@ -776,11 +813,13 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			output_meshes[mesh_buffer_idx]->setBoneIndices(0, indices, g->vertex_count);
 			free(indices);
 			output_meshes[mesh_buffer_idx]->setWeightFlags(CMeshWeightTypeFlags_HasInverseBoneMatrices|CMeshWeightTypeFlags_HasBoneIndices);
+
+			output_meshes[mesh_buffer_idx]->setBoneNameMap(info.frame_map, info.m_frames.size());
 			
 			
 		}
 		
-
+		
 		g->output_mesh_id = mesh_buffer_idx;
 
 		float *temp_verts = (float *)malloc(g->vertex_count * sizeof(float) * 3);
@@ -878,6 +917,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	while (it != info.m_geom_records.end()) {
 		GeometryRecord *g = *it;
 		if (g->parent_frame != NULL) {
+			printf("aa parent: %p\n",g->parent_frame);
 			CMesh *parent = find_mesh_by_name_from_array(output_meshes, mesh_buffer_idx, g->parent_frame->name, &info);
 			if (parent) {
 				printf("Setting parent of %s(%08X) to: %08X(%s)\n", output_meshes[g->output_mesh_id]->getName(), output_meshes[g->output_mesh_id]->getGroupId(), parent->getGroupId(),parent->getName());
@@ -886,6 +926,9 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		}
 		it++;
 	}	
+
+
+	sync_bone_parents_from_frames(output_meshes, mesh_buffer_idx, &info);
 
 	//run exporter
 	ScenePack scene;

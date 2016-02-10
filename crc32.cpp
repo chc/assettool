@@ -41,6 +41,7 @@
  */
 
 #include <crc32.h>
+#include <ctype.h>
 
 static uint32_t crc32_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -98,6 +99,28 @@ crc32(uint32_t crc, const void *buf, int size)
 
 	while (size--)
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+
+	return crc;
+}
+
+
+uint32_t crc32_extended(const void *buf, int size, bool case_insensitive, bool replace_spaces) {
+		const uint8_t *p;
+
+	p = (uint8_t *)buf;
+	uint32_t crc = -1;
+	uint8_t ch;
+
+	while (size--) {
+		ch = *p++;
+		if(case_insensitive) {
+			ch = tolower(ch);
+		}
+		if(replace_spaces && ch == ' ') {
+			ch = '_';
+		}
+		crc = crc32_tab[(crc ^ ch) & 0xFF] ^ (crc >> 8);
+	}
 
 	return crc;
 }

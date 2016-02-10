@@ -8,6 +8,11 @@ enum ECoordinateSystem {
 	ECoordinateSystem_Right,	
 };
 
+typedef struct {
+	void *value;
+	uint32_t identifier;
+} DataMapEntry;
+
 class CGeneric : public IGame {
 public:
 	CGeneric();

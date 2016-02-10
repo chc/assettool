@@ -1,9 +1,9 @@
 #include "TTF.h"
-#include <freetype/ft2build.h>
-#include <freetype/freetype.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
-#include <freetype/fttrigon.h>
+//#include <freetype/ft2build.h>
+//#include <freetype/freetype.h>
+//#include <freetype/ftglyph.h>
+//#include <freetype/ftoutln.h>
+//#include <freetype/fttrigon.h>
 
 #include <png.h>
 inline int next_p2 (int a )
@@ -13,7 +13,9 @@ inline int next_p2 (int a )
 	while(rval<a) rval<<=1;
 	return rval;
 }
+	/*
 void saveFontTex(FT_GlyphSlot g) {
+
 	FILE *fd = fopen("out.png","wb");
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -81,6 +83,11 @@ bool ttf_import_mesh(ImportOptions* opts) {
  
 	// Ditto For The Font Library.
 	FT_Done_FreeType(library);
+	return false;
+	
+}
+*/
+bool ttf_import_mesh(ImportOptions* opts) {
 	return false;
 }
 bool ttf_export_mesh(ExportOptions* opts) {

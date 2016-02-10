@@ -32,6 +32,9 @@ CMesh::CMesh() {
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
+
+	m_num_inverse_bone_matrices = 0;
+	m_num_bone_index_sets = 0;
 }
 CMesh::~CMesh() {
 	if(m_vertices)
@@ -264,4 +267,21 @@ void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
 	}
 
 	m_coordinate_system = system;
+}
+
+void CMesh::setBoneNameMap(DataMapEntry *m_entries, uint32_t num_entries) {
+	mp_bone_name_map = m_entries;
+	m_num_bone_name_entries = num_entries;
+}
+DataMapEntry *CMesh::getBoneNameMap(uint32_t &num_entries) {
+	num_entries = m_num_bone_name_entries;
+	return mp_bone_name_map;
+}
+void CMesh::setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs) {
+	m_num_bone_parent_ids = num_indexs;
+	mp_bone_parent_ids = indexes;
+}
+uint32_t *CMesh::getBoneParentIDs(uint32_t &num_indexs) {
+	num_indexs = m_num_bone_parent_ids;
+	return mp_bone_parent_ids;
 }

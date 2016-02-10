@@ -98,6 +98,10 @@ public:
 	uint32_t getNumWeightSets();
 
 	/*
+		!!! All this bone crap must be fixed up into a struct (BoneInfo)
+	*/
+
+	/*
 		All inverse bone matrices are mat4 atm
 	*/
 	void setNumInverseBoneMatrices(uint32_t num_matrices);
@@ -112,6 +116,13 @@ public:
 
 	uint32_t getNumBoneIndexSets();
 	uint32_t *getBoneIndices(uint32_t set, uint32_t &num_indices);
+
+	void setBoneNameMap(DataMapEntry *m_entries, uint32_t num_entries);
+	DataMapEntry *getBoneNameMap(uint32_t &num_entries);
+
+
+	void setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs);
+	uint32_t *getBoneParentIDs(uint32_t &num_indexs);
 private:
 	void generate_bbox();
 	char m_name[64];
@@ -155,5 +166,11 @@ private:
 	uint32_t m_num_bone_index_sets;
 	uint32_t *m_num_bone_indices;
 	uint32_t **m_bone_indices;
+
+	DataMapEntry *mp_bone_name_map;
+	uint32_t m_num_bone_name_entries;
+
+	uint32_t m_num_bone_parent_ids;
+	uint32_t *mp_bone_parent_ids;
 };
 #endif //_CMESH_H

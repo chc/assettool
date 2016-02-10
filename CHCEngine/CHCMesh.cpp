@@ -10,7 +10,14 @@
 #include <Generic/CCollision.h>
 #include <Generic/BSP/BSP.h>
 #include <Generic/BSP/BSPGen.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+
 #define CHCMESH_VERSION 4
+#define CHC_SKELETON_VERSION 3
 enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_ColAsInt = (1<<0),
 	ECHCMeshFlag_HasNormals = (1<<1),
@@ -30,7 +37,7 @@ bool chc_engine_import_mesh(ImportOptions* opts) {
 }
 
 void write_mesh(CMesh *mesh, FILE* fd) {
-	mesh->convertToCoordinateSystem(ECoordinateSystem_Right);
+	mesh->convertToCoordinateSystem(ECoordinateSystem_Left_XZY);
 	uint32_t num_verts = mesh->getNumVertices();
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
@@ -361,13 +368,70 @@ void write_collision(FILE *fd, CCollision *collision) {
 		it2++;
 	}
 }
+void write_skeleton(CMesh *mesh, FILE *fd) {
+	uint32_t bone_count = mesh->getNumBoneIndexSets();
+	uint32_t num_bone_entries;
+	DataMapEntry *mp_entries = mesh->getBoneNameMap(num_bone_entries);
+	uint32_t checksum, parent_checksum;
+
+	uint32_t num_indexs;
+	uint32_t *parents = mesh->getBoneParentIDs(num_indexs);
+
+	fwrite(&bone_count, sizeof(uint32_t), 1, fd);
+	//ids
+	for(int i=0;i<bone_count;i++) {
+		const char *str = (const char *)mp_entries[i].value;
+		checksum = crc32_extended(str, strlen(str));
+		fwrite(&checksum, sizeof(uint32_t), 1, fd);
+
+
+		printf("Write Bone: %s : 0x%08x 0x%08x\n",str, checksum, parent_checksum);
+	}
+	//parent ids
+	for(int i=0;i<bone_count;i++) {
+		if(parents[i] != -1) {
+			//printf("aaa %d\n",i);
+			printf("bbb %d\n",parents[i]);
+			printf("Bones: %d %d\n",parents[i],parents[i],mp_entries[parents[i]].identifier);
+			//printf("Len: %s\n",(mp_entries[parents[i]].value));
+			//checksum = crc32_extended(mp_entries[parents[i]].value, strlen(mp_entries[parents[i]].value));	
+		} else {
+			checksum = 0;
+		}
+		printf("Writing parent checksum: %s %08X\n", mp_entries[i].value, checksum);
+		fwrite(&checksum, sizeof(uint32_t), 1, fd);
+	}
+
+	//flipped anims
+	for(int i=0;i<bone_count;i++) {
+		checksum = 0;
+		fwrite(&checksum, sizeof(uint32_t), 1, fd);
+	}
+
+	for(int i=0;i<bone_count;i++) {
+		float *_matrix = mesh->getInverseBoneMatrices(i);
+
+		glm::mat4 matrix = glm::make_mat4(_matrix);
+		glm::quat quat = glm::quat_cast(matrix);
+		printf("Bone  %d\n",i);
+
+		printf("(%f, %f, %f, %f)\n",quat.x,quat.y,quat.z,quat.w);
+		printf("(%f, %f, %f, %f)\n",_matrix[12 + 0],_matrix[12 + 1],_matrix[12 + 2],_matrix[12 +3]);
+		fwrite(glm::value_ptr(quat), sizeof(float), 4, fd);
+		fwrite(&_matrix[12], sizeof(float), 4, fd);
+	}
+}
 bool chc_engine_export_mesh(ExportOptions* opts) {
 	ScenePack *scenepack = (ScenePack *)opts->dataClass;
 	char fname[FILENAME_MAX+1];
 	sprintf(fname,"%s.mesh",opts->path);
 
+	int num_skeletons = 0;
+
 	if (scenepack->num_meshes > 0 || scenepack->num_materials >0) {
 		FILE *fd = fopen(fname, "wb");
+
+		printf("Num Meshes: %d\n", scenepack->num_meshes);
 
 
 		uint32_t version = CHCMESH_VERSION;
@@ -379,6 +443,9 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		fwrite(&box.max, sizeof(float), 3, fd);
 
 		for (int i = 0; i < scenepack->num_meshes; i++) {
+			if(scenepack->m_meshes[i]->getNumBoneIndexSets() > 0 || scenepack->m_meshes[i]->getNumBoneIndexSets() > 0) {
+				num_skeletons++;
+			}
 			write_mesh(scenepack->m_meshes[i], fd);
 		}
 		fwrite(&scenepack->num_materials, sizeof(uint32_t), 1, fd);
@@ -421,5 +488,21 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		write_collision(colfd, scenepack->m_collision);
 		fclose(colfd);
 	}
+
+	if(num_skeletons > 0) {
+		sprintf(fname,"%s.ske",opts->path);
+		FILE *skefd = fopen(fname, "wb");
+		uint32_t version = CHC_SKELETON_VERSION;
+		fwrite(&version, sizeof(uint32_t), 1, skefd); //vesion
+		version = 0;
+		fwrite(&version, sizeof(uint32_t), 1, skefd); //flags
+		fwrite(&scenepack->num_meshes, sizeof(uint32_t), 1, skefd);
+		for(int i=0;i<scenepack->num_meshes;i++) {
+			write_skeleton(scenepack->m_meshes[i], skefd);
+		}
+		
+		fclose(skefd);
+	}
+
 	return false;
 }
