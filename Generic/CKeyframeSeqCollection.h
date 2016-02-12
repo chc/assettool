@@ -1,7 +1,7 @@
 #ifndef _CKEYFRAMESEQCOLLECTION_H
 #define _CKEYFRAMESEQCOLLECTION_H
 #include <main.h>
-#include "Vector.h"
+#include <Vector.h>
 
 class CKeyframeSequence;
 class CKeyframeSeqCollection {

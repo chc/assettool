@@ -1,6 +1,9 @@
 #include <main.h>
 #include <GTASA/CGTASA.h>
 #include <Generic/CGame.h>
+#include <Vector.h>
+#include <Math/Vector.h>
+#include <Math/Matrix.h>
 #include <GTASA/ifp.h>
 #include <Generic/CKeyframeSequence.h>
 #include <Generic/CKeyframeSeqCollection.h>

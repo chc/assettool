@@ -1,3 +1,4 @@
+#include <Vector.h>
 #include "CKeyframeSeqCollection.h"
 
 CKeyframeSeqCollection::CKeyframeSeqCollection() {

@@ -3,8 +3,8 @@
 #include "dff.h"
 
 #include <stdlib.h>
-#include "Vector.h"
-#include "Map.h"
+#include <Vector.h>
+#include <Map.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -63,7 +63,7 @@ typedef struct {
 	uint32_t num_bones;
 	uint32_t flags;
 	uint32_t data_size;
-	Core::Vector<DFFHierarchialChildBoneInfo> child_bones;
+	Core::Vector<DFFHierarchialChildBoneInfo *> child_bones;
 } DFFFrameBoneHierarchy;
 typedef struct {
 	glm::mat3x3 rotation_matrix;
@@ -247,11 +247,12 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			}
 			//fseek(fd, sizeof(uint32_t)*bone->num_bones, SEEK_CUR);
 
-			DFFHierarchialChildBoneInfo bone_info;
+			
 			for (int i = 0; i < bone->num_bones; i++) {
-				fread(&bone_info.bone_id, sizeof(uint32_t), 1, fd);
-				fread(&bone_info.bone_number, sizeof(uint32_t), 1, fd);
-				fread(&bone_info.bone_type, sizeof(uint32_t), 1, fd);
+				DFFHierarchialChildBoneInfo *bone_info = new DFFHierarchialChildBoneInfo;
+				fread(&bone_info->bone_id, sizeof(uint32_t), 1, fd);
+				fread(&bone_info->bone_number, sizeof(uint32_t), 1, fd);
+				fread(&bone_info->bone_type, sizeof(uint32_t), 1, fd);
 				bone->child_bones.add(bone_info);
 			}
 			//dff_out->m_frames[dff_out->last_frame_index]->bone_hiearchy = bone;
@@ -353,6 +354,12 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
 
 			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
+			printf("Weights: \n");
+			float *wp = weights;
+			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
+				printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
+				wp += 4;
+			}
 
 			float **matrices = (float **)malloc(sizeof(float *) * num_bones);
 			for(int i=0;i<num_bones;i++) {
@@ -514,10 +521,8 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 								}
 								fread(&dff_out->m_frames[i]->name, clumpHead.size, 1, fd);
 								printf("read frame name: %s\n", dff_out->m_frames[i]->name);
-								if(dff_out->m_frames[i]->bone_hiearchy) {
-									m_entries[x].value = dff_out->m_frames[i]->name;
-									m_entries[x].identifier = x++;
-								}
+								m_entries[x].value = dff_out->m_frames[i]->name;
+								m_entries[x].identifier = x++;
 
 							}
 						}
@@ -709,24 +714,57 @@ CMesh *find_mesh_by_name_from_array(CMesh **meshes, int size, const char *name, 
 	}
 	return NULL;
 }
-void sync_bone_parents_from_frames(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
+uint32_t bone_num_from_id(DFFInfo *info,uint32_t id) {
+	for(int i=0;i<info->m_frames.size();i++) {
+		if(info->m_frames[i]->bone_hiearchy) {
+			for(int j=0;j<info->m_frames[i]->bone_hiearchy->child_bones.size();j++) {
+				if(info->m_frames[i]->bone_hiearchy->child_bones[j]->bone_id == id) {
+					return info->m_frames[i]->bone_hiearchy->child_bones[j]->bone_number+1;
+				}
+			}
+		}
+	}
+	return -1;
+}
+void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
 
 	//meshes[0]->
 
 	//void setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs);
 
 	uint32_t *indexes = (uint32_t *)malloc(info->m_frames.size() * sizeof(uint32_t));
-	printf("begin syncs\n");
-	//only works on first mesh atm
-	for(int i=0;i<info->m_frames.size();i++) {
-		if(info->m_frames[i]->parent_frame != -1 && info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy != NULL)
-			indexes[i] = info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy->bone_id;
-		else indexes[i] = -1;
-		printf("Parent frame id: %d\n",indexes[i]);
-	}
+	printf("begin syncs of %d frames\n",info->m_frames.size());
+	
 
-	meshes[0]->setBoneParentIDs(indexes, info->m_frames.size());
+	//only works on first mesh atm -- can't find anywhere it would matter though
+
+
+	//we skip first bone atm(its just empty data)
+	for(int i=1;i<info->m_frames.size();i++) {
+		sBone *bone_info = meshes[0]->getBone(i-1);
+
+		sBone *parent_bone = NULL;
+		if(info->m_frames[i]->parent_frame > 0) {
+			printf("Frame: %d\n", info->m_frames[i]->parent_frame);
+			parent_bone = meshes[0]->getBone(info->m_frames[i]->parent_frame-1);
+			if(parent_bone)
+				printf("Parent Name: %s\n", parent_bone->identifier.sUnion.mString);
+		}
+
+		bone_info->parent = parent_bone;
+		bone_info->identifier.type = EDataType_String_ASCII;
+		bone_info->identifier.sUnion.mString = (char *)&info->m_frames[i]->name;
+		//if(info->m_frames[i]->parent_frame != -1 && info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy != NULL) {
+			//indexes[i] = bone_num_from_id(info, info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy->bone_id);
+			//indexes[i] = info->m_frames[i]->parent_frame;
+			//printf("Got internal ID: %s : %s (%d)\n",info->m_frames[i]->name, info->m_frames[indexes[i]]->name,indexes[i]);
+		//}
+		//else indexes[i] = -1;
+	}
+	//meshes[0]->setBoneParentIDs(indexes, info->m_frames.size());
+
 }
+
 bool gta_rw_import_dff(ImportOptions* impOpts) {
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
@@ -792,15 +830,20 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 
 		if(g->weights) {
+
+			//skeleton info
+			output_meshes[mesh_buffer_idx]->setNumBones(g->bone_count);
+			for(int i=0;i<g->bone_count;i++) {
+				sBone *bone_info = output_meshes[mesh_buffer_idx]->getBone(i);
+				memcpy(&bone_info->matrix, g->bone_matrices[i], sizeof(bone_info->matrix));
+				
+			}
+			//vertex bone weights
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
 			output_meshes[mesh_buffer_idx]->setWeights(g->weights, 0, g->vertex_count);
 			output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
-			output_meshes[mesh_buffer_idx]->setNumInverseBoneMatrices(g->bone_count);
 
-			for(int i=0;i<g->bone_count;i++) {
-				output_meshes[mesh_buffer_idx]->setInverseBoneMatrices(g->bone_matrices[i], i);
-				
-			}
+
 			uint32_t *indices = (uint32_t *)malloc(sizeof(uint32_t) * g->vertex_count * 4);
 			uint32_t *p = indices;
 			uint8_t *x = g->bone_indices;
@@ -813,8 +856,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			output_meshes[mesh_buffer_idx]->setBoneIndices(0, indices, g->vertex_count);
 			free(indices);
 			output_meshes[mesh_buffer_idx]->setWeightFlags(CMeshWeightTypeFlags_HasInverseBoneMatrices|CMeshWeightTypeFlags_HasBoneIndices);
-
-			output_meshes[mesh_buffer_idx]->setBoneNameMap(info.frame_map, info.m_frames.size());
 			
 			
 		}
@@ -928,7 +969,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	}	
 
 
-	sync_bone_parents_from_frames(output_meshes, mesh_buffer_idx, &info);
+	add_bones_from_dff(output_meshes, mesh_buffer_idx, &info);
 
 	//run exporter
 	ScenePack scene;

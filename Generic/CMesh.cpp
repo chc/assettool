@@ -8,9 +8,7 @@ CMesh::CMesh() {
 	m_indices = NULL;
 	m_num_vertices = 0;
 	m_num_indices = 0;
-	m_normals = NULL;
 	m_vert_cols = NULL;
-	m_vertices = NULL;
 	mp_material = NULL;
 	mp_collision = NULL;
 	mp_parent = NULL;
@@ -33,18 +31,18 @@ CMesh::CMesh() {
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
 
-	m_num_inverse_bone_matrices = 0;
+	m_num_bones = 0;
 	m_num_bone_index_sets = 0;
+
+	mp_data_package = new CDataPackage(EMeshDataBank_Count);
 }
 CMesh::~CMesh() {
-	if(m_vertices)
-		free(m_vertices);
-	if(m_normals)
-		free(m_normals);
 	if(m_vert_cols)
 		free(m_vert_cols);
 	if(m_indices)
 		free(m_indices);
+
+	delete mp_data_package;
 }
 void CMesh::setNumVerts(int count) {
 	m_num_vertices = count;
@@ -60,19 +58,22 @@ float *CMesh::getUVWs(int layer) {
 	return m_uvws[layer];
 }
 void CMesh::setVerticies(float *verts) {
-	if(m_vertices || m_num_vertices == 0 || !verts) return;
-	m_vertices = (float *)malloc(m_num_vertices * sizeof(float) * 3);
-	memcpy(m_vertices,verts,sizeof(float) * m_num_vertices * 3);
+	if(m_num_vertices == 0 || !verts) return;
+	mp_data_package->GetDataBank(EMeshDataBank_Vertices)->SetDataVector(0, verts, m_num_vertices);
+}
+float *CMesh::getVerticies() {
+	return mp_data_package->GetDataBank(EMeshDataBank_Vertices)->GetVertexHead(0);
 }
 void CMesh::setNormals(float *normals) {
-	if(m_normals || m_num_vertices == 0 || !normals) return;
-	m_normals = (float *)malloc(m_num_vertices * sizeof(float) * 3);
-	memcpy(m_normals,normals,sizeof(float) * m_num_vertices * 3);
+	if(m_num_vertices == 0 || !normals) return;
+	mp_data_package->GetDataBank(EMeshDataBank_Normals)->SetVectorData(0, normals, m_num_vertices);
+}
+float *CMesh::getNormals() {
+	return mp_data_package->GetDataBank(EMeshDataBank_Normals)->GetVertexHead(0);
 }
 void CMesh::setColours(uint32_t *colours) { 
 	if(m_vert_cols || m_num_vertices == 0 || !colours) return;
-	m_vert_cols = (uint32_t *)malloc(m_num_vertices * sizeof(uint32_t));
-	memcpy(m_vert_cols,colours,m_num_vertices * sizeof(uint32_t));
+	mp_data_package->GetDataBank(EMeshDataBank_Colours)->SetDataUInt32(0, colours, m_num_vertices);
 }
 void CMesh::setIndexLevels(int levels) {
 	num_index_levels = levels;
@@ -224,18 +225,6 @@ uint32_t CMesh::getWeightFlags() {
 	return m_weight_flags;
 }
 
-void CMesh::setNumInverseBoneMatrices(uint32_t num_matrices) {
-	m_num_inverse_bone_matrices = num_matrices;
-	m_inverse_bone_matrices = (float **)malloc(num_matrices * sizeof(float *));
-}
-void CMesh::setInverseBoneMatrices(float* matrices, uint32_t index) {
-	m_inverse_bone_matrices[index] = (float *)malloc(sizeof(float) * (4*4));
-	memcpy(m_inverse_bone_matrices[index], matrices, sizeof(float) * (4*4));
-}
-float* CMesh::getInverseBoneMatrices(uint32_t set) {
-	return m_inverse_bone_matrices[set];
-}
-
 void CMesh::setNumBoneIndexSets(uint32_t num_sets) {
 	m_num_bone_index_sets = num_sets;
 	m_num_bone_indices = (uint32_t*) malloc(sizeof(uint32_t) * num_sets);
@@ -256,11 +245,10 @@ uint32_t *CMesh::getBoneIndices(uint32_t set, uint32_t &num_indices) {
 
 
 void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
-	if(m_vertices)
-		convert_xyz_from_to(m_coordinate_system, system, m_vertices, m_num_vertices);
-
-	if(m_normals)
-		convert_xyz_from_to(m_coordinate_system, system, m_normals, m_num_vertices);
+	//if(m_vertices)
+		//convert_xyz_from_to(m_coordinate_system, system, m_vertices, m_num_vertices);
+	mp_data_package->GetDataBank(EMeshDataBank_Vertices)->ConvertToCoordinateSystem(system);
+	mp_data_package->GetDataBank(EMeshDataBank_Normals)->ConvertToCoordinateSystem(system);
 
 	for(int i=0;i<m_num_uv_layers;i++) {
 		convert_uvw_from_to(m_coordinate_system, system, m_uvws[i], m_num_vertices);
@@ -269,19 +257,18 @@ void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
 	m_coordinate_system = system;
 }
 
-void CMesh::setBoneNameMap(DataMapEntry *m_entries, uint32_t num_entries) {
-	mp_bone_name_map = m_entries;
-	m_num_bone_name_entries = num_entries;
+void CMesh::setNumBones(uint32_t num_bones) {
+	m_num_bones = num_bones;
+	mp_bone_info = (sBone *)malloc(num_bones * sizeof(sBone));
+	memset(mp_bone_info, 0, num_bones * sizeof(sBone));
 }
-DataMapEntry *CMesh::getBoneNameMap(uint32_t &num_entries) {
-	num_entries = m_num_bone_name_entries;
-	return mp_bone_name_map;
+sBone *CMesh::getBone(uint32_t index) {
+	return &mp_bone_info[index];
 }
-void CMesh::setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs) {
-	m_num_bone_parent_ids = num_indexs;
-	mp_bone_parent_ids = indexes;
+uint32_t CMesh::getNumBones() {
+	return m_num_bones;
 }
-uint32_t *CMesh::getBoneParentIDs(uint32_t &num_indexs) {
-	num_indexs = m_num_bone_parent_ids;
-	return mp_bone_parent_ids;
+uint32_t *CMesh::getColours() 
+{
+	return mp_data_package->GetDataBank(EMeshDataBank_Colours)->GetUInt32Head(0);
 }

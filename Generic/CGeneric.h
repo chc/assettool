@@ -3,15 +3,18 @@
 #include <Generic/CGame.h>
 
 enum ECoordinateSystem {
+	//Vector coord systems
 	ECoordinateSystem_Left,
 	ECoordinateSystem_Left_XZY,
-	ECoordinateSystem_Right,	
+	ECoordinateSystem_Right,
+
+	//Matrix coord systems
+	ECoordinateSystem_MatrixLH_RM,
+	ECoordinateSystem_MatrixRH_RM,
+	ECoordinateSystem_MatrixLH_CM,
+	ECoordinateSystem_MatrixRH_CM,
 };
 
-typedef struct {
-	void *value;
-	uint32_t identifier;
-} DataMapEntry;
 
 class CGeneric : public IGame {
 public:

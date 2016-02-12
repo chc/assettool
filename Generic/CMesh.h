@@ -5,6 +5,7 @@
 #include <string.h>
 #include <Generic/CGeneric.h>
 #include <Generic/CCollision.h>
+#include <Generic/DataBank.h>
 #define MAX_MESH_TEXTURES 4
 class CMaterial;
 class CKeyframeSequence;
@@ -19,6 +20,20 @@ enum CMeshPrimType {
 	CMeshPrimType_TriangleStrips,
 	CMeshPrimType_TriangleFans
 };
+struct sBone {
+	float matrix[16];
+	sBone *parent;
+	sGenericData identifier;
+};
+enum EMeshDataBanks {
+	EMeshDataBank_Vertices,
+	EMeshDataBank_Normals,
+	EMeshDataBank_Colours,
+	EMeshDataBank_UVs,
+	EMeshDataBank_Weights,
+	EMeshDataBank_Indices,
+	EMeshDataBank_Count,
+};
 class CMesh { 
 public:
 	CMesh();
@@ -32,9 +47,9 @@ public:
 	void setIndexLevels(int levels);
 	void setIndices(uint32_t *indices, int num_indices, int level = -1);
 
-	float *getVerticies() { return m_vertices; }
-	float *getNormals() { return m_normals;}
-	uint32_t *getColours() { return m_vert_cols; }
+	float *getVerticies();
+	float *getNormals();
+	uint32_t *getColours();
 	uint32_t *getIndices(int level = -1);
 	int getNumVertices() { return m_num_vertices; }
 	int getNumIndicies(int layer = -1);
@@ -90,6 +105,10 @@ public:
 	ECoordinateSystem getCoordinateSystem(ECoordinateSystem handedness) { return m_coordinate_system; }
 	void convertToCoordinateSystem(ECoordinateSystem system);
 
+	/*
+		Vertex weight stuff
+	*/
+
 	void setWeightFlags(uint32_t type);
 	uint32_t getWeightFlags();
 	void setNumWeightSets(uint32_t num_sets);
@@ -102,13 +121,6 @@ public:
 	*/
 
 	/*
-		All inverse bone matrices are mat4 atm
-	*/
-	void setNumInverseBoneMatrices(uint32_t num_matrices);
-	void setInverseBoneMatrices(float* matrices, uint32_t index);
-	float* getInverseBoneMatrices(uint32_t set);
-
-	/*
 		All bone indices are 4 uint32_ts atm
 	*/
 	void setNumBoneIndexSets(uint32_t num_sets);
@@ -117,21 +129,21 @@ public:
 	uint32_t getNumBoneIndexSets();
 	uint32_t *getBoneIndices(uint32_t set, uint32_t &num_indices);
 
-	void setBoneNameMap(DataMapEntry *m_entries, uint32_t num_entries);
-	DataMapEntry *getBoneNameMap(uint32_t &num_entries);
+	/*
+		Skeleton stuff
+	*/
+	void setNumBones(uint32_t num_bones);
+	uint32_t getNumBones();
+	sBone *getBone(uint32_t index); //used for accessing too
 
-
-	void setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs);
-	uint32_t *getBoneParentIDs(uint32_t &num_indexs);
 private:
 	void generate_bbox();
 	char m_name[64];
 	CMaterial *mp_material;
 	CCollision *mp_collision;
 	float *m_uvws[MAX_MESH_TEXTURES];
-	float *m_vertices;
 	int m_num_vertices;
-	float *m_normals;
+
 	uint32_t *m_vert_cols;
 	int num_index_levels;
 	int *m_num_indexed_levels;
@@ -155,22 +167,36 @@ private:
 
 	ECoordinateSystem m_coordinate_system;
 
+
+	//mesh weighting stuff
 	uint32_t m_weight_flags;
 	uint32_t m_num_weightsets;
 	uint32_t *m_num_weights;
 	float **m_weights;
 
-	uint32_t m_num_inverse_bone_matrices;
-	float **m_inverse_bone_matrices; //flat array of multiple matrices
-
 	uint32_t m_num_bone_index_sets;
 	uint32_t *m_num_bone_indices;
 	uint32_t **m_bone_indices;
+
+
+
+	//old bone info
+/*
+	uint32_t m_num_inverse_bone_matrices;
+	float **m_inverse_bone_matrices; //flat array of multiple matrices
+
 
 	DataMapEntry *mp_bone_name_map;
 	uint32_t m_num_bone_name_entries;
 
 	uint32_t m_num_bone_parent_ids;
 	uint32_t *mp_bone_parent_ids;
+*/
+
+	//new bone struct
+	uint32_t m_num_bones;
+	sBone*	mp_bone_info;
+
+	CDataPackage* mp_data_package;
 };
 #endif //_CMESH_H
