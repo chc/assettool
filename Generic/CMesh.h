@@ -176,8 +176,6 @@ private:
 	uint32_t *m_num_bone_indices;
 	uint32_t **m_bone_indices;
 
-
-
 	//old bone info
 /*
 	uint32_t m_num_inverse_bone_matrices;
