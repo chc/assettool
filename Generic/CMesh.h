@@ -141,10 +141,8 @@ private:
 	char m_name[64];
 	CMaterial *mp_material;
 	CCollision *mp_collision;
-	float *m_uvws[MAX_MESH_TEXTURES];
 	int m_num_vertices;
 
-	uint32_t *m_vert_cols;
 	int num_index_levels;
 	int *m_num_indexed_levels;
 	uint32_t *m_indices;

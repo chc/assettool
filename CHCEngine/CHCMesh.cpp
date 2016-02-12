@@ -173,7 +173,6 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		fwrite(&bbox.min, sizeof(float), 3, fd);
 		fwrite(&bbox.max, sizeof(float), 3, fd);
 	}
-
 	float *uv_sets[MAX_MESH_TEXTURES];
 	memset(&uv_sets,0,sizeof(uv_sets));
 	for(int i=0;i<MAX_MESH_TEXTURES;i++) {
@@ -181,19 +180,19 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	}
 	for(uint32_t i=0;i<num_verts;i++) {
 		fwrite(verts,sizeof(float),3,fd);
-		verts += 3;
+		verts += 4;
 		if(float_colours != NULL) {
 			fwrite(float_colours,sizeof(float),4,fd);
 			float_colours += 4;
 		}
 		if(normals != NULL) {
 			fwrite(normals,sizeof(float),3,fd);
-			normals +=  3;
+			normals +=  4;
 		}
 		for(int j=0;j<num_uv_sets;j++) {
 			if(uv_sets[j] != NULL) {
 				fwrite(uv_sets[j],sizeof(float),3,fd);
-				uv_sets[j] += 3;
+				uv_sets[j] += 4;
 			}
 		}
 
@@ -369,6 +368,7 @@ void write_collision(FILE *fd, CCollision *collision) {
 	}
 }
 void write_skeleton(CMesh *mesh, FILE *fd) {
+	/*
 	uint32_t bone_count = mesh->getNumBoneIndexSets();
 	uint32_t num_bone_entries;
 	DataMapEntry *mp_entries = mesh->getBoneNameMap(num_bone_entries);
@@ -420,6 +420,7 @@ void write_skeleton(CMesh *mesh, FILE *fd) {
 		fwrite(glm::value_ptr(quat), sizeof(float), 4, fd);
 		fwrite(&_matrix[12], sizeof(float), 4, fd);
 	}
+	*/
 }
 bool chc_engine_export_mesh(ExportOptions* opts) {
 	ScenePack *scenepack = (ScenePack *)opts->dataClass;

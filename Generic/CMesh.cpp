@@ -8,7 +8,6 @@ CMesh::CMesh() {
 	m_indices = NULL;
 	m_num_vertices = 0;
 	m_num_indices = 0;
-	m_vert_cols = NULL;
 	mp_material = NULL;
 	mp_collision = NULL;
 	mp_parent = NULL;
@@ -19,7 +18,6 @@ CMesh::CMesh() {
 	has_sub_indices = false;
 	m_indexed_materials = false;
 	m_prim_type = CMeshPrimType_TriangleList;
-	memset(&m_uvws, 0, sizeof(m_uvws));
 	memset(&m_bbox, 0, sizeof(m_bbox));
 
 	m_weight_flags = 0;
@@ -37,25 +35,18 @@ CMesh::CMesh() {
 	mp_data_package = new CDataPackage(EMeshDataBank_Count);
 }
 CMesh::~CMesh() {
-	if(m_vert_cols)
-		free(m_vert_cols);
-	if(m_indices)
-		free(m_indices);
-
 	delete mp_data_package;
 }
 void CMesh::setNumVerts(int count) {
 	m_num_vertices = count;
 }
 void CMesh::setUVWs(float *uvs, int layer) {
-	m_uvws[layer] =  (float *)malloc(m_num_vertices * sizeof(float) * 3);
-	memcpy(m_uvws[layer],uvs,m_num_vertices * sizeof(float) * 3);
-	if(layer > m_num_uv_layers-1) {
-		m_num_uv_layers = layer+1;
-	}
+	if(layer > m_num_uv_layers)
+		m_num_uv_layers = layer;
+	mp_data_package->GetDataBank(EMeshDataBank_UVs)->SetDataVector(layer, uvs, m_num_vertices, 3);
 }
 float *CMesh::getUVWs(int layer) {
-	return m_uvws[layer];
+	return mp_data_package->GetDataBank(EMeshDataBank_UVs)->GetVertexHead(layer);
 }
 void CMesh::setVerticies(float *verts) {
 	if(m_num_vertices == 0 || !verts) return;
@@ -66,50 +57,35 @@ float *CMesh::getVerticies() {
 }
 void CMesh::setNormals(float *normals) {
 	if(m_num_vertices == 0 || !normals) return;
-	mp_data_package->GetDataBank(EMeshDataBank_Normals)->SetVectorData(0, normals, m_num_vertices);
+	mp_data_package->GetDataBank(EMeshDataBank_Normals)->SetDataVector(0, normals, m_num_vertices);
 }
 float *CMesh::getNormals() {
 	return mp_data_package->GetDataBank(EMeshDataBank_Normals)->GetVertexHead(0);
 }
 void CMesh::setColours(uint32_t *colours) { 
-	if(m_vert_cols || m_num_vertices == 0 || !colours) return;
+	if(m_num_vertices == 0 || !colours) return;
 	mp_data_package->GetDataBank(EMeshDataBank_Colours)->SetDataUInt32(0, colours, m_num_vertices);
 }
 void CMesh::setIndexLevels(int levels) {
 	num_index_levels = levels;
-	m_indices = (uint32_t *)malloc(num_index_levels * sizeof(uint32_t* ));
-	memset(m_indices,0,num_index_levels * sizeof(uint32_t* ));
-	m_num_indexed_levels = (int*)malloc(sizeof(int) * levels);
+	mp_data_package->SetNumBanks(EMeshDataBank_Indices, levels);
+
 
 	//allocate materials
 	mp_material = (CMaterial *)malloc(num_index_levels * sizeof(CMaterial *));
 	m_num_materials = num_index_levels;
 }
 int CMesh::getNumIndicies(int layer) { 
-	if(layer == -1) {
-		return m_num_indices;
-	} else {
-		return m_num_indexed_levels[layer];
-	}
+	if(layer == -1) layer = 0;
+	int ds = mp_data_package->GetNumElements(EMeshDataBank_Indices, layer);
+	return ds;
 }
 uint32_t *CMesh::getIndices(int level) {
-	if(level == -1) {
-		return m_indices;
-	} else {
-		return ((uint32_t**)m_indices)[level];
-	}
+	uint32_t *ret = mp_data_package->GetDataBank(EMeshDataBank_Indices)->GetUInt32Head(level);
+	return ret;
 }
 void CMesh::setIndices(uint32_t *indices, int num_indices, int level) {
-	if(level < 0) {
-		m_indices = (uint32_t *)malloc(num_indices * sizeof(uint32_t));
-		memcpy(m_indices,indices,num_indices * sizeof(uint32_t));
-	} else {
-		has_sub_indices = true;
-		m_num_indexed_levels[level] = num_indices;
-		((uint32_t**)m_indices)[level] = (uint32_t*) malloc(num_indices * sizeof(uint32_t));
-		memcpy(((uint32_t**)m_indices)[level],indices,num_indices * sizeof(uint32_t));
-	}
-	m_num_indices = num_indices;
+	mp_data_package->GetDataBank(EMeshDataBank_Indices)->SetDataUInt32(level, indices, num_indices);
 }
 void CMesh::setMaterial(CMaterial *material) {
 	mp_material = material;
@@ -250,9 +226,9 @@ void CMesh::convertToCoordinateSystem(ECoordinateSystem system) {
 	mp_data_package->GetDataBank(EMeshDataBank_Vertices)->ConvertToCoordinateSystem(system);
 	mp_data_package->GetDataBank(EMeshDataBank_Normals)->ConvertToCoordinateSystem(system);
 
-	for(int i=0;i<m_num_uv_layers;i++) {
-		convert_uvw_from_to(m_coordinate_system, system, m_uvws[i], m_num_vertices);
-	}
+	//for(int i=0;i<m_num_uv_layers;i++) {
+		//convert_uvw_from_to(m_coordinate_system, system, m_uvws[i], m_num_vertices);
+	//}
 
 	m_coordinate_system = system;
 }

@@ -25,15 +25,16 @@ enum EDataType {
 	EDataType_Matrix,
 };
 
+//A Single piece of generic data
 struct sGenericData {
 	EDataType type;
 	union {
-		uint32_t uIntVal;
 		const char *mString;
-		const wchar_t *wString;
+		uint32_t 	uInt32Data;
 	} sUnion;
 };
 
+//An array of generic data
 struct sGenericDataArray {
 	EDataType type;
 	ECoordinateSystem coordSystem;
@@ -48,6 +49,7 @@ struct sGenericDataArray {
 		double *dblData;
 		Math::Vector *mVectors;
 		Math::Matrix *mMatrices;
+		sGenericDataArray *sArrayData;
 	} sUnion;
 };
 
@@ -57,20 +59,23 @@ class CDataBank {
 		friend class CDataPackage;
 		CDataBank();
 		CDataBank(int num_data_sets);
-		//manipulators
+		//mutators
 		void ConvertToCoordinateSystem(ECoordinateSystem system);
 		//setters
 		void SetDataUInt8(int index, uint8_t *mData, int num_data_sets);
 		void SetDataUInt16(int index, uint16_t *mData, int num_data_sets);
 		void SetDataUInt32(int index, uint32_t *mData, int num_data_sets);
 		void SetDataFloat(int index, float *mData, int num_data_sets);
-		void SetDataVector(int index, float *verts, int m_num_vertices);
+		void SetDataVector(int index, float *verts, int m_num_vertices, int num_elements = 3);
 		//getters
 		float *GetVertexHead(int index);
 		uint32_t *GetUInt32Head(int index);
 		float *GetFloatHead(int index);
 
 		sGenericDataArray *GetData(int index);
+
+		void SetNumDataSets(int num);
+		int GetNumDataSets(int index = -1);
 	private:
 		void alloc_data_sets(int size = 0);
 		void free_data_sets();
@@ -97,6 +102,8 @@ public:
 	CDataPackage(int num_data_sets);
 	~CDataPackage();
 	CDataBank *	GetDataBank(int index);
+	void		SetNumBanks(int index, int num);
+	int 		GetNumElements(int index, int slot = -1) const;
 private:
 	int m_data_banks;
 	CDataBank *mp_data_banks;
