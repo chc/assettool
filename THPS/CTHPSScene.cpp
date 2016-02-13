@@ -239,7 +239,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 		out_meshes[i]->setGroupId(sec->getChecksum());
 		out_meshes[i]->setColours(sec->getColours());
 
-		out_meshes[i]->setWeightsUInt32(0, sec->getWeights(), sec->getNumVerticies() * 4);
+		out_meshes[i]->setWeightsUInt32(0, sec->getWeights(), sec->getNumVerticies());
 
 		uint32_t *bone_indices = (uint32_t *)malloc(sec->getNumVerticies() * 4 * sizeof(uint32_t));
 		uint32_t *bidx = bone_indices;

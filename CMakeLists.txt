@@ -5,7 +5,7 @@ project(assettool)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 file (GLOB MAIN_SOURCES "*.cpp" "*.h")
-file (GLOB GENERIC_SOURCES "Generic/*.cpp" "Generic/*.h")
+file (GLOB GENERIC_SOURCES "Generic/*.cpp" "Generic/*.h" "Math/*.cpp" "Math/*.h")
 file (GLOB EXTERNAL_SOURCES "External/*.cpp" "External/*.c" "External/*.h" "External/libthps/*.cpp" "External/libthps/*.h")
 file (GLOB THPS_SOURCES "THPS/*.cpp" "THPS/*.h")
 file (GLOB GTASA_SOURCES "GTASA/*.cpp" "GTASA/*.h")

@@ -27,6 +27,7 @@ enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_HasDefaultHiearchyPos = (1<<5),
 	ECHCMeshFlag_HasDefaultHiearchyRot = (1 << 6),
 	ECHCMeshFlag_HasBBOX = (1 << 7),
+	ECHCMeshFlag_HasWeights_1W4I = (1 << 8),
 };
 enum ECHCPrimType { //must corrospond to game
 	ECHCPrimType_TriangleList,
@@ -74,6 +75,13 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t num_uv_sets = mesh->getUVLayers();
 
 	uint32_t stride = sizeof(float) * 3;
+
+	int num_indices, num_weights;
+	uint32_t *bone_indices_u32 = mesh->getBoneIndicesUInt32(0, num_indices);
+	uint32_t *vertex_weights_uint32 = mesh->getWeightsUInt32(0, num_weights);
+
+	//TODO: assert bone indices = vert count * 4, weights = vert count
+
 	if(normals) {
 		flags |= ECHCMeshFlag_HasNormals;
 		stride += sizeof(float) * 3;
@@ -88,6 +96,11 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			num_uv_sets = 1;
 		}
 		stride += (sizeof(float) * 3) * num_uv_sets;
+	}
+	if(vertex_weights_uint32 && bone_indices_u32) {
+		stride += sizeof(uint32_t); //vertex weights
+		stride += sizeof(uint32_t) * 4; //bone indices
+		flags |= ECHCMeshFlag_HasWeights_1W4I;
 	}
 
 	if(mesh->getUseIndexedMaterials()) {
@@ -194,6 +207,14 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 				fwrite(uv_sets[j],sizeof(float),3,fd);
 				uv_sets[j] += 4;
 			}
+		}
+		if(flags & ECHCMeshFlag_HasWeights_1W4I) {
+			fwrite(vertex_weights_uint32, sizeof(uint32_t), 1, fd);
+			fwrite(bone_indices_u32, sizeof(uint32_t), 4, fd);
+			//printf("Writing: %d (%d,%d,%d,%d)\n",vertex_weights_uint32[0],bone_indices_u32[0],bone_indices_u32[1],bone_indices_u32[2],bone_indices_u32[3]);
+			vertex_weights_uint32++;
+			bone_indices_u32 += 4;
+
 		}
 
 	}
