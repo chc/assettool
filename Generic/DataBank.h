@@ -67,6 +67,7 @@ class CDataBank {
 		void SetDataUInt32(int index, uint32_t *mData, int num_data_sets);
 		void SetDataFloat(int index, float *mData, int num_data_sets);
 		void SetDataVector(int index, float *verts, int m_num_vertices, int num_elements = 3);
+		void SetDataMatrix(int index, float *matarices, int m_num_matrices); //4x4 matrices only
 		//getters
 		float *GetVertexHead(int index);
 		uint32_t *GetUInt32Head(int index);

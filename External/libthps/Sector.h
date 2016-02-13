@@ -13,6 +13,9 @@ public:
 	float *getPositions();
 	float *getNormals();
 
+	uint32_t *getWeights();
+	uint16_t *getBoneIndices();
+
 	uint32_t *getColours();
 	uint32_t getNumVerticies();
 	uint32_t getChecksum();

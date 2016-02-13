@@ -22,8 +22,6 @@ CMesh::CMesh() {
 
 	m_weight_flags = 0;
 	m_num_weightsets = 0;
-	m_num_weights = 0;
-	m_weights = NULL;
 
 
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
@@ -116,7 +114,6 @@ CCollision *CMesh::getCollision() {
 }
 void CMesh::setDefaultHierarchicalPosition(float *pos) {
 	memcpy(default_hierarchical_position, pos, sizeof(float)*3);
-
 }
 void CMesh::setDefaultHierarchicalRotation(float *pos) {
 	memcpy(default_hierarchical_rotation, pos, sizeof(float)*9);
@@ -176,19 +173,23 @@ void CMesh::generate_bbox() {
 	m_bbox = bbox;
 }
 
-void CMesh::setNumWeightSets(uint32_t num_sets) {
+void CMesh::setNumWeightSets(int num_sets) {
 	m_num_weightsets = num_sets;
-	m_weights = (float **)malloc(sizeof(float *) * num_sets);
-	m_num_weights = (uint32_t *)malloc(num_sets * sizeof(uint32_t));
+	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetNumDataSets(num_sets);
 }
-void CMesh::setWeights(float *weights, uint32_t set, uint32_t num_weights) {
-	m_weights[set] = (float *)malloc(sizeof(float) * 4 * num_weights);
-	m_num_weights[set] = num_weights;
-	memcpy(m_weights[set], weights, num_weights * sizeof(float) * 4);
+void CMesh::setWeightsFloat(int set, float *weights, int num_weights) {
+	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetDataVector(set, weights, num_weights);
 }
-float *CMesh::getWeights(uint32_t set, uint32_t &num_weights) {
-	num_weights = m_num_weights[set];
-	return m_weights[set];
+void CMesh::setWeightsUInt32(int set, uint32_t *weights, int num_weights) {
+	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetDataUInt32(set, weights, num_weights);
+}
+float *CMesh::getWeightsFloat(int set, int &num_weights) {
+	num_weights = mp_data_package->GetDataBank(EMeshDataBank_Weights)->GetNumDataSets(set);
+	return mp_data_package->GetDataBank(EMeshDataBank_Weights)->GetVertexHead(set);
+}
+uint32_t *CMesh::getWeightsUInt32(int set, int &num_weights) {
+	num_weights = mp_data_package->GetDataBank(EMeshDataBank_Weights)->GetNumDataSets(set);
+	return mp_data_package->GetDataBank(EMeshDataBank_Weights)->GetUInt32Head(set);
 }
 uint32_t CMesh::getNumWeightSets() {
 	return m_num_weightsets;
@@ -201,22 +202,22 @@ uint32_t CMesh::getWeightFlags() {
 	return m_weight_flags;
 }
 
-void CMesh::setNumBoneIndexSets(uint32_t num_sets) {
+void CMesh::setNumBoneIndexSets(int num_sets) {
 	m_num_bone_index_sets = num_sets;
-	m_num_bone_indices = (uint32_t*) malloc(sizeof(uint32_t) * num_sets);
-	m_bone_indices = (uint32_t **)malloc(sizeof(uint32_t *) * num_sets);
+	mp_data_package->GetDataBank(EMeshDataBank_BoneIndices)->SetNumDataSets(num_sets);
 }
-void CMesh::setBoneIndices(uint32_t set, uint32_t *indices, uint32_t num_indices) {
-	m_num_bone_indices[set] = num_indices;
-	m_bone_indices[set] = (uint32_t*)malloc(sizeof(uint32_t) * num_indices * 4);
-	memcpy(m_bone_indices[set], indices, sizeof(uint32_t) * num_indices * 4);
+void CMesh::setBoneIndicesUInt32(int set, uint32_t *indices, int num_indices) {
+	mp_data_package->GetDataBank(EMeshDataBank_BoneIndices)->SetDataUInt32(set, indices, num_indices);	
+}
+void CMesh::setBoneIndicesFloat(int set, float *values, int num_indices) {
+	mp_data_package->GetDataBank(EMeshDataBank_BoneIndices)->SetDataFloat(set, values, num_indices);
 }
 uint32_t CMesh::getNumBoneIndexSets() {
 	return m_num_bone_index_sets;
 }
-uint32_t *CMesh::getBoneIndices(uint32_t set, uint32_t &num_indices) {
-	num_indices = m_num_bone_indices[set];
-	return m_bone_indices[set];
+uint32_t *CMesh::getBoneIndicesUInt32(int set, int &num_indices) {
+	num_indices = mp_data_package->GetDataBank(EMeshDataBank_BoneIndices)->GetNumDataSets(set);
+	return mp_data_package->GetDataBank(EMeshDataBank_BoneIndices)->GetUInt32Head(set);
 }
 
 

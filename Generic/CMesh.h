@@ -31,6 +31,7 @@ enum EMeshDataBanks {
 	EMeshDataBank_Colours,
 	EMeshDataBank_UVs,
 	EMeshDataBank_Weights,
+	EMeshDataBank_BoneIndices,
 	EMeshDataBank_Indices,
 	EMeshDataBank_Count,
 };
@@ -111,9 +112,12 @@ public:
 
 	void setWeightFlags(uint32_t type);
 	uint32_t getWeightFlags();
-	void setNumWeightSets(uint32_t num_sets);
-	void setWeights(float *weights, uint32_t set, uint32_t num_weights);
-	float *getWeights(uint32_t set, uint32_t &num_weights);
+	void setNumWeightSets(int num_sets);
+	void setWeightsUInt32(int set, uint32_t *weights, int num_weights);
+	void setWeightsFloat(int set, float *weights, int num_weights);
+	float *getWeightsFloat(int set, int &num_weights);
+	uint32_t *getWeightsUInt32(int set, int &num_weights);
+
 	uint32_t getNumWeightSets();
 
 	/*
@@ -123,11 +127,13 @@ public:
 	/*
 		All bone indices are 4 uint32_ts atm
 	*/
-	void setNumBoneIndexSets(uint32_t num_sets);
-	void setBoneIndices(uint32_t set, uint32_t *indices, uint32_t num_indices);
+	void setNumBoneIndexSets(int num_sets);
+	void setBoneIndicesUInt32(int set, uint32_t *indices, int num_indices);
+	void setBoneIndicesFloat(int set, float *values, int num_indices);
 
 	uint32_t getNumBoneIndexSets();
-	uint32_t *getBoneIndices(uint32_t set, uint32_t &num_indices);
+	uint32_t *getBoneIndicesUInt32(int set, int &num_indices);
+	float *getBoneIndicesFloat(int set, int &num_indices);
 
 	/*
 		Skeleton stuff
@@ -168,13 +174,13 @@ private:
 
 	//mesh weighting stuff
 	uint32_t m_weight_flags;
-	uint32_t m_num_weightsets;
-	uint32_t *m_num_weights;
-	float **m_weights;
+	int m_num_weightsets;
+	//uint32_t *m_num_weights;
+	//float **m_weights;
 
-	uint32_t m_num_bone_index_sets;
-	uint32_t *m_num_bone_indices;
-	uint32_t **m_bone_indices;
+	int m_num_bone_index_sets;
+	//uint32_t *m_num_bone_indices;
+	//uint32_t **m_bone_indices;
 
 	//old bone info
 /*
@@ -190,7 +196,7 @@ private:
 */
 
 	//new bone struct
-	uint32_t m_num_bones;
+	int m_num_bones;
 	sBone*	mp_bone_info;
 
 	CDataPackage* mp_data_package;

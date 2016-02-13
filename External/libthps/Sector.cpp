@@ -114,6 +114,12 @@ float *Sector::getPositions() {
 float *Sector::getNormals() {
 	return mp_vertex_normals;
 }
+uint32_t *Sector::getWeights() {
+	return mp_vertex_weights;
+}
+uint16_t *Sector::getBoneIndices() {
+	return mp_vertex_bone_indices;
+}
 	
 std::vector<Mesh *> Sector::getMeshes() {
 	return m_meshes;

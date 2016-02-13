@@ -840,7 +840,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			}
 			//vertex bone weights
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
-			output_meshes[mesh_buffer_idx]->setWeights(g->weights, 0, g->vertex_count);
+			output_meshes[mesh_buffer_idx]->setWeightsFloat(g->weights, 0, g->vertex_count * 4);
 			output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
 
 
@@ -853,7 +853,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 				*p++ = *x++; //z
 				*p++ = *x++;  //w
 			}
-			output_meshes[mesh_buffer_idx]->setBoneIndices(0, indices, g->vertex_count);
+			output_meshes[mesh_buffer_idx]->setBoneIndicesUInt32(0, indices, g->vertex_count * 4);
 			free(indices);
 			output_meshes[mesh_buffer_idx]->setWeightFlags(CMeshWeightTypeFlags_HasInverseBoneMatrices|CMeshWeightTypeFlags_HasBoneIndices);
 			
