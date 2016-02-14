@@ -38,6 +38,11 @@ Sector::~Sector() {
 		free(mp_vertex_weights);
 	}
 }
+void unpack_xbox_floats(uint32_t packed, float *x, float *y, float *z) {
+	*x = (packed &  0x7ff) / 1023.0f;
+	*y = ((packed & 0x003ff800)>>11) / 1023.0f;
+	*z = ((packed & 0xFFC00000)>>22) / 511.0f;	
+}
 void Sector::loadFromFile(FILE *fd) {
 
 	fread(&m_checksum, sizeof(uint32_t), 1, fd);
@@ -66,8 +71,20 @@ void Sector::loadFromFile(FILE *fd) {
 		fread(mp_vertex_normals, sizeof(float)*3,m_num_verts,fd);
 	}
 	if(m_flags & 0x10) {
-		mp_vertex_weights = (uint32_t*)malloc(sizeof(uint32_t)*m_num_verts);
-		fread(mp_vertex_weights,sizeof(uint32_t),m_num_verts,fd);
+		mp_vertex_weights = (float*)malloc(sizeof(float)*m_num_verts*4);
+		float *p = mp_vertex_weights;
+		uint32_t *vert_weights = (uint32_t*)malloc(sizeof(uint32_t)*m_num_verts);
+		fread(vert_weights,sizeof(uint32_t),m_num_verts,fd);
+		for(int i=0;i<m_num_verts;i++) {
+			float x,y,z;
+			unpack_xbox_floats(vert_weights[i],&x,&y,&z);
+			*p++ = x;
+			*p++ = y;
+			*p++ = z;
+			*p++ = 1.0;
+		}
+		free(vert_weights);
+
 		mp_vertex_bone_indices = (uint16_t*)malloc(sizeof(uint16_t)*4*m_num_verts);
 		fread(mp_vertex_bone_indices, sizeof(uint16_t)*4,m_num_verts, fd);
 	}
@@ -114,7 +131,7 @@ float *Sector::getPositions() {
 float *Sector::getNormals() {
 	return mp_vertex_normals;
 }
-uint32_t *Sector::getWeights() {
+float *Sector::getWeights() {
 	return mp_vertex_weights;
 }
 uint16_t *Sector::getBoneIndices() {

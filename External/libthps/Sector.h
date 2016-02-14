@@ -13,7 +13,7 @@ public:
 	float *getPositions();
 	float *getNormals();
 
-	uint32_t *getWeights();
+	float *getWeights();
 	uint16_t *getBoneIndices();
 
 	uint32_t *getColours();
@@ -47,7 +47,7 @@ private:
 	float *mp_vertex_positions;
 
 	float *mp_vertex_normals;
-	uint32_t *mp_vertex_weights;
+	float *mp_vertex_weights;
 	uint16_t *mp_vertex_bone_indices;
 
 	uint32_t m_num_tc_sets;

@@ -27,7 +27,7 @@ enum ECHCMeshFlags { //must corrospond to game
 	ECHCMeshFlag_HasDefaultHiearchyPos = (1<<5),
 	ECHCMeshFlag_HasDefaultHiearchyRot = (1 << 6),
 	ECHCMeshFlag_HasBBOX = (1 << 7),
-	ECHCMeshFlag_HasWeights_1W4I = (1 << 8),
+	ECHCMeshFlag_HasWeights = (1 << 8),
 };
 enum ECHCPrimType { //must corrospond to game
 	ECHCPrimType_TriangleList,
@@ -42,6 +42,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 	uint32_t num_verts = mesh->getNumVertices();
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
+	printf("%d vertices\n", num_verts);
 	uint8_t primtype = ECHCPrimType_TriangleList;
 
 	if(mesh->getPrimType() == CMeshPrimType_TriangleStrips) {
@@ -78,7 +79,7 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 
 	int num_indices, num_weights;
 	uint32_t *bone_indices_u32 = mesh->getBoneIndicesUInt32(0, num_indices);
-	uint32_t *vertex_weights_uint32 = mesh->getWeightsUInt32(0, num_weights);
+	float *vertex_weights = mesh->getWeightsFloat(0, num_weights);
 
 	//TODO: assert bone indices = vert count * 4, weights = vert count
 
@@ -97,10 +98,10 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 		}
 		stride += (sizeof(float) * 3) * num_uv_sets;
 	}
-	if(vertex_weights_uint32 && bone_indices_u32) {
-		stride += sizeof(uint32_t); //vertex weights
+	if(vertex_weights && bone_indices_u32) {
+		stride += sizeof(float) * 4; //vertex weights
 		stride += sizeof(uint32_t) * 4; //bone indices
-		flags |= ECHCMeshFlag_HasWeights_1W4I;
+		flags |= ECHCMeshFlag_HasWeights;
 	}
 
 	if(mesh->getUseIndexedMaterials()) {
@@ -127,7 +128,6 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 			}
 		}
 	}
-
 	fwrite(&flags,sizeof(uint32_t),1,fd);
 	fwrite(&stride,sizeof(uint32_t),1,fd);
 	fwrite(&num_uv_sets, sizeof(uint32_t), 1, fd);
@@ -208,11 +208,10 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 				uv_sets[j] += 4;
 			}
 		}
-		if(flags & ECHCMeshFlag_HasWeights_1W4I) {
-			fwrite(vertex_weights_uint32, sizeof(uint32_t), 1, fd);
+		if(flags & ECHCMeshFlag_HasWeights) {
+			fwrite(vertex_weights, sizeof(float), 4, fd);
 			fwrite(bone_indices_u32, sizeof(uint32_t), 4, fd);
-			//printf("Writing: %d (%d,%d,%d,%d)\n",vertex_weights_uint32[0],bone_indices_u32[0],bone_indices_u32[1],bone_indices_u32[2],bone_indices_u32[3]);
-			vertex_weights_uint32++;
+			vertex_weights += 4;
 			bone_indices_u32 += 4;
 
 		}
