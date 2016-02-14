@@ -1,9 +1,8 @@
 #ifndef _DATABANK_H
 #define _DATABANK_H
+#include <main.h>
 #include <Generic/CGeneric.h>
 #include <stdint.h>
-#include <Math/Vector.h>
-#include <Math/Matrix.h>
 typedef struct {
 	void *value;
 	uint32_t identifier;
@@ -47,8 +46,8 @@ struct sGenericDataArray {
 		uint64_t *uInt64Data;
 		float *fData;
 		double *dblData;
-		Math::Vector *mVectors;
-		Math::Matrix *mMatrices;
+		glm::vec4 *mVectors;
+		glm::mat4 *mMatrices;
 		sGenericDataArray *sArrayData;
 	} sUnion;
 };

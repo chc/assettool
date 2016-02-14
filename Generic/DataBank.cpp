@@ -38,14 +38,14 @@ void CDataBank::ConvertToCoordinateSystem(ECoordinateSystem system) {
 
 }
 float *CDataBank::GetVertexHead(int index) {
-	return &mp_data_array[index].sUnion.mVectors[0][Math::X];
+	return glm::value_ptr(mp_data_array[index].sUnion.mVectors[0]);
 }
 uint32_t *CDataBank::GetUInt32Head(int index) {
 	if(index < 0) index = 0;
 	return mp_data_array[index].sUnion.uInt32Data;	
 }
 void CDataBank::SetDataVector(int index, float *verts, int m_num_vertices, int num_elements) {
-	Math::Vector *vectors = new Math::Vector[m_num_vertices];
+	glm::vec4 *vectors = new glm::vec4[m_num_vertices];
 	for(int i=0;i<m_num_vertices;i++) {
 		float x = 0.0,y = 0.0,z = 0.0,w = 1.0;
 		if(num_elements >= 1)
@@ -56,7 +56,7 @@ void CDataBank::SetDataVector(int index, float *verts, int m_num_vertices, int n
 			z = verts[2];
 		if(num_elements >= 4)
 			w = verts[3];
-		vectors[i] = Math::Vector(x,y,z,w);
+		vectors[i] = glm::vec4(x,y,z,w);
 		verts += num_elements;
 	}
 

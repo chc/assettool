@@ -16,6 +16,11 @@ assettool -ingame GTASA -infmt imgv2 -append newtxd.txd -outpath gta3_new.img
 #include <stdint.h>
 #include <string.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+
 #ifndef _MAIN_H
 #define _MAIN_H
 #include <Generic/CGame.h>

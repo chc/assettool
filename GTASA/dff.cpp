@@ -840,8 +840,11 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			}
 			//vertex bone weights
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
-			output_meshes[mesh_buffer_idx]->setWeightsFloat(g->weights, 0, g->vertex_count * 4);
-			output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
+			if(g->weights || g->bone_count) {
+				output_meshes[mesh_buffer_idx]->setWeightsFloat(0, g->weights, g->vertex_count);
+				output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
+			}
+			
 
 
 			uint32_t *indices = (uint32_t *)malloc(sizeof(uint32_t) * g->vertex_count * 4);
