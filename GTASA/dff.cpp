@@ -693,7 +693,7 @@ void getMaterialFromRecord(MaterialRecord *matrec, CMaterial *mat, GeometryRecor
 		if (strlen(texrec->alphaname) > 0) {
 			has_alpha = true;
 		}
-		mat->setTextureChecksum(crc32(0, texrec->texturename, strlen(texrec->texturename)), level);
+		mat->setTextureName(texrec->texturename, level);
 		mat->setBlendMode(EBlendMode_Modulate, level);
 		mat->setTextureFilterMode(texrec->mat_filter_mode, level);
 		mat->setTextureAddressMode(texrec->u_mode, texrec->v_mode, level++);
@@ -728,13 +728,7 @@ uint32_t bone_num_from_id(DFFInfo *info,uint32_t id) {
 }
 void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
 
-	//meshes[0]->
-
-	//void setBoneParentIDs(uint32_t *indexes, uint32_t num_indexs);
-
 	uint32_t *indexes = (uint32_t *)malloc(info->m_frames.size() * sizeof(uint32_t));
-	printf("begin syncs of %d frames\n",info->m_frames.size());
-	
 
 	//only works on first mesh atm -- can't find anywhere it would matter though
 
@@ -745,23 +739,13 @@ void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
 
 		sBone *parent_bone = NULL;
 		if(info->m_frames[i]->parent_frame > 0) {
-			printf("Frame: %d\n", info->m_frames[i]->parent_frame);
 			parent_bone = meshes[0]->getBone(info->m_frames[i]->parent_frame-1);
-			if(parent_bone)
-				printf("Parent Name: %s\n", parent_bone->identifier.sUnion.mString);
 		}
 
 		bone_info->parent = parent_bone;
 		bone_info->identifier.type = EDataType_String_ASCII;
 		bone_info->identifier.sUnion.mString = (char *)&info->m_frames[i]->name;
-		//if(info->m_frames[i]->parent_frame != -1 && info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy != NULL) {
-			//indexes[i] = bone_num_from_id(info, info->m_frames[info->m_frames[i]->parent_frame]->bone_hiearchy->bone_id);
-			//indexes[i] = info->m_frames[i]->parent_frame;
-			//printf("Got internal ID: %s : %s (%d)\n",info->m_frames[i]->name, info->m_frames[indexes[i]]->name,indexes[i]);
-		//}
-		//else indexes[i] = -1;
 	}
-	//meshes[0]->setBoneParentIDs(indexes, info->m_frames.size());
 
 }
 
@@ -961,10 +945,8 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	while (it != info.m_geom_records.end()) {
 		GeometryRecord *g = *it;
 		if (g->parent_frame != NULL) {
-			printf("aa parent: %p\n",g->parent_frame);
 			CMesh *parent = find_mesh_by_name_from_array(output_meshes, mesh_buffer_idx, g->parent_frame->name, &info);
 			if (parent) {
-				printf("Setting parent of %s(%08X) to: %08X(%s)\n", output_meshes[g->output_mesh_id]->getName(), output_meshes[g->output_mesh_id]->getGroupId(), parent->getGroupId(),parent->getName());
 				output_meshes[g->output_mesh_id]->setParent(parent);
 			}
 		}

@@ -101,6 +101,12 @@ void CMaterial::setTextureChecksum(uint32_t checksum, int level) {
 uint32_t CMaterial::getTextureChecksum(int level) {
 	return m_texture_checksums[level];
 }
+const char *CMaterial::getTextureName(int level) {
+	return (const char *)&m_texture_names[level];
+}
+void CMaterial::setTextureName(const char *name, int level) {
+	strcpy((char *)&m_texture_names[level], name);
+}
 void CMaterial::setTextureFilterMode(ETextureFilterMode mode, int level) {
 	m_filter_modes[level] = mode;
 	

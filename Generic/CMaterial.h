@@ -1,5 +1,6 @@
 #ifndef _CMATERIAL_H
 #define _CMATERIAL_H
+#include <main.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -107,6 +108,9 @@ public:
 	void setTexture(CTexture *tex, int level);
 	CTexture* getTexture(int level);
 
+	void setTextureName(const char *name, int level);
+	const char *getTextureName(int level);
+
 	//used when the textures aren't loaded by converter
 	void setTextureChecksum(uint32_t checksum, int level);
 	uint32_t getTextureChecksum(int level);
@@ -150,6 +154,7 @@ private:
 	ETextureAddresingMode m_address_modes[MAX_MATERIAL_TEXTURES][3]; //UVW
 	CTexture* m_textures[MAX_MATERIAL_TEXTURES];
 	uint32_t m_texture_checksums[MAX_MATERIAL_TEXTURES];
+	char m_texture_names[MAX_MATERIAL_TEXTURES][MAX_NAME + 1];
 
 	EBlendMode m_texture_blend_modes[MAX_MATERIAL_TEXTURES];
 

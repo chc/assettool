@@ -89,6 +89,9 @@ void CMesh::setMaterial(CMaterial *material) {
 	mp_material = material;
 }
 CMaterial *CMesh::getMaterial() {
+	if(m_num_materials > 1 || num_index_levels != 0) {
+		return ((CMaterial**)mp_material)[0];
+	}
 	return mp_material;
 }
 

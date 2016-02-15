@@ -8,7 +8,7 @@ typedef void (*FileSearcherCB)(FileInfo *, void *);
 class FileSearcher {
 	public:
 		FileSearcher(const char *path, FileSearcherCB callback, void *params);
-		void run();
+		void run(const char *path = NULL);
 	private:
 		char m_path[FILENAME_MAX+1];
 		FileSearcherCB mp_cb_onfound;
