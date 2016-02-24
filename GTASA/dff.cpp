@@ -749,6 +749,53 @@ void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
 
 }
 
+void gta_dff_info_cleanup(DFFInfo *info) {
+	std::vector<GeometryRecord *>::iterator it = info->m_geom_records.begin(); 
+	while(it != info->m_geom_records.end()) {
+		GeometryRecord *g = *it;
+		if(g->vertex_data)
+			free(g->vertex_data);
+		if(g->normal_data) 
+			free(g->normal_data);
+		if(g->vertex_colours)
+			free(g->vertex_colours);
+		if(g->uv_data) {
+			for(int i=0;i<g->uvcount;i++)
+			{
+				free(g->uv_data[i]);
+			}
+		}
+		if(g->indicies) {
+			free(g->indicies);
+		}
+		if(g->weights)
+			free(g->weights);
+		if(g->bone_used)
+			free(g->bone_used);
+		if(g->bone_indices)
+			free(g->bone_indices);
+		if(g->bone_matrices) {
+			for(int i=0;i<g->bone_count;i++) {
+				free(g->bone_matrices[i]);
+			}
+			free(g->bone_matrices);
+		}
+		for(int i=0;i<g->keyframes.size();i++) {
+			free(g->keyframes[i]);
+		}
+		for(int i=0;i<g->m_material_records.size();i++) {
+			delete g->m_material_records[i];
+		}
+		delete g;
+		it++;
+	}
+	for(int i=0;i<info->m_frames.size();i++) {
+		delete info->m_frames[i];
+	}
+	if(info->frame_map)
+		free(info->frame_map);
+}
+
 bool gta_rw_import_dff(ImportOptions* impOpts) {
 	FILE *fd = fopen(impOpts->path, "rb");
 	DFFChunkInfo head;
@@ -940,7 +987,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		it++;
 	}
 
-
 	it = info.m_geom_records.begin();
 	while (it != info.m_geom_records.end()) {
 		GeometryRecord *g = *it;
@@ -980,7 +1026,19 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	opts.srcPath = impOpts->path;
 	opts.args = impOpts->expArgs;
 	opts.path = impOpts->outpath;
+	gta_dff_info_cleanup(&info);
+
 	impOpts->exporter(&opts);
+
+	for(int i=0;i<mesh_buffer_idx;i++) {
+		delete output_meshes[i];
+	}
+	for(int i=0;i<scene.num_materials;i++) {
+		delete scene.m_materials[i];
+	}
+	free(output_mats);
+	free(meshes);
+	free(output_meshes);
 	
 	return true;
 }

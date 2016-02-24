@@ -47,5 +47,6 @@ int main(int argc, const char* argv[]) {
 		opts.args = g_toolState.inFmtArgs;
 		g_toolState.inFmt->mp_impFunc(&opts);
 	}
+	unloadModules();
 	return 0;
 }

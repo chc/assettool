@@ -501,6 +501,7 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 		texopts.srcPath = opts->srcPath;
 		chc_tex_export_img(&texopts);
 	}
+	delete texture_collection;
 
 
 	if(scenepack->m_collision) {

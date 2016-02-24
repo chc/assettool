@@ -58,6 +58,7 @@ class CDataBank {
 		friend class CDataPackage;
 		CDataBank();
 		CDataBank(int num_data_sets);
+		~CDataBank();
 		//mutators
 		void ConvertToCoordinateSystem(ECoordinateSystem system);
 		//setters
@@ -75,11 +76,12 @@ class CDataBank {
 		sGenericDataArray *GetData(int index);
 
 		void SetNumDataSets(int num);
-		int GetNumDataSets(int index = -1);
-	private:
+		int GetNumDataSets(int index = -1) const;
+	
 		void alloc_data_sets(int size = 0);
-		void free_data_sets();
-		sGenericDataArray *mp_data_array;
+        void free_data_sets();
+        private:
+        sGenericDataArray *mp_data_array;
 		int m_num_data_sets; 
 };
 
@@ -101,11 +103,11 @@ class CDataPackage {
 public:
 	CDataPackage(int num_data_sets);
 	~CDataPackage();
-	CDataBank *	GetDataBank(int index);
+	CDataBank *	GetDataBank(int index) const;
 	void		SetNumBanks(int index, int num);
 	int 		GetNumElements(int index, int slot = -1) const;
 private:
-	int m_data_banks;
+	int m_num_data_banks;
 	CDataBank *mp_data_banks;
 };
 

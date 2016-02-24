@@ -10,7 +10,7 @@ bool gen_import_texfolder_process_image(ExportOptions *opts) {
 	CTextureCollection *tex_col = (CTextureCollection *)opts->extra;
 	CTexture *tex = new CTexture();
 
-	char *name = opts->srcPath;
+	const char *name = opts->srcPath;
 	char chkstr[256];
 	chkstr[0] = 0;
 	char *last_slash = strrchr(name, '/');

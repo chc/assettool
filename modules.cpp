@@ -26,3 +26,11 @@ void loadModules() {
 	g_toolState.gameIn = generic_game;
 	g_toolState.gameOut = generic_game;
 }
+void unloadModules() {
+	std::vector<IGame *>::iterator it = loaded_game_interfaces.begin();
+	while(it != loaded_game_interfaces.end()) {
+		delete *it;
+		it++;
+	}
+	loaded_game_interfaces.clear();
+}

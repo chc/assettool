@@ -30,9 +30,12 @@ CMesh::CMesh() {
 	m_num_bones = 0;
 	m_num_bone_index_sets = 0;
 
+	mp_bone_info = NULL;
 	mp_data_package = new CDataPackage(EMeshDataBank_Count);
 }
 CMesh::~CMesh() {
+	if(mp_bone_info)
+		free(mp_bone_info);
 	delete mp_data_package;
 }
 void CMesh::setNumVerts(int count) {

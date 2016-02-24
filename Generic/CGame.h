@@ -35,6 +35,7 @@ typedef struct {
 class IGame {
 public:
 	IGame() : m_fileFmtCount(0),mp_fileFormats(NULL) {};
+	virtual ~IGame();
 	const char *getShortName();
 	const char *getName();
 	FileFormat **getFormats(int &count);
