@@ -218,9 +218,8 @@ bool gen_export_json_mesh(ExportOptions* opts) {
 	json_object_set(json_file, "materials", material_array);
 	json_decref(material_array);
 
-	int df = json_dump_file(json_file, opts->path, JSON_INDENT(1)|JSON_PRESERVE_ORDER);
-	
-	printf("Ref Count: %d %d\n",json_file->refcount, df);
+	json_dump_file(json_file, opts->path, JSON_INDENT(1)|JSON_PRESERVE_ORDER);
+
 	json_decref(json_file);
 	return false;
 }
