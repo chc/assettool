@@ -103,6 +103,9 @@ void CDataBank::SetNumDataSets(int num) {
 	int old_size = m_num_data_sets;
 	m_num_data_sets = num;
 	mp_data_array = (sGenericDataArray *)realloc(mp_data_array, sizeof(sGenericDataArray) * m_num_data_sets);
+    for(int i=0;i<num;i++) {
+    	mp_data_array[i].num_elements = 0;
+    }
     //memset(&mp_data_array[old_size], 0, sizeof(sGenericDataArray) * (m_num_data_sets - old_size));
 }
 int CDataBank::GetNumDataSets(int index) const {

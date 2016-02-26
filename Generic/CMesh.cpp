@@ -23,7 +23,6 @@ CMesh::CMesh() {
 	m_weight_flags = 0;
 	m_num_weightsets = 0;
 
-
 	memset(&default_hierarchical_position,0, sizeof(default_hierarchical_position));
 	memset(&default_hierarchical_rotation,0, sizeof(default_hierarchical_rotation));
 
@@ -36,6 +35,10 @@ CMesh::CMesh() {
 CMesh::~CMesh() {
 	if(mp_bone_info)
 		free(mp_bone_info);
+
+	if(mp_material) {
+		free(mp_material);
+	}
 	delete mp_data_package;
 }
 void CMesh::setNumVerts(int count) {

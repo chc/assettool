@@ -10,13 +10,11 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 	json_t* jarr1 = json_array();
 	int num_verts = mesh->getNumVertices();
 	float *p = mesh->getVerticies();
-	json_t *material_checksum = 0;
-	json_t *name = json_string(mesh->getName());
-	json_object_set_new(jobj, "name", name);
+	json_t *material_checksum = NULL;
+	json_object_set_new(jobj, "name", json_string(mesh->getName()));
 	printf("associated mat: %p\n", mesh->getMaterial());
 	if (mesh->getMaterial()) {
-		material_checksum = json_integer(mesh->getMaterial()->getIdentifierChecksum());
-		json_object_set_new(jobj, "material_checksum", material_checksum);
+		json_object_set_new(jobj, "material_checksum", json_integer(mesh->getMaterial()->getIdentifierChecksum()));
 	}
 	
 	//add verts to json
@@ -24,15 +22,16 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 		json_t* v_array = json_array();
 		for (int j = 0; j < 3; j++) {
 			double v = (*p);
-			json_t* jval = json_real(v);
-			json_array_append_new(v_array, jval);
+			json_array_append_new(v_array, json_real(v));
 			p++;
 		}
 		p++; //skip W
-		json_array_append_new(jarr1, v_array);
+		json_array_append(jarr1, v_array);
+		json_decref(v_array);
 	}
-	json_object_set_new(jobj, "vertices", jarr1);
-
+	json_object_set(jobj, "vertices", jarr1);
+	json_decref(jarr1);
+	
 	jarr1 = json_array();
 	//normals
 	p = mesh->getNormals();
@@ -41,38 +40,37 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 			json_t* v_array = json_array();
 			for (int j = 0; j < 3; j++) {
 				double v = (*p);
-				json_t* jval = json_real(v);
-				json_array_append_new(v_array, jval);
+				json_array_append_new(v_array, json_real(v));
 				p++;
 			}
 			p++; //skip W
-			json_array_append_new(jarr1, v_array);
+			json_array_append(jarr1, v_array);
+			json_decref(v_array);
 		}
-		json_object_set_new(jobj, "normals", jarr1);
+		json_object_set(jobj, "normals", jarr1);
+		json_decref(jarr1);
 	}
-
-	jarr1 = json_array();
 	
 	//uvs
 	json_t *uv_array = json_array();
 	if (mesh->getUVWs(0) != NULL) {
 		for (int l = 0; l < mesh->getUVLayers() || l == 0; l++) {
-			json_t *uv_data_array = json_array();
 			p = mesh->getUVWs(l);
 			for (int i = 0; i < num_verts; i++) {
 				json_t* v_array = json_array();
 				for (int j = 0; j < 3; j++) {
 					double v = (*p);
-					json_t* jval = json_real(v);
-					json_array_append_new(v_array, jval);
+					json_array_append_new(v_array, json_real(v));
 					p++;
 				}
 				p++; //skip W
-				json_array_append_new(uv_array, v_array);
+				json_array_append(uv_array, v_array);
+				json_decref(v_array);
 			}
 		}
-		json_object_set_new(jobj, "uvs", uv_array);
+		json_object_set(jobj, "uvs", uv_array);
 	}
+	json_decref(uv_array);
 
 
 	//dump indices
@@ -94,29 +92,25 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 				//TODO: make indices count based off primitive type
 				json_t* v_array = json_array();
 				for(int j=0;j<3;j++) {
-					int index = *indices;
-					json_t* jval = json_integer(index);
-					indices++;
-					json_array_append_new(v_array, jval);
+					int index = *(indices++);
+					json_array_append_new(v_array, json_integer(index));
 				}
-				json_array_append_new(indices_array, v_array);
-				//int index = *indices;
-				//json_t* jval = json_integer(index);
-				//json_array_append_new(indices_array, jval);
-				//indices++;
+				json_array_append(indices_array, v_array);
+				json_decref(v_array);
 			}
-			json_array_append_new(indices_array2, indices_array);
+			json_array_append(indices_array2, indices_array);
+			json_decref(indices_array);
 		}
 		if (sub_indices) {
 			json_object_set_new(jobj, "submesh_materials", json_integer(1));
 		}
-		json_object_set_new(jobj, "indices", indices_array2);
+		json_object_set(jobj, "indices", indices_array2);
+		json_decref(indices_array2);
 	}	
 }
 void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 	int num_bones = mesh->getNumBones();
 
-	json_t* skel_obj = json_object();
 	json_t *bones = json_array();
 
 	for(int i=0;i<num_bones;i++) {
@@ -129,7 +123,7 @@ void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 		float *mat = matrix;
 
 		const char *name = (const char *)bone->identifier.sUnion.mString;
-
+		//printf("Skeleton name: %s\n", name);
 		json_object_set_new(bone_obj, "name", json_string(name));
 		
 		if(bone->parent) {
@@ -143,80 +137,90 @@ void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 				json_array_append_new(element_array, json_real(*mat));	
 				mat++;
 			}
-			json_array_append_new(bone_matrix, element_array);
+			json_array_append(bone_matrix, element_array);
+			json_decref(element_array);
 		}
-		json_object_set_new(bone_obj, "matrix", bone_matrix);
-
-		json_array_append_new(bones, bone_obj);
+		json_object_set(bone_obj, "matrix", bone_matrix);
+		json_decref(bone_matrix);
+		
+		json_array_append(bones, bone_obj);
+		json_decref(bone_obj);
+		
 	}
-	json_object_set_new(jobj, "skeleton", bones);
-	
+	json_object_set(jobj, "skeleton", bones);
+	json_decref(bones);
 }
 void add_material_to_json(json_t *jobj, CMaterial *mat) {
 	CTexture *tex;
 	json_t *mat_obj = json_object();
-	printf("adding mat: %p\n", mat);
-	json_t *checksum = json_integer(mat->getIdentifierChecksum());
-	json_t *name = json_string(mat->getName());
-	json_object_set_new(mat_obj, "checksum", checksum);
-	json_object_set_new(mat_obj, "name", name);
+	json_object_set_new(mat_obj, "checksum", json_integer(mat->getIdentifierChecksum()));
+	json_object_set_new(mat_obj, "name", json_string(mat->getName()));
 	bool wrote_materials = false;
 	json_t *textures = json_array();
 	for (int i = 0; (tex = mat->getTexture(i)) != NULL; i++) {
 		json_t *tex_obj = json_object();
 		const char *file_name = strrchr(tex->getPath(), '\\');
-		json_t *level = json_integer(i);
-		json_object_set_new(tex_obj, "level", level);
+		json_object_set_new(tex_obj, "level", json_integer(i));
 		if (file_name) {
 			file_name++;
-			json_t *str = json_string(file_name);
-			json_object_set_new(tex_obj, "path", str);
+			json_object_set_new(tex_obj, "path", json_string(file_name));
 		}
-		json_array_append_new(textures, tex_obj);
+		json_array_append(textures, tex_obj);
+		json_decref(tex_obj);
 		wrote_materials = true;
 	}
 	if (!wrote_materials) {
 		for (int i = 0; i < MAX_MATERIAL_TEXTURES; i++) {
 			json_t *tex_obj = json_object();
 			const char *name = mat->getTextureName(i);
-			json_t *level;
 			if(strlen(name) > 0) {
-				level = json_string(name);
-				json_object_set_new(tex_obj, "name", level);
+				json_object_set_new(tex_obj, "name", json_string(name));
 			} else {
 				uint32_t checksum = mat->getTextureChecksum(i);
-				if (checksum == 0) break;
-				level = json_integer(checksum);				
-				json_object_set_new(tex_obj, "checksum", level);
+				if (checksum == 0)  {
+					//not adding this record
+					json_decref(tex_obj);
+					break;
+				}			
+				json_object_set_new(tex_obj, "checksum", json_integer(checksum));
 			}
-
 			
-			json_array_append_new(textures, tex_obj);
+			json_array_append(textures, tex_obj);
+			json_decref(tex_obj);
 		}
-		json_object_set_new(mat_obj, "textures", textures);
+		json_object_set(mat_obj, "textures", textures);
 	}
-	json_array_append_new(jobj, mat_obj);
+	json_decref(textures); //we added the object, but its going out of scope, and only retained in mat_obj
+	json_array_append(jobj, mat_obj);
+	json_decref(mat_obj); //we added the object, but its going out of scope, and only retained in jobj
 }
 bool gen_export_json_mesh(ExportOptions* opts) {
 	ScenePack *pack = (ScenePack *)opts->dataClass;
 	json_t *json_file = json_object();
+	
 	json_t *meshes = json_array();
 	for (int i = 0; i < pack->num_meshes; i++) {
+		int x = 0;
 		json_t *mesh_data = json_object();
 		add_mesh_to_json(mesh_data, pack->m_meshes[i]);
-		json_array_append_new(meshes, mesh_data);
-
 		add_model_skeleton_to_json(mesh_data, pack->m_meshes[i]);
+		json_array_append(meshes, mesh_data);
+		json_decref(mesh_data);
 	}
-	json_object_set_new(json_file, "meshes", meshes);
+	
+	json_object_set(json_file, "meshes", meshes);
+	json_decref(meshes);
+
 	json_t *material_array = json_array();
 	for (int i = 0; i < pack->num_materials; i++) {
 		add_material_to_json(material_array, pack->m_materials[i]);
 	}
-	json_object_set_new(json_file, "materials", material_array);
-	char *s = json_dumps(json_file, JSON_INDENT(1));
-	FILE *fd = fopen(opts->path, "w");
-	fwrite(s, strlen(s), 1, fd);
-	fclose(fd);
+	json_object_set(json_file, "materials", material_array);
+	json_decref(material_array);
+
+	int df = json_dump_file(json_file, opts->path, JSON_INDENT(1)|JSON_PRESERVE_ORDER);
+	
+	printf("Ref Count: %d %d\n",json_file->refcount, df);
+	json_decref(json_file);
 	return false;
 }

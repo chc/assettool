@@ -122,7 +122,7 @@ bool png_export_img_file(const char *path, CImage *img) {
 
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
 
-	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+	png_destroy_write_struct(&png_ptr, &info_ptr);
 
 	free(row);
 	fclose(fd);

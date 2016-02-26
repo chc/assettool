@@ -65,7 +65,8 @@ typedef struct {
 	uint32_t data_size;
 	Core::Vector<DFFHierarchialChildBoneInfo *> child_bones;
 } DFFFrameBoneHierarchy;
-typedef struct {
+typedef struct 
+{
 	glm::mat3x3 rotation_matrix;
 	glm::vec3 position;
 	uint32_t parent_frame;
@@ -150,9 +151,10 @@ typedef struct {
 	uint8_t *bone_used;
 } GeometryRecord;
 
-typedef struct {
+class DFFInfo {
+public:
 	std::vector<GeometryRecord *> m_geom_records;
-	Core::Vector<FrameInfo *> m_frames;
+	std::vector<FrameInfo *> m_frames;
 
 	MaterialRecord *last_material;
 	GeometryRecord *last_geometry;
@@ -163,7 +165,7 @@ typedef struct {
 
 	DFFFrameBoneHierarchy *last_bone_hiearchy;
 
-} DFFInfo;
+};
 typedef struct {
 	uint32_t material_count;
 	uint32_t unknown[4];
@@ -292,7 +294,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
 			}
 			*/
-			dff_out->m_geom_records[geometry_index]->name[0] = 0;
+			memset(&dff_out->m_geom_records[geometry_index]->name, 0, sizeof(dff_out->m_geom_records[geometry_index]->name));
 			strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
 			memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float) * 3);
 			memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_rotation, glm::value_ptr(dff_out->m_frames[frame_index]->rotation_matrix), sizeof(float) * 9);
@@ -354,10 +356,10 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
 
 			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
-			printf("Weights: \n");
+			//printf("Weights: \n");
 			float *wp = weights;
 			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
-				printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
+				//printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
 				wp += 4;
 			}
 
@@ -491,13 +493,18 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 					FrameInfo *frame;
 					for(int i=0;i<num_frames;i++) {
 						frame = new FrameInfo;
-						memset(frame,0,sizeof(FrameInfo));
+						frame->flags = 0;
+						frame->position = glm::vec3();
+						frame->rotation_matrix = glm::mat3x3();
+						frame->parent_frame = 0;
+						frame->bone_hiearchy = NULL;
+						memset(&frame->name,0,sizeof(frame->name));
+						printf("Making frame: %p %d\n", frame,i);
 						fread(glm::value_ptr(frame->rotation_matrix), sizeof(float), 9, fd);
 						fread(glm::value_ptr(frame->position), sizeof(float), 3, fd);
 						fread(&frame->parent_frame, sizeof(uint32_t), 1, fd);
 						fread(&frame->flags, sizeof(uint32_t), 1, fd);
-						dump_frame_info(frame);
-						dff_out->m_frames.add(frame);
+						dff_out->m_frames.push_back(frame);
 					}
 					DataMapEntry *m_entries = (DataMapEntry *)malloc(sizeof(DataMapEntry) * num_frames);
 					memset(m_entries, 0, sizeof(DataMapEntry) * num_frames);
@@ -520,7 +527,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 									dff_out->last_bone_hiearchy = NULL;
 								}
 								fread(&dff_out->m_frames[i]->name, clumpHead.size, 1, fd);
-								printf("read frame name: %s\n", dff_out->m_frames[i]->name);
+								//printf("read frame name: %s\n", dff_out->m_frames[i]->name);
 								m_entries[x].value = dff_out->m_frames[i]->name;
 								m_entries[x].identifier = x++;
 
@@ -728,11 +735,6 @@ uint32_t bone_num_from_id(DFFInfo *info,uint32_t id) {
 }
 void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
 
-	uint32_t *indexes = (uint32_t *)malloc(info->m_frames.size() * sizeof(uint32_t));
-
-	//only works on first mesh atm -- can't find anywhere it would matter though
-
-
 	//we skip first bone atm(its just empty data)
 	for(int i=1;i<info->m_frames.size();i++) {
 		sBone *bone_info = meshes[0]->getBone(i-1);
@@ -764,6 +766,7 @@ void gta_dff_info_cleanup(DFFInfo *info) {
 			{
 				free(g->uv_data[i]);
 			}
+			free(g->uv_data);
 		}
 		if(g->indicies) {
 			free(g->indicies);
@@ -780,16 +783,27 @@ void gta_dff_info_cleanup(DFFInfo *info) {
 			}
 			free(g->bone_matrices);
 		}
-		for(int i=0;i<g->keyframes.size();i++) {
-			free(g->keyframes[i]);
-		}
 		for(int i=0;i<g->m_material_records.size();i++) {
+			for(int j=0;j<g->m_material_records.size();j++) {
+				delete g->m_material_records[i]->textures[j];
+			}
 			delete g->m_material_records[i];
 		}
 		delete g;
 		it++;
 	}
+	printf("Size: %d\n", info->m_frames.size());
 	for(int i=0;i<info->m_frames.size();i++) {
+		FrameInfo *frame = info->m_frames[i];
+		if(info->m_frames[i]->bone_hiearchy) {
+			char *c = &((char *)&info->m_frames[i]->bone_hiearchy)[6];
+			if(info->m_frames[i]->bone_hiearchy->child_bones.size() > 0) {
+				for(int j=0;j<info->m_frames[i]->bone_hiearchy->child_bones.size();j++) {
+					delete info->m_frames[i]->bone_hiearchy->child_bones[j];
+				}
+			}
+			delete info->m_frames[i]->bone_hiearchy;
+		}
 		delete info->m_frames[i];
 	}
 	if(info->frame_map)
@@ -806,7 +820,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			break;
 	}
 	fclose(fd);
-
 
 	int num_geom_records = info.m_geom_records.size();
 	CMesh** meshes = (CMesh**)malloc(num_geom_records * sizeof(CMesh*));
@@ -834,8 +847,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	CMesh **output_meshes = (CMesh**)malloc(info.m_geom_records.size() * sizeof(CMesh *));
 	int mesh_id = 0;
 	int num_meshes = 0;
-	uint16_t **index_buffers = (uint16_t**)malloc(num_materials * sizeof(uint16_t*));
-	memset(index_buffers,0,num_materials * sizeof(uint16_t*));
+
 	int mesh_vert_count = 0;
 	
 	int index_buffer_idx = 0, mesh_buffer_idx = 0;
@@ -927,17 +939,17 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			uint32_t *p = indices;
 
 			Core::Iterator<Core::Vector<glm::ivec3>, glm::ivec3> it3 = item->value.begin();
-
+			int idx = 0;
 			while(it3 != item->value.end()) {
 				glm::ivec3 cur_indices = *it3;
 				*p++ = cur_indices.x;
 				*p++ = cur_indices.y;
 				*p++ = cur_indices.z;
 				it3++;
+				idx++;
 			}
 			output_meshes[mesh_buffer_idx]->setIndices(indices, item->value.size() * 3, level);
 			free(indices);
-
 			level++;
 			it2++;
 		}
@@ -1026,10 +1038,10 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	opts.srcPath = impOpts->path;
 	opts.args = impOpts->expArgs;
 	opts.path = impOpts->outpath;
-	gta_dff_info_cleanup(&info);
 
 	impOpts->exporter(&opts);
 
+	gta_dff_info_cleanup(&info);
 	for(int i=0;i<mesh_buffer_idx;i++) {
 		delete output_meshes[i];
 	}

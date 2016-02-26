@@ -14,6 +14,7 @@ CMaterial::CMaterial() {
 
 	memset(&m_name,0,sizeof(m_name));
 
+	memset(&m_texture_names, 0, sizeof(m_texture_names));
 	memset(&m_textures,0,sizeof(m_textures));
 	memset(&m_texture_checksums, 0, sizeof(m_texture_checksums));
 

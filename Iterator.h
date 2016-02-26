@@ -9,6 +9,9 @@ namespace Core {
 			pos = index;
 			this->vec = vec;
 		}
+		~Iterator() {
+			
+		}
 		RT operator*() {
 			return vec.get(pos);
 		}

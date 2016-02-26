@@ -2,11 +2,19 @@
 #define _CORE_VECTOR_H
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "Iterator.h"
 namespace Core {
 	template<typename T>
 	class VectorItem {
 	public:
+		VectorItem() {
+			initalized = false;
+		}
+		VectorItem(const VectorItem<T> &v) {
+			data = v.data;
+			initalized = v.initalized;
+		}
 		T data;
 		bool initalized;
 	};
@@ -21,8 +29,10 @@ namespace Core {
 		}
 		Vector(const Vector<T> &v) {
 			item_count = v.item_count;
-			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * v.item_count);
-			memcpy(items, v.items, sizeof(VectorItem<T>) * v.item_count);
+			items = new VectorItem<T>[v.item_count];
+			for(int i=0;i<item_count;i++) {
+				items[i] = v.items[i];
+			}
 		}
 		Vector(int num_elements) {
 			initalize(num_elements);
@@ -31,7 +41,7 @@ namespace Core {
 			initalize(10);
 		}
 		~Vector() {
-			free(items);
+			uninitalize();
 		}
 		void add(T val) {
 			VectorItem<T> *item = findFirstFreeItem();
@@ -52,9 +62,13 @@ namespace Core {
 			return (T)NULL;
 		}
 		Vector<T>& operator=(Vector& other) {
+			uninitalize();
 			item_count = other.item_count;
-			items = (VectorItem<T>*)malloc(sizeof(VectorItem<T>) * item_count);
-			memcpy(items,other.items, sizeof(VectorItem<T>) * item_count);
+			items = new VectorItem<T>[item_count];
+			for(int i=0;i<item_count;i++) {
+				items[i].data = other.items[i].data;
+				items[i].initalized = other.items[i].initalized;
+			}
 			return *this;
 		}
 		T get(int pos) {
@@ -88,9 +102,12 @@ namespace Core {
 			}
 			return NULL;
 		}
+		void uninitalize() {
+			if(items)
+				free(items);
+		}
 		void initalize(int count) {
-			items = (VectorItem<T> *)malloc(sizeof(VectorItem<T>) * count);
-			memset(items,0,sizeof(VectorItem<T>) * count);
+			items = new VectorItem<T>[count];
 			item_count = count;
 		}
 		VectorItem<T> *findFirstFreeItem() {
@@ -105,12 +122,12 @@ namespace Core {
 			if(count == 0) count = 10;
 			item_count += count;
 
-			VectorItem<T> *new_items = (VectorItem<T> *)malloc(sizeof(VectorItem<T>) * item_count);
-			memset(new_items,0,sizeof(VectorItem<T>) * item_count);
-			printf("Increasing items: %d %p\n",item_count,items);
+			VectorItem<T> *new_items = new VectorItem<T>[item_count];
 			if(items) {
-				memcpy(new_items,items,sizeof(VectorItem<T>) * (item_count-count));
-				free(items);
+				for(int i=0;i<(item_count-count);i++) {
+					new_items[i] = items[i];
+				}
+				delete[] items;
 			}
 			items = new_items;
 		}

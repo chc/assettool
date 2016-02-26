@@ -172,8 +172,7 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 		tex->setImage(imp_img);
 		tex_col->AddTexture(tex);
 		free_img(aimg);
-
-		for(int i=0;i<tex_count-1;i++) {
+		for(int i=1;i<tex_count;i++) {
 			imp_img = new CImage();
 			tex = new CTexture();
 			fread(&record,sizeof(record),1,fd);
@@ -206,7 +205,18 @@ bool gta_rw_import_txd(ImportOptions* opts) {
 	expOpts.args = opts->expArgs;
 
 	opts->exporter(&expOpts);
-	
+	Core::Vector<CTexture *> vec = tex_col->getTextures();
+	Core::Iterator<Core::Vector<CTexture *>, CTexture *> it = vec.begin();
+	while(it != vec.end()) {
+		if(*it) {
+			CImage *img = (*it)->getImage();
+			if(img)
+				delete img;
+			delete *it;
+		}
+		it++;
+	}
+	delete tex_col;
 	return true;
 }
 
