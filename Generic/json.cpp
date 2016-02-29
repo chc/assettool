@@ -107,6 +107,55 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 		json_object_set(jobj, "indices", indices_array2);
 		json_decref(indices_array2);
 	}	
+
+
+	//dump bone weights
+	int num_weight_sets = mesh->getNumWeightSets();
+	json_t *weights_array = json_array();
+	for(int i=0;i<num_weight_sets;i++) {
+		json_t *weight_set = json_array();
+		int num_weights;
+		float *weights = mesh->getWeightsFloat(i, num_weights);
+		for(int j=0;j<mesh->getNumVertices();j++) {
+			json_t *jweights = json_array();
+			for(int k=0;k<4;k++) {
+				float v = *weights++;
+				json_array_append_new(jweights, json_real(v));
+			}
+
+			json_array_append(weight_set, jweights);
+			json_decref(jweights);
+		}
+		json_array_append(weights_array, weight_set);
+
+		json_decref(weight_set);
+	}
+
+	json_object_set(jobj, "weights", weights_array);
+	json_decref(weights_array);
+	
+
+	//dump bone indices
+	int num_bone_index_sets = mesh->getNumBoneIndexSets();
+	json_t *bones_array = json_array();
+	for(int i=0;i<num_bone_index_sets;i++) {
+		json_t *indices_array = json_array();
+		//uint32_t *getBoneIndicesUInt32(int set, int &num_indices);
+		int num_indices;
+		uint32_t *bone_indices = mesh->getBoneIndicesUInt32(0, num_indices);
+		for(int j=0;j<mesh->getNumVertices();j++) {
+			json_t *bone_group = json_array();
+			for(int k=0;k<4;k++) {
+				uint32_t v = *bone_indices++;
+				json_array_append_new(bone_group, json_integer(v));
+			}
+			json_array_append(indices_array, bone_group);
+			json_decref(bone_group);
+		}
+		json_array_append(bones_array, indices_array);
+	}
+	json_object_set(jobj, "bone_indices", bones_array);
+	json_decref(bones_array);
 }
 void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 	int num_bones = mesh->getNumBones();

@@ -141,6 +141,7 @@ public:
 	void setNumBones(uint32_t num_bones);
 	uint32_t getNumBones();
 	sBone *getBone(uint32_t index); //used for accessing too
+	sBone *getBoneByName(const char *name); //used by dff IO only.. please avoid.. this shouldn't exist
 
 private:
 	void generate_bbox();

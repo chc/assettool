@@ -725,22 +725,28 @@ FrameInfo *find_frame_by_bone_id(DFFInfo *info, uint32_t index) {
 	return NULL;
 }
 void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
-	//we skip first bone atm(its just empty data)
+	//map names
+	for(int i=0;i<info->m_bones.size();i++) {
+		DFFBone *dff_bone = info->m_bones[i];
+		
+		FrameInfo *frame = find_frame_by_bone_id(info,dff_bone->bone_id);
+		
+		sBone *bone_info = meshes[0]->getBone(i);
+
+		bone_info->identifier.type = EDataType_String_ASCII;
+		bone_info->identifier.sUnion.mString = (char *)&frame->name;
+	}
+	//map parents
 	for(int i=0;i<info->m_bones.size();i++) {
 		DFFBone *dff_bone = info->m_bones[i];
 		FrameInfo *frame = find_frame_by_bone_id(info,dff_bone->bone_id);
-		printf("%s - %d - %d\n",frame->name,dff_bone->bone_number,dff_bone->bone_id);
 		sBone *bone_info = meshes[0]->getBone(i);
 
-		//sBone *parent_bone = NULL;
-		//if(info->m_frames[i]->parent_frame > 0) {
-		//	parent_bone = meshes[0]->getBone(info->m_frames[i]->parent_frame-1);
-		//}
-
-
-	//	bone_info->parent = parent_bone;
-		bone_info->identifier.type = EDataType_String_ASCII;
-		bone_info->identifier.sUnion.mString = (char *)&frame->name;
+		sBone *parent_bone = NULL;
+		if(frame->parent_frame > 0) {
+			FrameInfo *parent_frame = info->m_frames[frame->parent_frame];
+			bone_info->parent = meshes[0]->getBoneByName(parent_frame->name);
+		}
 	}
 
 }
@@ -750,7 +756,6 @@ DFFBone *get_dff_bone_by_index(DFFInfo *info, uint32_t index) {
 	while(it != info->m_bones.end()) {
 		DFFBone *bone = *it;
 		if(bone->bone_number == index) {
-			printf("Returning (%d - %d)\n", bone->bone_number, bone->bone_id);
 			return bone;
 		}
 		it++;

@@ -251,6 +251,16 @@ void CMesh::setNumBones(uint32_t num_bones) {
 sBone *CMesh::getBone(uint32_t index) {
 	return &mp_bone_info[index];
 }
+sBone *CMesh::getBoneByName(const char *name) {
+	for(int i=0;i<m_num_bones;i++) {
+		if(mp_bone_info[i].identifier.type == EDataType_String_ASCII) {
+			if(!strcmp(mp_bone_info[i].identifier.sUnion.mString, name)) {
+				return &mp_bone_info[i];
+			}
+		}
+	}
+	return NULL;
+}
 uint32_t CMesh::getNumBones() {
 	return m_num_bones;
 }
