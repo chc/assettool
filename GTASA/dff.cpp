@@ -66,6 +66,7 @@ typedef struct {
 	uint32_t bone_number;
 	uint32_t bone_id;
 	uint32_t bone_type;
+	uint32_t bone_file_index; //position, which it appears in the file
 	float matrix[16];
 } DFFBone;
 
@@ -278,16 +279,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&frame_index, sizeof(uint32_t), 1, fd);
 			fread(&geometry_index, sizeof(uint32_t), 1, fd);
 			fread(&unknown, sizeof(uint32_t), 2, fd);
-			/*
-			if(dff_out->m_geom_records[geometry_index]->frame == NULL) {
-				dff_out->m_geom_records[geometry_index]->frame = dff_out->m_frames[frame_index];
-				printf("pos: ");
-				dump_vec3(dff_out->m_frames[frame_index]->position);
-				memcpy(&dff_out->m_geom_records[geometry_dump_vecindex]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float)*3);
-				memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_rotation, glm::value_ptr(dff_out->m_frames[frame_index]->rotation_matrix), sizeof(float)*9);
-				strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
-			}
-			*/
+
 			memset(&dff_out->m_geom_records[geometry_index]->name, 0, sizeof(dff_out->m_geom_records[geometry_index]->name));
 			strcpy(dff_out->m_geom_records[geometry_index]->name, dff_out->m_frames[frame_index]->name);
 			memcpy(&dff_out->m_geom_records[geometry_index]->default_hierarchical_position, glm::value_ptr(dff_out->m_frames[frame_index]->position), sizeof(float) * 3);
@@ -360,6 +352,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 				DFFBone *bone = get_dff_bone_by_index(dff_out, i);
 				fread(&bone->matrix, sizeof(float), 4*4, fd);
 				bone->matrix[15] = 1.0;
+				bone->bone_file_index = i;
 			}
 
 			dff_out->last_geometry->weights = weights;
@@ -490,7 +483,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 						frame->parent_frame = 0;
 						frame->bone_id = -1;
 						memset(&frame->name,0,sizeof(frame->name));
-						printf("Making frame: %p %d\n", frame,i);
 						fread(glm::value_ptr(frame->rotation_matrix), sizeof(float), 9, fd);
 						fread(glm::value_ptr(frame->position), sizeof(float), 3, fd);
 						fread(&frame->parent_frame, sizeof(uint32_t), 1, fd);
@@ -724,7 +716,12 @@ FrameInfo *find_frame_by_bone_id(DFFInfo *info, uint32_t index) {
 	}
 	return NULL;
 }
+bool sort_bones_by_file_index(const DFFBone *bone1, const DFFBone *bone2) {
+	return bone1->bone_file_index < bone2->bone_file_index;
+}
 void add_bones_from_dff(CMesh **meshes, uint32_t num_meshes, DFFInfo *info) {
+	//sort bones by file index
+	std::sort(info->m_bones.begin(), info->m_bones.end(), sort_bones_by_file_index);
 	//map names
 	for(int i=0;i<info->m_bones.size();i++) {
 		DFFBone *dff_bone = info->m_bones[i];
@@ -875,8 +872,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			for(int i=0;i<g->bone_count;i++) {
 				DFFBone *dff_bone = get_dff_bone_by_index(&info, i);
 				sBone *bone_info = output_meshes[mesh_buffer_idx]->getBone(i);
-				memcpy(&bone_info->matrix, &dff_bone->matrix, sizeof(bone_info->matrix));
-				
+				memcpy(&bone_info->matrix, &dff_bone->matrix, sizeof(bone_info->matrix));				
 			}
 			//vertex bone weights
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
