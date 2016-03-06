@@ -38,5 +38,5 @@ ELSE() #unix
 file (GLOB PLAT_SOURCES "Platform/UNIX/*.cpp" "Platform/UNIX/*.h")
 add_executable (assettool ${ALL_SRCS} ${PLAT_SOURCES})
 target_compile_options(assettool PUBLIC -fpermissive)
-target_link_libraries(assettool png z pugixml freetype jansson assimp squish shaderasm)
+target_link_libraries(assettool png z pugixml freetype jansson assimp squish shaderpacket)
 ENDIF()
