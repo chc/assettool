@@ -187,7 +187,7 @@ void CMesh::setNumWeightSets(int num_sets) {
 	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetNumDataSets(num_sets);
 }
 void CMesh::setWeightsFloat(int set, float *weights, int num_weights) {
-	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetDataVector(set, weights, num_weights);
+	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetDataVector(set, weights, num_weights, 4);
 }
 void CMesh::setWeightsUInt32(int set, uint32_t *weights, int num_weights) {
 	mp_data_package->GetDataBank(EMeshDataBank_Weights)->SetDataUInt32(set, weights, num_weights);

@@ -334,6 +334,7 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&max_weights_per_vertex, sizeof(uint8_t), 1, fd);
 			fread(&padding, sizeof(uint8_t), 1, fd);
 
+			printf("aaa: %d %d\n", num_used_bones, max_weights_per_vertex);
 			uint8_t *bones_used = (uint8_t *)malloc(num_used_bones * sizeof(uint8_t));
 			fread(bones_used, num_used_bones, sizeof(uint8_t), fd);
 
@@ -342,12 +343,42 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(vertex_bone_indices, dff_out->last_geometry->vertex_count * sizeof(uint8_t), 4, fd);
 
 			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
+
+			//invert them for some reason??
+			/*
+			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
+				float *v = &weights[i * 4];
+				float t[4];
+				t[3] = v[0];
+				t[2] = v[1];
+				t[1] = v[2];
+				t[0] = v[3];
+
+				v[0] = t[0];
+				v[1] = t[1];
+				v[2] = t[2];
+				v[3] = t[3];
+			}
+			*/
+			
 			//printf("Weights: \n");
 			float *wp = weights;
+
+			float wmin = 9999999.0;
+			float wmax = -999999.0;
 			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
-				//printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
+				printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
+				for(int j=0;j<4;j++) {
+					if(wp[j] < wmin) {
+						wmin = wp[j];
+					}
+					if(wp[j] > wmax) {
+						wmax = wp[j];
+					}
+				}
 				wp += 4;
 			}
+			printf("Weights minmax: %f %f\n",wmin, wmax);
 			for(int i=0;i<num_bones;i++) {
 				DFFBone *bone = get_dff_bone_by_index(dff_out, i);
 				fread(&bone->matrix, sizeof(float), 4*4, fd);
@@ -878,7 +909,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 			output_meshes[mesh_buffer_idx]->setNumWeightSets(1);
 			if(g->weights || g->bone_count) {
 				output_meshes[mesh_buffer_idx]->setWeightsFloat(0, g->weights, g->vertex_count);
-				output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(g->bone_count);
+				output_meshes[mesh_buffer_idx]->setNumBoneIndexSets(1);
 			}
 			
 
