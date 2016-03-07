@@ -333,7 +333,7 @@ void json_export_keyframe_collection(json_t *file, CKeyframeCollection *col) {
 		it++;
 	}
 
-	json_object_set(file, "collections", keyframe_col);
+	json_object_set(file, "objects", keyframe_col);
 	json_decref(keyframe_col);
 	
 }
