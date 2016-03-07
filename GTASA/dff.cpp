@@ -1059,6 +1059,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 	memset(&opts,0,sizeof(opts));
 	
 	opts.dataClass = &scene;
+	opts.type = ClassType_ScenePack;
 	opts.srcPath = impOpts->path;
 	opts.args = impOpts->expArgs;
 	opts.path = impOpts->outpath;

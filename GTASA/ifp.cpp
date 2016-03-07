@@ -99,31 +99,34 @@ void get_sequence_from_frame(CKeyframeSequence *keyframe, AnimRootFrame *frame) 
 bool gta_rw_import_ifp(ImportOptions* impOpts) {
 	FILE *fd = fopen(impOpts->path, "rb");
 	IFPHeader head;
-	AnimHeader anim;
-
+	AnimHeader *anims;
+	Core::Vector<ObjectInfo *> objects;
 	Core::Vector<CKeyframeCollection *> collections;
 	CKeyframeSeqCollection *collection = NULL;
 	fread(&head, sizeof(IFPHeader), 1, fd);
 	if(head.magic != ANIM_V2_FOURCC) 
 		return false;
+	anims = (AnimHeader *)malloc(head.anim_count * sizeof(AnimHeader));
 	print_ifp_header(&head);
 	for (int i = 0; i < head.anim_count; i++) {
-		fread(&anim, sizeof(AnimHeader), 1, fd);
-		print_anim_info(&anim);
+		fread(&anims[i], sizeof(AnimHeader), 1, fd);
+		print_anim_info(&anims[i]);
 		CKeyframeCollection *key_col = new CKeyframeCollection();
-		key_col->setCollectionIdentifier(crc32(0, anim.name, strlen(anim.name)));
-		printf("key checksum: %s 0x%08X\n", anim.name, key_col->getCollectionIdentifier());
-		for (int j = 0; j < anim.object_count; j++) {
-			ObjectInfo obj;
-			fread(&obj, sizeof(ObjectInfo), 1, fd);
-			print_object_info(&obj);
+		sGenericData data;
+		data.type = EDataType_String_ASCII;
+		data.sUnion.mString = (char *)&anims[i].name;
+		key_col->setIdentifier(data);
+		for (int j = 0; j < anims[i].object_count; j++) {
+			ObjectInfo* obj = new ObjectInfo;
+			fread(obj, sizeof(ObjectInfo), 1, fd);
+			print_object_info(obj);
 			collection = new CKeyframeSeqCollection();
-			uint32_t checksum = crc32(0, obj.name, strlen(obj.name));
-			printf("Obj checksum: %s 0x%08X\n", obj.name, checksum);
-			collection->setCollectionIdentifier(checksum);
-			collection->setBoneID(obj.bone_id);
-			for (int k = 0; k < obj.num_frames; k++) {
-				if (obj.type == 4) {
+			data.type = EDataType_String_ASCII;
+			data.sUnion.mString = (char *)&obj->name;
+			collection->setIdentifier(data);
+			collection->setBoneID(obj->bone_id);
+			for (int k = 0; k < obj->num_frames; k++) {
+				if (obj->type == 4) {
 					AnimRootFrame frame;
 					fread(&frame, sizeof(AnimRootFrame), 1, fd);
 					CKeyframeSequence *seq = new CKeyframeSequence();
@@ -146,6 +149,7 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 				}
 			}
 			key_col->add(collection);
+			objects.add(obj);
 		}
 		collections.add(key_col);
 	}
@@ -155,6 +159,7 @@ bool gta_rw_import_ifp(ImportOptions* impOpts) {
 
 
 	opts.dataClass = &collections;
+	opts.type = ClassType_KeyframeCol;
 	opts.srcPath = impOpts->path;
 	opts.args = impOpts->expArgs;
 	opts.path = impOpts->outpath;

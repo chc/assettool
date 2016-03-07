@@ -1,7 +1,7 @@
 #include "CKeyframeCollection.h"
+#include <Generic/CGeneric.h>
 
 CKeyframeCollection::CKeyframeCollection() {
-	checksum = 0;
 }
 CKeyframeCollection::~CKeyframeCollection() {
 
@@ -14,9 +14,9 @@ Core::Vector<CKeyframeSeqCollection *> CKeyframeCollection::getCollection() {
 	return this->frames;
 }
 
-void CKeyframeCollection::setCollectionIdentifier(uint32_t checksum) {
-	this->checksum = checksum;
+void CKeyframeCollection::setIdentifier(sGenericData identifier) {
+	m_identifier = identifier;
 }
-uint32_t CKeyframeCollection::getCollectionIdentifier() {
-	return checksum;
+sGenericData CKeyframeCollection::getIdentifier() {
+	return m_identifier;
 }

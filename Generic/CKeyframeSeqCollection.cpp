@@ -2,7 +2,6 @@
 #include "CKeyframeSeqCollection.h"
 
 CKeyframeSeqCollection::CKeyframeSeqCollection() {
-	checksum = 0;
 }
 CKeyframeSeqCollection::~CKeyframeSeqCollection() {
 
@@ -15,11 +14,11 @@ Core::Vector<CKeyframeSequence *> CKeyframeSeqCollection::getCollection() {
 	return this->frames;
 }
 
-void CKeyframeSeqCollection::setCollectionIdentifier(uint32_t checksum) {
-	this->checksum = checksum;
+void CKeyframeSeqCollection::setIdentifier(sGenericData identifier) {
+	m_identifier = identifier;
 }
-uint32_t CKeyframeSeqCollection::getCollectionIdentifier() {
-	return checksum;
+sGenericData CKeyframeSeqCollection::getIdentifier() {
+	return m_identifier;
 }
 
 void CKeyframeSeqCollection::setBoneID(uint32_t bone_id) {

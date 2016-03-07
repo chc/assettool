@@ -2,6 +2,7 @@
 #define _CKEYFRAMECOLLECTION_H
 #include <main.h>
 #include "Vector.h"
+#include <Generic/DataBank.h>
 
 class CKeyframeSeqCollection;
 class CKeyframeCollection {
@@ -12,11 +13,11 @@ public:
 	void add(CKeyframeSeqCollection *col);
 	Core::Vector<CKeyframeSeqCollection *> getCollection();
 
-	void setCollectionIdentifier(uint32_t checksum);
-	uint32_t getCollectionIdentifier();
+	void setIdentifier(sGenericData identifier);
+	sGenericData getIdentifier();
 
 private:
-	uint32_t checksum;
+	sGenericData m_identifier;
 	Core::Vector<CKeyframeSeqCollection *> frames;
 };
 #endif //_CKEYFRAMECOLLECTION_H

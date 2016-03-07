@@ -58,7 +58,7 @@ bool thps_xbx_import_img(ImportOptions* opts) {
 	char out_path[FILENAME_MAX+1];
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
-	expOpts.type = FileType_Texture;
+	expOpts.type = ClassType_Texture;
 	expOpts.path = (const char *)&out_path;
 	CImage *tex = new CImage();
 	uint32_t width, height;
@@ -126,7 +126,7 @@ bool thps_xbx_import_textable(ImportOptions* opts) {
 	
 	ExportOptions expOpts;
 	memset(&expOpts,0,sizeof(expOpts));
-	expOpts.type = FileType_Texture;
+	expOpts.type = ClassType_Texture;
 	expOpts.dataClass = (void *)tex_col;
 
 	expOpts.path = opts->outpath;

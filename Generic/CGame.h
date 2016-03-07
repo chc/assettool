@@ -4,14 +4,16 @@
 enum FileFormatFlags {
 	FileFormat_DirContainer,
 };
-enum FileType {
-	FileType_Texture, //CTexture interface
-	FileType_FileContainer,
+enum GenericClassType {
+	ClassType_Texture, //CTexture interface
+	ClassType_FileContainer,
+	ClassType_ScenePack,
+	ClassType_KeyframeCol,
 };
 typedef struct {
 	const char *path;
 	const char *srcPath;
-	FileType type; //FileType_Texture means void *dataClass = CImage *
+	GenericClassType type; //FileType_Texture means void *dataClass = CImage *
 	const char *args;
 	void *dataClass;
 	void *extra;

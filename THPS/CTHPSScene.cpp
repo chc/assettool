@@ -329,6 +329,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 	memset(&expopts,0,sizeof(expopts));
 	
 	expopts.dataClass = &pack;
+	expopts.type = ClassType_ScenePack;
 	expopts.srcPath = opts->path;
 	expopts.args = opts->expArgs;
 	expopts.path = opts->outpath;

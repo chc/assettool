@@ -1,5 +1,10 @@
+#include <Vector.h>
+#include <Iterator.h>
 #include "json.h"
 #include <jansson.h>
+#include <Generic/CKeyframeSequence.h>
+#include <Generic/CKeyframeSeqCollection.h>
+#include <Generic/CKeyframeCollection.h>
 #include <Generic/ScenePack.h>
 bool gen_import_json_mesh(ImportOptions* opts) {
 	return false;
@@ -244,7 +249,7 @@ void add_material_to_json(json_t *jobj, CMaterial *mat) {
 	json_array_append(jobj, mat_obj);
 	json_decref(mat_obj); //we added the object, but its going out of scope, and only retained in jobj
 }
-bool gen_export_json_mesh(ExportOptions* opts) {
+void json_export_scenepack(ExportOptions *opts) {
 	ScenePack *pack = (ScenePack *)opts->dataClass;
 	json_t *json_file = json_object();
 	
@@ -271,5 +276,92 @@ bool gen_export_json_mesh(ExportOptions* opts) {
 	json_dump_file(json_file, opts->path, JSON_INDENT(1)|JSON_PRESERVE_ORDER);
 
 	json_decref(json_file);
+}
+void json_export_keyframe_seq(json_t *file, CKeyframeSequence *seq) {
+	json_t *obj = json_object();
+
+	json_t *vec_array = json_array();
+	glm::vec3 position = seq->getPosition();
+
+	json_array_append_new(vec_array, json_real(position.x));
+	json_array_append_new(vec_array, json_real(position.y));
+	json_array_append_new(vec_array, json_real(position.z));
+
+	json_object_set(obj, "position", vec_array);
+	json_decref(vec_array);
+
+	vec_array = json_array();
+
+	glm::quat quat = seq->getRotation();
+	json_array_append_new(vec_array, json_real(quat.x));
+	json_array_append_new(vec_array, json_real(quat.y));
+	json_array_append_new(vec_array, json_real(quat.z));
+	json_array_append_new(vec_array, json_real(quat.w));
+
+	json_object_set(obj, "rotation", vec_array);
+
+	json_object_set_new(obj, "time", json_real(seq->getBeginFrame()));
+	json_decref(vec_array);
+
+	json_array_append(file, obj);
+	json_decref(obj);
+}
+void json_export_keyframe_collection(json_t *file, CKeyframeCollection *col) {
+	static int idx = 0;
+	printf("Export: %s : %d\n",col->getIdentifier().sUnion.mString, idx++);
+	Core::Vector<CKeyframeSeqCollection *> key_col = col->getCollection();
+	Core::Iterator<Core::Vector<CKeyframeSeqCollection *>, CKeyframeSeqCollection *> it = key_col.begin(); 
+
+	json_object_set_new(file, "name", json_string(col->getIdentifier().sUnion.mString));
+	json_t *keyframe_col = json_array();
+	while(it != key_col.end()) {
+		json_t *keyframe_seq_col_obj = json_object();
+		CKeyframeSeqCollection *seqcol = *it;
+		json_object_set_new(keyframe_seq_col_obj, "name", json_string(seqcol->getIdentifier().sUnion.mString));
+		Core::Vector<CKeyframeSequence *> seq_vec =  seqcol->getCollection();
+		Core::Iterator<Core::Vector<CKeyframeSequence *>, CKeyframeSequence *> it2 = seq_vec.begin();
+		json_t *keyframe_seq_array = json_array();
+		while(it2 != seq_vec.end()) {
+			CKeyframeSequence *seq = *it2;
+			json_export_keyframe_seq(keyframe_seq_array, seq);
+			it2++;
+		}
+		json_object_set(keyframe_seq_col_obj, "keyframes", keyframe_seq_array);
+		json_decref(keyframe_seq_array);
+
+		json_array_append(keyframe_col, keyframe_seq_col_obj);
+		it++;
+	}
+
+	json_object_set(file, "collections", keyframe_col);
+	json_decref(keyframe_col);
+	
+}
+void json_export_keyframe_collections(ExportOptions *opts) {
+	json_t *keyframe_collections = json_array();
+	Core::Vector<CKeyframeCollection *> *collections = (Core::Vector<CKeyframeCollection *> *)opts->dataClass;
+
+	Core::Iterator<Core::Vector<CKeyframeCollection *> , CKeyframeCollection *> it = collections->begin();
+	while(it != collections->end()) {
+		json_t *keyframe_obj = json_object();
+		CKeyframeCollection *key_col = *it;
+		json_export_keyframe_collection(keyframe_obj, key_col);
+		it++;
+		json_array_append(keyframe_collections, keyframe_obj);
+		json_decref(keyframe_obj);
+	}
+	json_dump_file(keyframe_collections, opts->path, JSON_INDENT(1)|JSON_PRESERVE_ORDER);
+	json_decref(keyframe_collections);
+
+}
+bool gen_export_json_mesh(ExportOptions* opts) {
+	switch(opts->type) {
+		case ClassType_KeyframeCol:
+			json_export_keyframe_collections(opts);
+		break;
+		case ClassType_ScenePack:
+			json_export_scenepack(opts);
+		break;
+	}
 	return false;
 }
