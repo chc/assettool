@@ -6,6 +6,14 @@
 #include <shaderlib/shaderasm.h>
 #include <shaderlib/GLSLBuilder.h>
 
+struct {
+	uint32_t *checksums;
+	uint32_t *parents;
+	uint32_t *flipped;
+	uint32_t num_bones;
+	glm::mat4 *matrices;
+} THPSMdlSkeleton;
+
 int get_mesh_count(std::vector<LibTHPS::Sector *> secs) {
 	int c = 0;
 	std::vector<LibTHPS::Sector *>::iterator it = secs.begin();
@@ -201,7 +209,65 @@ void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 		out->setTextureAddressMode(tex_address_mode_from_thps_uvaddress(matinfo.m_u_address), tex_address_mode_from_thps_uvaddress(matinfo.m_v_address), i);
 	}	
 }
+void thps_append_skeleton(const char *path) {
+	FILE *fd = fopen(path,"rb");
+	uint32_t version, flags;
+	fread(&version, sizeof(uint32_t), 1, fd);
+	fread(&flags, sizeof(uint32_t), 1, fd);
+	fread(&THPSMdlSkeleton.num_bones, sizeof(uint32_t), 1, fd);
+
+	THPSMdlSkeleton.checksums = (uint32_t *)malloc(THPSMdlSkeleton.num_bones * sizeof(uint32_t));
+	THPSMdlSkeleton.parents = (uint32_t *)malloc(THPSMdlSkeleton.num_bones * sizeof(uint32_t));
+	THPSMdlSkeleton.flipped = (uint32_t *)malloc(THPSMdlSkeleton.num_bones * sizeof(uint32_t));
+	fread(THPSMdlSkeleton.checksums, sizeof(uint32_t), THPSMdlSkeleton.num_bones, fd);
+	fread(THPSMdlSkeleton.parents, sizeof(uint32_t), THPSMdlSkeleton.num_bones, fd);
+	fread(THPSMdlSkeleton.flipped, sizeof(uint32_t), THPSMdlSkeleton.num_bones, fd);
+	THPSMdlSkeleton.matrices = new glm::mat4[THPSMdlSkeleton.num_bones];
+	for(int i=0;i<THPSMdlSkeleton.num_bones;i++) {
+		glm::quat quat;
+		glm::vec3 pos;
+		glm::mat4 matrix;
+
+		float q[4],t[3];
+		fread(&q, sizeof(float), 4, fd);
+		fread(&t, sizeof(float), 3, fd);
+
+		quat.x = q[0];
+		quat.y = q[1];
+		quat.z = q[2];
+		quat.w = q[3];
+
+		pos.x = t[0];
+		pos.y = t[1];
+		pos.z = t[2];
+
+		glm::mat4 rot = glm::mat4_cast(quat);
+		glm::mat4 trans = glm::translate(glm::mat4(1.0f), pos);
+		glm::mat4 final = rot * trans;
+		THPSMdlSkeleton.matrices[i] = final;
+	}
+	fclose(fd);
+}
+void thps_attach_skeleton_to_mesh(CMesh *mesh) {
+	mesh->setNumBones(THPSMdlSkeleton.num_bones);
+	for(int i=0;i<THPSMdlSkeleton.num_bones;i++) {
+		sBone *bone_info = mesh->getBone(i);
+		memcpy(&bone_info->matrix, glm::value_ptr(THPSMdlSkeleton.matrices[i]), sizeof(float)*16);
+
+		bone_info->identifier.type = EDataType_UInt32;
+		bone_info->identifier.sUnion.uInt32Data = THPSMdlSkeleton.checksums[i];
+	}
+
+}
 bool thps_xbx_import_scn(ImportOptions* opts) {
+	printf("The Options: %s\n", opts->args);
+	THPSMdlSkeleton.checksums = NULL;
+	THPSMdlSkeleton.parents = NULL;
+	THPSMdlSkeleton.flipped = NULL;
+	THPSMdlSkeleton.num_bones = 0;
+	if(opts->args) {
+		thps_append_skeleton(opts->args);
+	}
 	LibTHPS::Scene *scn = new LibTHPS::Scene(opts->path, LibTHPS::Platform_Xbox);
 
 	//load materials
@@ -314,6 +380,8 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 			free(indices);
 			it2++;
 		}
+
+		thps_attach_skeleton_to_mesh(out_meshes[i]);
 
 		i++;
 		it++;

@@ -162,6 +162,16 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 	json_object_set(jobj, "bone_indices", bones_array);
 	json_decref(bones_array);
 }
+void add_generic_data_to_json(json_t *jobj, const char *name, sGenericData *data) {
+	switch(data->type) {
+		case EDataType_String_ASCII:
+			json_object_set_new(jobj, name, json_string(data->sUnion.mString));
+		break;
+		case EDataType_UInt32:
+			json_object_set_new(jobj, name, json_integer(data->sUnion.uInt32Data));
+		break;
+	}
+}
 void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 	int num_bones = mesh->getNumBones();
 
@@ -176,13 +186,10 @@ void add_model_skeleton_to_json(json_t *jobj, CMesh *mesh) {
 		float *matrix = (float *)&bone->matrix;
 		float *mat = matrix;
 
-		const char *name = (const char *)bone->identifier.sUnion.mString;
-		//printf("Skeleton name: %s\n", name);
-		json_object_set_new(bone_obj, "name", json_string(name));
+		add_generic_data_to_json(bone_obj, "name", &bone->identifier);
 		
 		if(bone->parent) {
-			const char *parent_name = bone->parent->identifier.sUnion.mString;
-			json_object_set_new(bone_obj, "parent", json_string(parent_name));
+			add_generic_data_to_json(bone_obj, "parent", &bone->parent->identifier);
 		}
 		json_t* bone_matrix = json_array();
 		for(int j=0;j<4;j++) {
