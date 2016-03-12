@@ -142,7 +142,6 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 
 	//dump bone indices
 	int num_bone_index_sets = mesh->getNumBoneIndexSets();
-	printf("%d set\n", num_bone_index_sets);
 	json_t *bones_array = json_array();
 	for(int i=0;i<num_bone_index_sets;i++) {
 		json_t *indices_array = json_array();

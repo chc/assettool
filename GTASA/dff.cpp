@@ -15,6 +15,7 @@
 #include <Generic/ScenePack.h>
 
 #include <crc32.h>
+#include <algorithm>
 
 typedef struct {
 	uint32_t tag;
