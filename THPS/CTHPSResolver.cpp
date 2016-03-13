@@ -144,7 +144,7 @@ sGenericData *CTHPSResolver::resolve(sGenericData *input) {
   		{
   			const char *name = json_string_value(jname);
 
-  			char *the_name = (char *)malloc(strlen(name+1));
+  			char *the_name = (char *)malloc(strlen(name)+1);
   			memset(the_name,0,strlen(name)+1);
   			strcpy(the_name,name);
 
