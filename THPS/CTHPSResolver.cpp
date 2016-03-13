@@ -101,7 +101,7 @@ sGenericData *CTHPSResolver::resolve(sGenericData *input) {
     struct curl_fetch_st *cf = &curl_fetch;                 /* pointer to fetch struct */
 
     char url[128];
-    sprintf(url, "http://thmods.com/checksum_query.php?checksum=%d",input->sUnion.uInt32Data);
+    sprintf(url, "http://thmods.com/checksum_query.php?checksum=%lu",input->sUnion.uInt32Data);
 
     /* init curl handle */
     if ((ch = curl_easy_init()) == NULL) {
