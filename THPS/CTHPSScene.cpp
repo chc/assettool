@@ -5,6 +5,7 @@
 
 #include <shaderlib/shaderasm.h>
 #include <shaderlib/GLSLBuilder.h>
+#include <THPS/CTHPSResolver.h>
 
 struct {
 	uint32_t *checksums;
@@ -13,6 +14,8 @@ struct {
 	uint32_t num_bones;
 	glm::mat4 *matrices;
 } THPSMdlSkeleton;
+
+CTHPSResolver thps_checksum_resolver;
 
 int get_mesh_count(std::vector<LibTHPS::Sector *> secs) {
 	int c = 0;
@@ -254,8 +257,17 @@ void thps_attach_skeleton_to_mesh(CMesh *mesh) {
 		sBone *bone_info = mesh->getBone(i);
 		memcpy(&bone_info->matrix, glm::value_ptr(THPSMdlSkeleton.matrices[i]), sizeof(float)*16);
 
-		bone_info->identifier.type = EDataType_UInt32;
-		bone_info->identifier.sUnion.uInt32Data = THPSMdlSkeleton.checksums[i];
+		sGenericData data;
+
+		data.type = EDataType_UInt32;
+		data.sUnion.uInt32Data = THPSMdlSkeleton.checksums[i];
+
+		sGenericData *ret_data = thps_checksum_resolver.resolve(&data);
+		if(ret_data) {
+			bone_info->identifier = *ret_data;
+		} else {
+			bone_info->identifier = data;
+		}
 	}
 
 }

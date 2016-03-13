@@ -43,7 +43,7 @@ namespace Core {
 		~Vector() {
 			uninitalize();
 		}
-		void add(T val) {
+		T add(T val) {
 			VectorItem<T> *item = findFirstFreeItem();
 			if(item == NULL) {
 				AddItemSlots(item_count*2);
@@ -53,13 +53,14 @@ namespace Core {
 				item->initalized = true;
 				item->data = val;
 			}
+			return item->data;
 		}
 		T operator[](int i) {
 			VectorItem<T> *item = findItemByExternalIndex(i);
 			if(item) {
 				return item->data;
 			}
-			return (T)NULL;
+			return T();
 		}
 		Vector<T>& operator=(Vector& other) {
 			uninitalize();
