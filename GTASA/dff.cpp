@@ -345,41 +345,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 
 			fread(weights, dff_out->last_geometry->vertex_count * sizeof(float), 4, fd);
 
-			//invert them for some reason??
-			/*
-			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
-				float *v = &weights[i * 4];
-				float t[4];
-				t[3] = v[0];
-				t[2] = v[1];
-				t[1] = v[2];
-				t[0] = v[3];
-
-				v[0] = t[0];
-				v[1] = t[1];
-				v[2] = t[2];
-				v[3] = t[3];
-			}
-			*/
-			
-			//printf("Weights: \n");
-			float *wp = weights;
-
-			float wmin = 9999999.0;
-			float wmax = -999999.0;
-			for(int i=0;i<dff_out->last_geometry->vertex_count;i++) {
-				printf("(%f,%f,%f,%f)\n",wp[0],wp[1],wp[2],wp[3]);
-				for(int j=0;j<4;j++) {
-					if(wp[j] < wmin) {
-						wmin = wp[j];
-					}
-					if(wp[j] > wmax) {
-						wmax = wp[j];
-					}
-				}
-				wp += 4;
-			}
-			printf("Weights minmax: %f %f\n",wmin, wmax);
 			for(int i=0;i<num_bones;i++) {
 				DFFBone *bone = get_dff_bone_by_index(dff_out, i);
 				fread(&bone->matrix, sizeof(float), 4*4, fd);
