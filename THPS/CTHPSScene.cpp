@@ -212,6 +212,14 @@ void thps_material_to_cmaterial(LibTHPS::Material *mat, CMaterial *out) {
 		out->setTextureAddressMode(tex_address_mode_from_thps_uvaddress(matinfo.m_u_address), tex_address_mode_from_thps_uvaddress(matinfo.m_v_address), i);
 	}	
 }
+sBone *thps_get_bone_by_checksum(CMesh *mesh, uint32_t checksum) {
+	for(int i=0;i<THPSMdlSkeleton.num_bones;i++) {
+		if(THPSMdlSkeleton.checksums[i] == checksum) {
+			return mesh->getBone(i);
+		}
+	}
+	return NULL;
+}
 void thps_append_skeleton(const char *path) {
 	FILE *fd = fopen(path,"rb");
 	uint32_t version, flags;
@@ -253,6 +261,8 @@ void thps_append_skeleton(const char *path) {
 }
 void thps_attach_skeleton_to_mesh(CMesh *mesh) {
 	mesh->setNumBones(THPSMdlSkeleton.num_bones);
+
+	//setup names
 	for(int i=0;i<THPSMdlSkeleton.num_bones;i++) {
 		sBone *bone_info = mesh->getBone(i);
 		memcpy(&bone_info->matrix, glm::value_ptr(THPSMdlSkeleton.matrices[i]), sizeof(float)*16);
@@ -267,6 +277,14 @@ void thps_attach_skeleton_to_mesh(CMesh *mesh) {
 			bone_info->identifier = *ret_data;
 		} else {
 			bone_info->identifier = data;
+		}
+	}
+
+	//map parents
+	for(int i=0;i<THPSMdlSkeleton.num_bones;i++) {
+		if(THPSMdlSkeleton.parents[i] != 0) {
+			sBone *parent_bone = thps_get_bone_by_checksum(mesh,THPSMdlSkeleton.parents[i]);
+			mesh->getBone(i)->parent = parent_bone;
 		}
 	}
 
