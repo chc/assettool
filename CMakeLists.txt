@@ -28,11 +28,11 @@ source_group("XML" FILES ${XML_SOURCES})
 
 #OpenGL specific stuff
 IF(WIN32)
-
-add_executable (assettool ${ALL_SRCS})
+file (GLOB PLAT_SOURCES "Platform/Win32/*.cpp" "Platform/Win32/*.h")
+add_executable (assettool ${ALL_SRCS} ${PLAT_SOURCES})
 target_link_libraries(assettool )
-target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped jansson_d assimpd)
-target_link_libraries(assettool general libpng zlib libsquish pugixml freetype jansson assimp)
+target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped jansson_d assimpd curl shaderpacket)
+target_link_libraries(assettool general libpng zlib libsquish pugixml freetype jansson assimp curl shaderpacket)
 
 ELSE() #unix
 file (GLOB PLAT_SOURCES "Platform/UNIX/*.cpp" "Platform/UNIX/*.h")
