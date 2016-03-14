@@ -13,12 +13,12 @@ bool gen_import_texfolder_process_image(ExportOptions *opts) {
 	const char *name = opts->srcPath;
 	char chkstr[256];
 	chkstr[0] = 0;
-	char *last_slash = strrchr(name, '/');
+	char *last_slash = strrchr((char *)name, '/');
 	if(last_slash) {
 		name = last_slash+1;
 	}
 
-	char *last_period = strrchr(name, '.');
+	char *last_period = strrchr((char *)name, '.');
 	if(last_period) {
 		*last_period = 0;
 	}
