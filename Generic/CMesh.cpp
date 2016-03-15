@@ -86,6 +86,7 @@ int CMesh::getNumIndicies(int layer) {
 }
 uint32_t *CMesh::getIndices(int level) {
 	uint32_t *ret = mp_data_package->GetDataBank(EMeshDataBank_Indices)->GetUInt32Head(level);
+	printf("Indices: %d %p\n",level,ret);
 	return ret;
 }
 void CMesh::setIndices(uint32_t *indices, int num_indices, int level) {

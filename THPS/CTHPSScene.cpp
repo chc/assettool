@@ -6,6 +6,7 @@
 #include <shaderlib/shaderasm.h>
 #include <shaderlib/GLSLBuilder.h>
 #include <THPS/CTHPSResolver.h>
+#include <Generic/coordinate_normalizer.h>
 
 struct {
 	uint32_t *checksums;
@@ -239,9 +240,9 @@ void thps_append_skeleton(const char *path) {
 		glm::vec3 pos;
 		glm::mat4 matrix;
 
-		float q[4],t[3];
+		float q[4],t[4];
 		fread(&q, sizeof(float), 4, fd);
-		fread(&t, sizeof(float), 3, fd);
+		fread(&t, sizeof(float), 4, fd);
 
 		quat.x = q[0];
 		quat.y = q[1];
@@ -252,7 +253,7 @@ void thps_append_skeleton(const char *path) {
 		pos.y = t[1];
 		pos.z = t[2];
 
-		glm::mat4 rot = glm::mat4_cast(quat);
+		glm::mat4 rot = glm::mat4_cast(glm::inverse(quat));
 		glm::mat4 trans = glm::translate(glm::mat4(1.0f), pos);
 		glm::mat4 final = rot * trans;
 		THPSMdlSkeleton.matrices[i] = final;
@@ -388,7 +389,7 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 
 		out_meshes[i]->setIndexLevels(meshes.size());
 		out_meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
-		out_meshes[i]->setCoordinateSystem(ECoordinateSystem_Left_XZY);
+		//out_meshes[i]->setCoordinateSystem(ECoordinateSystem_Left_XZY);
 		uint32_t j = 0;
 		while(it2 != meshes.end()) {
 			LibTHPS::Mesh *mesh = *it2;
@@ -405,7 +406,11 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 			CMaterial *mat = CMaterial::findMaterialByChecksum(out_mats,mats.size() , mesh->getMaterialChecksum());
 			out_meshes[i]->setIndexMaterial(mat, j);
 			out_meshes[i]->setUseIndexedMaterials(true);
-			out_meshes[i]->setIndices(out_indices, num_indices, j++);
+
+			//void convert_to_primitive(CMeshPrimType from, CMeshPrimType to, uint16_t *indices, uint32_t num_indices, uint16_t **out_indices, uint32_t *out_num_indices)
+			uint32_t *converted_indices, num_converted_indices;
+			convert_to_primitive(CMeshPrimType_TriangleStrips, CMeshPrimType_TriangleList, out_indices, num_indices, &converted_indices, &num_converted_indices);
+			out_meshes[i]->setIndices(converted_indices, num_converted_indices, j++);
 			free(out_indices);
 			free(indices);
 			it2++;

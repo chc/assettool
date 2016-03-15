@@ -87,10 +87,7 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 		for (int i = 0; i < num_index_sets || i == 0; i++) {
 			int level = i;
 			uint32_t *indices = mesh->getIndices(level);
-			if (!sub_indices) {
-				level = -1;
-				indices = mesh->getIndices(level);
-			}
+			printf("Getting index level: %d\n",level);
 			json_t *indices_array = json_array();
 			uint32_t num_indices = mesh->getNumIndicies(level);
 			for (int k = 0; k < num_indices / 3; k++) {

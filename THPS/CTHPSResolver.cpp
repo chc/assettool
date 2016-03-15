@@ -148,11 +148,12 @@ sGenericData *CTHPSResolver::resolve(sGenericData *input) {
   			memset(the_name,0,strlen(name)+1);
   			strcpy(the_name,name);
 
-   			sGenericData data;
-  			data.type = EDataType_String_ASCII;
-  			data.sUnion.mString = the_name;
-
-  			return &m_allocated_data.add(data);
+   			sGenericData *data = (sGenericData *)malloc(sizeof(sGenericData));
+  			data->type = EDataType_String_ASCII;
+  			data->sUnion.mString = the_name;
+            
+            m_allocated_data.add(data);
+  			return data;
   		}
 
   		json_decref(root);

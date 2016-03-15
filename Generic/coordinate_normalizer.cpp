@@ -86,3 +86,22 @@ void convert_uvw_from_to(ECoordinateSystem from, ECoordinateSystem to, float *bu
 		}
 	}
 }
+
+void convert_to_primitive(CMeshPrimType from, CMeshPrimType to, uint32_t *indices, uint32_t num_indices, uint32_t **out_indices, uint32_t *out_num_indices) {
+	uint32_t *list_indices = (uint32_t*)malloc(num_indices * 3 * sizeof(uint32_t));
+	uint32_t *p = list_indices;
+	uint32_t out_num = 0;
+	for(unsigned int c = 0;c<num_indices-2;c++) {
+		*p++ = indices[c];
+		if( c & 1) {
+			*p++ = indices[c+2];
+			*p++ = indices[c+1];
+		} else {
+			*p++ = indices[c+1];
+			*p++ = indices[c+2];
+		}
+		out_num += 3;
+	}
+	*out_indices = list_indices;
+	*out_num_indices = out_num;
+}
