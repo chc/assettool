@@ -20,6 +20,10 @@ enum CMeshPrimType {
 	CMeshPrimType_TriangleStrips,
 	CMeshPrimType_TriangleFans
 };
+struct sFace {
+	glm::ivec4 vertex_indices;
+	int material_id;
+};
 struct sBone {
 	float matrix[16];
 	sBone *parent;
@@ -101,10 +105,21 @@ public:
 	bool hasSubIndices();
 
 	COLBBox getBBox();
+
+	/*
+		Coordinate system related functions
+	*/
 		
 	void setCoordinateSystem(ECoordinateSystem system) { m_coordinate_system = system; }
 	ECoordinateSystem getCoordinateSystem(ECoordinateSystem handedness) { return m_coordinate_system; }
 	void convertToCoordinateSystem(ECoordinateSystem system);
+
+	/*
+		Vertex face related functions
+	*/
+	void setNumFaces(uint32_t num_faces);
+	sFace *getFace(int index);
+
 
 	/*
 		Vertex weight stuff
@@ -195,6 +210,9 @@ private:
 	uint32_t m_num_bone_parent_ids;
 	uint32_t *mp_bone_parent_ids;
 */
+
+	int m_num_faces;
+	sFace* mp_faces;
 
 	//new bone struct
 	int m_num_bones;

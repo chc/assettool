@@ -31,6 +31,8 @@ CMesh::CMesh() {
 
 	mp_bone_info = NULL;
 	mp_data_package = new CDataPackage(EMeshDataBank_Count);
+	m_num_faces = 0;
+	mp_faces = NULL;
 }
 CMesh::~CMesh() {
 	if(mp_bone_info)
