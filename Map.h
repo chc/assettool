@@ -6,7 +6,7 @@ namespace Core {
 	template<typename T, typename T2>
 	class MapItem {
 	public:
-		MapItem() : key() {
+		MapItem() : key(), value() {
 			initalized = false;
 		}
 		MapItem(T _key) : key(_key) {
