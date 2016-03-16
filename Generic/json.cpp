@@ -77,7 +77,7 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 	}
 	json_decref(uv_array);
 
-
+	/*
 	//dump indices
 	int num_index_sets = mesh->getNumIndexLevels();
 	if (mesh->getIndices() != NULL)
@@ -108,7 +108,26 @@ void add_mesh_to_json(json_t *jobj, CMesh *mesh) {
 		}
 		json_object_set(jobj, "indices", indices_array2);
 		json_decref(indices_array2);
-	}	
+	}
+	*/
+	json_t *faces_array = json_array();
+	int num_faces = mesh->getNumFaces();
+	for(int i=0;i<num_faces;i++) {
+		sFace *face = mesh->getFace(i);
+		json_t *face_obj = json_object();
+		json_t *indices_array = json_array();
+		json_array_append_new(indices_array, json_integer(face->vertex_indices.x));
+		json_array_append_new(indices_array, json_integer(face->vertex_indices.y));
+		json_array_append_new(indices_array, json_integer(face->vertex_indices.z));
+		json_object_set(face_obj, "vertex_indices", indices_array);
+		json_object_set_new(face_obj, "material_id", json_integer(0));
+		json_array_append(faces_array, face_obj);
+
+		json_decref(indices_array);
+		json_decref(face_obj);
+	}
+	json_object_set(jobj, "faces", faces_array);
+	json_decref(faces_array);
 
 
 	//dump bone weights

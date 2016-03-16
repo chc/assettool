@@ -335,7 +335,6 @@ bool parse_chunk(DFFInfo *dff_out, DFFChunkInfo *chunk, FILE *fd, DFFTags last_t
 			fread(&max_weights_per_vertex, sizeof(uint8_t), 1, fd);
 			fread(&padding, sizeof(uint8_t), 1, fd);
 
-			printf("aaa: %d %d\n", num_used_bones, max_weights_per_vertex);
 			uint8_t *bones_used = (uint8_t *)malloc(num_used_bones * sizeof(uint8_t));
 			fread(bones_used, num_used_bones, sizeof(uint8_t), fd);
 
@@ -856,8 +855,6 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		output_meshes[mesh_buffer_idx] = new CMesh();
 		output_meshes[mesh_buffer_idx]->setCoordinateSystem(ECoordinateSystem_Right);
 		
-		output_meshes[mesh_buffer_idx]->setUseIndexedMaterials(true);
-		
 		output_meshes[mesh_buffer_idx]->setName(g->name);
 		output_meshes[mesh_buffer_idx]->setGroupId(crc32(0, g->name, strlen(g->name)));
 
@@ -913,35 +910,26 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 		output_meshes[mesh_buffer_idx]->setIndexLevels(g->m_index_buffers.size());
 		Core::Iterator<Core::Map<int, Core::Vector<glm::ivec3> >, Core::MapItem< int, Core::Vector<glm::ivec3> >* > it2 = g->m_index_buffers.begin();
 		int level = 0;
-		
-		while(it2 != g->m_index_buffers.end()) {
-			Core::MapItem< int, Core::Vector<glm::ivec3> >* item = *it2;
 
-			MaterialRecord *matrec = g->m_material_records[item->key];
+		output_meshes[mesh_buffer_idx]->setNumFaces(g->face_count);
 
-			CMaterial *cmat = new CMaterial();
-			getMaterialFromRecord(matrec, cmat, g);
-			materials.add(cmat);
-			output_meshes[mesh_buffer_idx]->setIndexMaterial(cmat, level);
+		Core::Map<int, CMaterial *> materials;
+		for(int i=0;i<g->face_count;i++) {
+			sFace *face = output_meshes[mesh_buffer_idx]->getFace(i);
+			glm::ivec4 mesh_index_info = g->indicies[i];
+			face->vertex_indices = glm::ivec4(mesh_index_info.x, mesh_index_info.y, mesh_index_info.z, 0);
 
+			CMaterial *mat = NULL;
 
-			uint32_t *indices = (uint32_t*) malloc(sizeof(uint32_t) * 3 * item->value.size());
-			uint32_t *p = indices;
-
-			Core::Iterator<Core::Vector<glm::ivec3>, glm::ivec3> it3 = item->value.begin();
-			int idx = 0;
-			while(it3 != item->value.end()) {
-				glm::ivec3 cur_indices = *it3;
-				*p++ = cur_indices.x;
-				*p++ = cur_indices.y;
-				*p++ = cur_indices.z;
-				it3++;
-				idx++;
+			if(materials[mesh_index_info.w] != NULL) {
+				mat = materials[mesh_index_info.w];
+			} else {
+				MaterialRecord *matrec = g->m_material_records[mesh_index_info.w];
+				mat = new CMaterial();
+				getMaterialFromRecord(matrec, mat, g);
+				materials[mesh_index_info.w] = mat;
 			}
-			output_meshes[mesh_buffer_idx]->setIndices(indices, item->value.size() * 3, level);
-			free(indices);
-			level++;
-			it2++;
+			face->material = mat;
 		}
 		
 		output_meshes[mesh_buffer_idx]->setNumVerts(g->vertex_count);
