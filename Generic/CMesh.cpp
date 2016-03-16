@@ -271,3 +271,13 @@ uint32_t *CMesh::getColours()
 {
 	return mp_data_package->GetDataBank(EMeshDataBank_Colours)->GetUInt32Head(0);
 }
+void CMesh::setNumFaces(uint32_t num_faces) {
+	m_num_faces = num_faces;
+	mp_faces = (sFace *)malloc(num_faces * sizeof(sFace));
+}
+int CMesh::getNumFaces() {
+	return m_num_faces;
+}
+sFace *CMesh::getFace(int index) {
+	return &mp_faces[index];
+}

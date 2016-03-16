@@ -22,7 +22,7 @@ enum CMeshPrimType {
 };
 struct sFace {
 	glm::ivec4 vertex_indices;
-	int material_id;
+	CMaterial *material;
 };
 struct sBone {
 	float matrix[16];
@@ -117,6 +117,7 @@ public:
 	/*
 		Vertex face related functions
 	*/
+	int getNumFaces();
 	void setNumFaces(uint32_t num_faces);
 	sFace *getFace(int index);
 
