@@ -913,7 +913,7 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 		output_meshes[mesh_buffer_idx]->setNumFaces(g->face_count);
 
-		Core::Map<int, CMaterial *> materials;
+		Core::Map<int, CMaterial *> materials_map;
 		for(int i=0;i<g->face_count;i++) {
 			sFace *face = output_meshes[mesh_buffer_idx]->getFace(i);
 			glm::ivec4 mesh_index_info = g->indicies[i];
@@ -921,13 +921,14 @@ bool gta_rw_import_dff(ImportOptions* impOpts) {
 
 			CMaterial *mat = NULL;
 
-			if(materials[mesh_index_info.w] != NULL) {
-				mat = materials[mesh_index_info.w];
+			if(materials_map[mesh_index_info.w] != NULL) {
+				mat = materials_map[mesh_index_info.w];
 			} else {
 				MaterialRecord *matrec = g->m_material_records[mesh_index_info.w];
 				mat = new CMaterial();
 				getMaterialFromRecord(matrec, mat, g);
-				materials[mesh_index_info.w] = mat;
+				materials_map[mesh_index_info.w] = mat;
+				materials.add(mat);
 			}
 			face->material = mat;
 		}

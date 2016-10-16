@@ -79,6 +79,7 @@ void CMesh::setIndexLevels(int levels) {
 
 	//allocate materials
 	mp_material = (CMaterial *)malloc(num_index_levels * sizeof(CMaterial *));
+	memset(mp_material, 0, num_index_levels * sizeof(CMaterial *));
 	m_num_materials = num_index_levels;
 }
 int CMesh::getNumIndicies(int layer) { 
