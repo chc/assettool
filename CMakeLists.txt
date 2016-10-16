@@ -26,12 +26,13 @@ source_group("Assimp" FILES ${ASSIMP_SOURCES})
 source_group("CHCEngine" FILES ${CHCENGINE_SOURCES})
 source_group("XML" FILES ${XML_SOURCES})
 
+add_definitions(-DCURL_STATICLIB)
 #OpenGL specific stuff
 IF(WIN32)
 file (GLOB PLAT_SOURCES "Platform/Win32/*.cpp" "Platform/Win32/*.h")
 add_executable (assettool ${ALL_SRCS} ${PLAT_SOURCES})
 target_link_libraries(assettool )
-target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped jansson_d assimpd curl shaderpacket)
+target_link_libraries(assettool debug libpng zlib libsquishd pugixmld freetyped jansson_d assimpd curld shaderpacketd)
 target_link_libraries(assettool general libpng zlib libsquish pugixml freetype jansson assimp curl shaderpacket)
 
 ELSE() #unix
