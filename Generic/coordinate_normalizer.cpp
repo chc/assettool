@@ -1,6 +1,50 @@
 #include <main.h>
 #include <Generic/coordinate_normalizer.h>
-
+void convert_xyz_from_to(ECoordinateSystem from, ECoordinateSystem to, glm::vec4 *buffer, uint32_t num_verts) {
+	for(int i=0;i<num_verts;i++) {
+		float x,y,z,w;
+		glm::vec4 vec = buffer[i];
+		switch(from) {
+			/*
+				Normalize to right handed
+			*/
+			case ECoordinateSystem_Left_XZY:
+				x = vec.x;
+				y = -vec.z;
+				z = vec.y;
+				w = vec.w;
+				break;
+			case ECoordinateSystem_Left:
+				x = vec.x;
+				y = vec.y;
+				z = -vec.z;
+				w = vec.w;
+				break;
+			case ECoordinateSystem_Right: //should invert or w/e if right/left but for now w/e
+				x = vec.x;
+				y = vec.y;
+				z = vec.z;
+				w = vec.w;
+				break;
+		}
+		switch(to) {
+			case ECoordinateSystem_Left:
+			case ECoordinateSystem_Right: //should invert or w/e if right/left but for now w/e
+				vec.x = x;
+				vec.y = y;
+				vec.z = z;
+				vec.w = w;
+			break;
+			case ECoordinateSystem_Left_XZY:
+				vec.x = x;
+				vec.y = z;
+				vec.z = y;
+				vec.w = w;
+				break;
+		}
+		buffer[i] = vec;
+	}
+}
 void convert_xyz_from_to(ECoordinateSystem from, ECoordinateSystem to, float *buffer, uint32_t num_verts) {
 	float *p = buffer;
 	for(int i=0;i<num_verts;i++) {
@@ -11,7 +55,7 @@ void convert_xyz_from_to(ECoordinateSystem from, ECoordinateSystem to, float *bu
 			*/
 			case ECoordinateSystem_Left_XZY:
 				x = p[0];
-				y = p[2];
+				y = -p[2];
 				z = p[1];
 				break;
 			case ECoordinateSystem_Left:

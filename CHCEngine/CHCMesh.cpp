@@ -38,7 +38,6 @@ bool chc_engine_import_mesh(ImportOptions* opts) {
 }
 
 void write_mesh(CMesh *mesh, FILE* fd) {
-	mesh->convertToCoordinateSystem(ECoordinateSystem_Left_XZY);
 	uint32_t num_verts = mesh->getNumVertices();
 	uint32_t num_indicies = mesh->getNumIndicies();
 	fwrite(&num_verts,sizeof(uint32_t),1,fd);
@@ -467,6 +466,7 @@ bool chc_engine_export_mesh(ExportOptions* opts) {
 			if(scenepack->m_meshes[i]->getNumBoneIndexSets() > 0 || scenepack->m_meshes[i]->getNumBoneIndexSets() > 0) {
 				num_skeletons++;
 			}
+			scenepack->m_meshes[i]->convertToCoordinateSystem(ECoordinateSystem_Right);
 			write_mesh(scenepack->m_meshes[i], fd);
 		}
 		fwrite(&scenepack->num_materials, sizeof(uint32_t), 1, fd);

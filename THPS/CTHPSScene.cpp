@@ -330,6 +330,8 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 		LibTHPS::Sector *sec = *it;
 
 		out_meshes[i] = new CMesh();
+		out_meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
+		out_meshes[i]->setCoordinateSystem(ECoordinateSystem_Left_XZY);
 		out_meshes[i]->setNumVerts(sec->getNumVerticies());
 		out_meshes[i]->setVerticies(sec->getPositions());
 		out_meshes[i]->setNormals(sec->getNormals());
@@ -388,8 +390,6 @@ bool thps_xbx_import_scn(ImportOptions* opts) {
 		std::vector<LibTHPS::Mesh *>::iterator it2 = meshes.begin();
 
 		out_meshes[i]->setIndexLevels(meshes.size());
-		out_meshes[i]->setPrimType(CMeshPrimType_TriangleStrips);
-		//out_meshes[i]->setCoordinateSystem(ECoordinateSystem_Left_XZY);
 		uint32_t j = 0;
 		while(it2 != meshes.end()) {
 			LibTHPS::Mesh *mesh = *it2;

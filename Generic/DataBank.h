@@ -61,13 +61,14 @@ class CDataBank {
 		~CDataBank();
 		//mutators
 		void ConvertToCoordinateSystem(ECoordinateSystem system);
+		void ConvertVectorToCoordSystem(int index, ECoordinateSystem system);
 		//setters
 		void SetDataUInt8(int index, uint8_t *mData, int num_data_sets);
 		void SetDataUInt16(int index, uint16_t *mData, int num_data_sets);
 		void SetDataUInt32(int index, uint32_t *mData, int num_data_sets);
 		void SetDataFloat(int index, float *mData, int num_data_sets);
-		void SetDataVector(int index, float *verts, int m_num_vertices, int num_elements = 3);
-		void SetDataMatrix(int index, float *matarices, int m_num_matrices); //4x4 matrices only
+		void SetDataVector(int index, float *verts, int m_num_vertices, int num_elements = 3, ECoordinateSystem system = ECoordinateSystem_Left);
+		void SetDataMatrix(int index, float *matarices, int m_num_matrices, ECoordinateSystem system = ECoordinateSystem_MatrixLH_RM); //4x4 matrices only
 		//getters
 		float *GetVertexHead(int index);
 		uint32_t *GetUInt32Head(int index);

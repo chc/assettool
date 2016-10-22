@@ -49,21 +49,21 @@ void CMesh::setNumVerts(int count) {
 void CMesh::setUVWs(float *uvs, int layer) {
 	if(layer > m_num_uv_layers)
 		m_num_uv_layers = layer;
-	mp_data_package->GetDataBank(EMeshDataBank_UVs)->SetDataVector(layer, uvs, m_num_vertices, 3);
+	mp_data_package->GetDataBank(EMeshDataBank_UVs)->SetDataVector(layer, uvs, m_num_vertices, 3, m_coordinate_system);
 }
 float *CMesh::getUVWs(int layer) {
 	return mp_data_package->GetDataBank(EMeshDataBank_UVs)->GetVertexHead(layer);
 }
 void CMesh::setVerticies(float *verts) {
 	if(m_num_vertices == 0 || !verts) return;
-	mp_data_package->GetDataBank(EMeshDataBank_Vertices)->SetDataVector(0, verts, m_num_vertices);
+	mp_data_package->GetDataBank(EMeshDataBank_Vertices)->SetDataVector(0, verts, m_num_vertices, 3, m_coordinate_system);
 }
 float *CMesh::getVerticies() {
 	return mp_data_package->GetDataBank(EMeshDataBank_Vertices)->GetVertexHead(0);
 }
 void CMesh::setNormals(float *normals) {
 	if(m_num_vertices == 0 || !normals) return;
-	mp_data_package->GetDataBank(EMeshDataBank_Normals)->SetDataVector(0, normals, m_num_vertices);
+	mp_data_package->GetDataBank(EMeshDataBank_Normals)->SetDataVector(0, normals, m_num_vertices, 3, m_coordinate_system);
 }
 float *CMesh::getNormals() {
 	return mp_data_package->GetDataBank(EMeshDataBank_Normals)->GetVertexHead(0);
@@ -99,7 +99,7 @@ void CMesh::setMaterial(CMaterial *material) {
 	mp_material = material;
 }
 CMaterial *CMesh::getMaterial() {
-	if(m_num_materials > 1 || num_index_levels != 0) {
+	if(m_num_materials > 1 || m_indexed_materials) {
 		return ((CMaterial**)mp_material)[0];
 	}
 	return mp_material;

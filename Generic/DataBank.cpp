@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <memory.h>
+
+#include <Generic/coordinate_normalizer.h>
 CDataBank::CDataBank() {
 	alloc_data_sets(10);
 }
@@ -54,8 +56,16 @@ sGenericDataArray *CDataBank::GetData(int index) {
 	return &mp_data_array[index];
 
 }
+void CDataBank::ConvertVectorToCoordSystem(int index, ECoordinateSystem system) {
+	convert_xyz_from_to(mp_data_array[index].coordSystem, system, mp_data_array[index].sUnion.mVectors, mp_data_array[index].num_elements);
+	mp_data_array[index].coordSystem = system;
+}
 void CDataBank::ConvertToCoordinateSystem(ECoordinateSystem system) {
-
+	for(int i=0;i<m_num_data_sets;i++) {
+		if(mp_data_array[i].type == EDataType_Vector) {
+			ConvertVectorToCoordSystem(i, system);
+		}
+	}
 }
 float *CDataBank::GetVertexHead(int index) {
 	return glm::value_ptr(mp_data_array[index].sUnion.mVectors[0]);
@@ -64,7 +74,7 @@ uint32_t *CDataBank::GetUInt32Head(int index) {
 	if(index < 0) index = 0;
 	return mp_data_array[index].sUnion.uInt32Data;	
 }
-void CDataBank::SetDataVector(int index, float *verts, int m_num_vertices, int num_elements) {
+void CDataBank::SetDataVector(int index, float *verts, int m_num_vertices, int num_elements, ECoordinateSystem system) {
 	glm::vec4 *vectors = new glm::vec4[m_num_vertices];
 	for(int i=0;i<m_num_vertices;i++) {
 		float x = 0.0,y = 0.0,z = 0.0,w = 1.0;
@@ -83,8 +93,7 @@ void CDataBank::SetDataVector(int index, float *verts, int m_num_vertices, int n
 	mp_data_array[index].type =	EDataType_Vector;
 	mp_data_array[index].num_elements = m_num_vertices;
 	mp_data_array[index].sUnion.mVectors = vectors;
-	//mp_data_banks[index].type = EDataType_Vector;
-
+	mp_data_array[index].coordSystem = system;
 }
 void CDataBank::alloc_data_sets(int size) {
 	if(!size) {
