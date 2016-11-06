@@ -146,6 +146,8 @@ bool png_export_img(ExportOptions *expOpts) {
 		CImage *img = tex->getImage();
 		char path[128];
 		char out_name[128];
+		out_name[0] = 0;
+		path[0] = 0;
 		if (tex->getChecksum() != 0 && strlen(tex->getPath()) == 0) {
 			sprintf(out_name, "%08X", tex->getChecksum());
 

@@ -6,6 +6,7 @@
 CTexture::CTexture() {
 	memset(&m_image, 0, sizeof(m_image));
 	is_cube_map = false;
+	path[0] = 0;
 }
 CTexture::~CTexture() {
 }

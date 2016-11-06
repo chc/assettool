@@ -207,13 +207,14 @@ void write_mesh(CMesh *mesh, FILE* fd) {
 				uv_sets[j] += 4;
 			}
 		}
+		/*
 		if(flags & ECHCMeshFlag_HasWeights) {
 			fwrite(vertex_weights, sizeof(float), 4, fd);
 			fwrite(bone_indices_u32, sizeof(uint32_t), 4, fd);
 			vertex_weights += 4;
 			bone_indices_u32 += 4;
-
 		}
+		*/
 
 	}
 	int num_index_sets = mesh->getNumIndexLevels();
